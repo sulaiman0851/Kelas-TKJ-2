@@ -1,0 +1,64 @@
+-- Create Student Directory Table
+CREATE TABLE IF NOT EXISTS public.student_directory (
+    id SERIAL PRIMARY KEY,
+    absent_no INTEGER UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    is_linked BOOLEAN DEFAULT FALSE,
+    linked_user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.student_directory ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Student directory is viewable by everyone" ON public.student_directory
+    FOR SELECT USING (true);
+
+CREATE POLICY "Only admins can update student directory" ON public.student_directory
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.user_roles ur
+            JOIN public.roles r ON ur.role_id = r.id
+            WHERE ur.user_id = auth.uid() AND r.name = 'admin'
+        )
+    );
+
+-- Seed Data from Image
+INSERT INTO public.student_directory (absent_no, full_name) VALUES
+(1, 'MOCHAMMAD DAFFA WIJAYANTO'),
+(2, 'MOCHAMMAD RIZULDY ILHAM'),
+(3, 'MOH EVAN HADI MARTADINATA'),
+(4, 'MOH ROMADHONI NURIL ARSYIN'),
+(5, 'MOHAMMAD HUSNI ALTAF'),
+(6, 'MUHAMMAD ALIEF PUGUH PRASETYO'),
+(7, 'MUHAMMAD ARIEL BUDI LAKSAMANA PUTRA'),
+(8, 'MUHAMMAD BAGUS ARYA DAMARA'),
+(9, 'MUHAMMAD FAJRI UBAIDILLAH'),
+(10, 'MUHAMMAD HAFIL WIDAD'),
+(11, 'MUHAMMAD HUSEN WIJAYA'),
+(12, 'MUHAMMAD IFANZAH'),
+(13, 'MUHAMMAD IQBAL FADILAH'),
+(14, 'MUHAMMAD PATTIMURA PUTRA'),
+(15, 'MUHAMMAD RADITYA FIRMANSYAH'),
+(16, 'MUHAMMAD RAIHAN HARIYADI'),
+(17, 'MUHAMMAD RAIHAN ZAKARIYYA'),
+(18, 'MUHAMMAD RIDWAN'),
+(19, 'MUHAMMAD RISKY PRATAMA'),
+(20, 'NANDA ALIEF ZAMZAMI'),
+(21, 'NANDA NABILLAH AZZAHRA'),
+(22, 'NAVINSA LAURA NOVELIA'),
+(23, 'RAFIF ARWANDA PUTRA ASHARI'),
+(24, 'RAFLI SAHRANI'),
+(25, 'RANGGA ROIS'),
+(26, 'REGITA DWI PUTRI FEBYOLA'),
+(27, 'RESI ARIYANTI'),
+(28, 'RICA HERMAWATI'),
+(29, 'RIFALDI DWI SETIAWAN'),
+(30, 'RIZKI RAMADANI'),
+(31, 'SABRI FAHRIZAL'),
+(32, 'SULAIMAN MAJID TRUNA S'),
+(33, 'SULTHAN HAFIZH ERNANDA'),
+(34, 'VASHA SEPTIANANDA RAMADHAN'),
+(35, 'YAFQI PUTRA AGUNG ARDIANSAH'),
+(36, 'ZIDNA RIZKI AZHARI');
