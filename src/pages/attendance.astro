@@ -32,6 +32,9 @@ import Layout from '../layouts/Layout.astro';
                     Daftar Kehadiran Harian
                 </h3>
                 <div class="flex items-center gap-2 w-full md:w-auto">
+                    <button id="export-btn" class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer border border-white/5 group" title="Export CSV">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-hover:scale-110 transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    </button>
                     <label class="text-xs text-slate-500 uppercase font-extrabold tracking-tighter">Pilih Tanggal:</label>
                     <input type="date" class="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-xl flex-1 md:flex-initial focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all" id="date-filter">
                 </div>
@@ -199,8 +202,14 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Modal and Footer scripts stay similar -->
     <dialog id="checkin-modal" class="bg-slate-900 text-white border border-white/10 rounded-3xl p-8 backdrop:bg-slate-950/80 w-full max-w-md shadow-2xl">
-        <h3 class="text-2xl font-black mb-6 tracking-tight">Check-In Kehadiran</h3>
+        <h3 class="text-2xl font-black mb-6 tracking-tight">Input Kehadiran</h3>
         <form id="checkin-form" class="space-y-6">
+            <div id="student-select-container" class="hidden">
+                <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Pilih Siswa</label>
+                <select id="student-select" class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all">
+                    <!-- Loaded dynamically -->
+                </select>
+            </div>
             <div>
                 <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Pilih Status</label>
                 <select id="status-select" class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all">
@@ -232,6 +241,7 @@ import Layout from '../layouts/Layout.astro';
     
     let trendChart: any = null;
     let distChart: any = null;
+    let allStudents: any[] = [];
 
     async function init() {
         const { data: { session } } = await supabase.auth.getSession();
@@ -246,10 +256,28 @@ import Layout from '../layouts/Layout.astro';
         setupFilters();
         
         // Initial load
-        loadAttendanceStatuses();
+        await loadStudents();
+        await loadAttendanceStatuses();
         loadAttendanceList();
         renderStatsCalendar();
         loadAnalyticsData();
+    }
+
+    async function loadStudents() {
+        const { data } = await supabase
+            .from('student_directory')
+            .select('*, linked_profile:profiles(username, full_name, id)')
+            .order('absent_no', { ascending: true });
+        allStudents = data || [];
+
+        if (isAdminOrTeacher) {
+            const container = document.getElementById('student-select-container');
+            const select = document.getElementById('student-select');
+            if (container && select) {
+                container.classList.remove('hidden');
+                select.innerHTML = allStudents.map(s => `<option value="${s.id}">${s.absent_no}. ${s.full_name}</option>`).join('');
+            }
+        }
     }
 
     function setupTabs() {
@@ -304,21 +332,62 @@ import Layout from '../layouts/Layout.astro';
             renderStatsCalendar();
             loadAnalyticsData();
         });
+
+        // Export functionality
+        document.getElementById('export-btn')?.addEventListener('click', exportAttendance);
     }
+
+    async function exportAttendance() {
+        const { data: attData } = await supabase
+            .from('attendance')
+            .select(`*, status:attendance_status(label), student:student_directory(full_name, absent_no)`)
+            .eq('date', currentDate)
+            .order('student_id');
+
+        if (!attData || attData.length === 0) {
+            alert('Tidak ada data untuk diekspor pada tanggal ini.');
+            return;
+        }
+
+        const csvRows = [
+            ['No Absen', 'Nama Siswa', 'Waktu', 'Status', 'Catatan'],
+            ...attData.map(r => [
+                r.student?.absent_no || '?',
+                `"${r.student?.full_name || 'Unknown'}"`,
+                new Date(r.check_in_time).toLocaleTimeString('id-ID'),
+                r.status?.label || '-',
+                `"${r.note || ''}"`
+            ])
+        ];
+
+        const csvContent = csvRows.map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Absensi_TKJ_${currentDate}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    let attendanceStatuses: any[] = [];
 
     async function loadAttendanceStatuses() {
         const { data } = await supabase.from('attendance_status').select('*').eq('is_active', true);
+        attendanceStatuses = data || [];
         const select = document.getElementById('status-select');
         if (select && data) {
             select.innerHTML = data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
         }
         
-        // Render Action Buttons
         const actionContainer = document.getElementById('action-container');
-        if (actionContainer && !isAdminOrTeacher) {
+        if (actionContainer) {
             actionContainer.innerHTML = `
-                <button onclick="document.getElementById('checkin-modal').showModal()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black shadow-xl shadow-emerald-600/20 transition-all cursor-pointer scale-100 hover:scale-105 active:scale-95">
-                    Check-In Sekarang
+                <button onclick="document.getElementById('checkin-modal').showModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all cursor-pointer scale-100 hover:scale-105 active:scale-95 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    ${isAdminOrTeacher ? 'Input Satuan' : 'Check-In Sekarang'}
                 </button>
             `;
         }
@@ -329,77 +398,259 @@ import Layout from '../layouts/Layout.astro';
         const listMobile = document.getElementById('attendance-list-mobile');
         if(!tbodyDesktop || !listMobile) return;
 
-        const { data: attData, error } = await supabase
+        // Reset view with skeletons if needed, but here we just load
+        const { data: attData } = await supabase
             .from('attendance')
             .select(`*, status:attendance_status(*)`)
-            .eq('date', currentDate)
-            .order('check_in_time', { ascending: false });
+            .eq('date', currentDate);
             
-        if (error || !attData || attData.length === 0) {
-            const msg = 'Belum ada data absensi hari ini.';
-            tbodyDesktop.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-600 font-medium italic">${msg}</td></tr>`;
-            listMobile.innerHTML = `<div class="p-12 text-center text-slate-600 font-medium italic">${msg}</div>`;
-            return;
-        }
+        const attendanceMap = Object.fromEntries(attData?.map(a => [a.student_id, a]) || []);
 
-        const userIds = [...new Set(attData.map((d: any) => d.user_id))];
-        const { data: profiles } = await supabase.from('profiles').select('id, full_name, username').in('id', userIds);
-        const profileMap = Object.fromEntries(profiles?.map((p:any) => [p.id, p]) || []);
+        // We assume allStudents is already loaded from init()
+        const rows = allStudents.map((student: any) => {
+            const record = attendanceMap[student.id];
+            const profile = student.linked_profile || { username: '-' };
+            const time = record ? new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+            
+            const statusCode = record?.status?.code || '-';
+            const statusFullLabel = record?.status?.label?.split(' ')[0] || '-';
+            const statusColor = record?.status?.color || 'slate';
+            const note = record?.note || '';
+            const displayNote = note.trim() !== '' ? note : statusFullLabel;
 
-        tbodyDesktop.innerHTML = attData.map((record: any) => {
-            const profile = profileMap[record.user_id] || { username: '?', full_name: 'Unknown' };
-            const time = new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            return `
-                <tr class="hover:bg-white/5 transition-all group">
+            // Desktop Row
+            const desktopRow = `
+                <tr class="hover:bg-white/5 transition-all group ${record ? 'bg-white/2' : 'opacity-80'}">
                     <td class="p-6">
-                        <div class="font-black text-white group-hover:text-emerald-400 transition-colors">${profile.username}</div>
-                        <div class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">${profile.full_name}</div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 border border-white/5 flex items-center justify-center text-[10px] font-black ${record ? 'text-blue-400 border-blue-500/20' : 'text-slate-600'}">
+                                ${student.absent_no}
+                            </div>
+                            <div>
+                                <div class="font-black text-white group-hover:text-blue-400 transition-colors uppercase text-sm font-outfit tracking-tight">${student.full_name}</div>
+                                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">${profile.username}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="p-6 text-slate-400 font-mono text-xs">${time} WIB</td>
+                    <td class="p-6 text-slate-400 font-mono text-[10px]">${time !== '-' ? `${time} WIB` : '-'}</td>
                     <td class="p-6">
-                        <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
-                            ${record.status?.label || '-'}
-                        </span>
+                        <div class="flex flex-col gap-2">
+                             ${record ? `
+                                <div class="flex items-center gap-2">
+                                    <span class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black uppercase bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20 shadow-sm">
+                                        ${statusCode}
+                                    </span>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter sm:hidden lg:inline">${record.status.label}</span>
+                                </div>
+                            ` : `
+                                <span class="text-[9px] font-black uppercase text-slate-700 tracking-widest italic">Belum Absen</span>
+                            `}
+                            ${isAdminOrTeacher ? `
+                                <div class="flex gap-1 mt-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    ${attendanceStatuses.map(s => `
+                                        <button 
+                                            data-action="quick-attendance"
+                                            data-student-id="${student.id}"
+                                            data-status-id="${s.id}"
+                                            title="${s.label}"
+                                            class="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-black border transition-all cursor-pointer
+                                            ${record?.status_id === s.id 
+                                                ? `bg-${s.color}-500 border-${s.color}-400 text-white` 
+                                                : `bg-slate-800/80 border-white/5 text-slate-500 hover:text-${s.color}-400`}"
+                                        >
+                                            ${s.code}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
                     </td>
-                    <td class="p-6 text-slate-500 text-xs italic font-medium max-w-xs truncate">${record.note || '-'}</td>
+                    <td class="p-6">
+                        ${isAdminOrTeacher ? `
+                            <button 
+                                data-action="edit-note"
+                                data-student-id="${student.id}"
+                                data-note="${note}"
+                                class="text-left w-full group/note"
+                            >
+                                <div class="text-slate-500 text-xs italic truncate max-w-[150px] group-hover/note:text-blue-400 transition-colors underline decoration-dotted decoration-slate-700 underline-offset-4">
+                                    ${displayNote}
+                                </div>
+                            </button>
+                        ` : `
+                            <div class="text-slate-500 text-xs italic truncate max-w-[150px]">${displayNote}</div>
+                        `}
+                    </td>
                     <td class="p-6 text-right">
-                        ${isAdminOrTeacher ? `<button class="p-2.5 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-all cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>` : ''}
+                         ${isAdminOrTeacher && record ? `
+                            <button data-action="delete" data-record-id="${record.id}" class="p-2 text-red-500/50 hover:text-red-500 transition-colors cursor-pointer" title="Hapus">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                         ` : ''}
                     </td>
                 </tr>
             `;
-        }).join('');
 
-        listMobile.innerHTML = attData.map((record: any) => {
-            const profile = profileMap[record.user_id] || { username: '?', full_name: 'Unknown' };
-            const time = new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            return `
-                <div class="p-6 space-y-4 hover:bg-white/5 transition-all">
-                    <div class="flex justify-between items-start">
+            // Mobile Card
+            const mobileCard = `
+                <div class="p-6 space-y-4 hover:bg-white/5 transition-all ${record ? 'bg-emerald-500/5' : ''}">
+                    <div class="flex justify-between items-start gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center font-black text-emerald-500 shadow-xl group-hover:scale-110 transition-transform">
-                                ${profile.username.charAt(0).toUpperCase()}
+                            <div class="w-10 h-10 rounded-2xl bg-slate-800 border ${record ? 'border-blue-500/20 text-blue-400' : 'border-white/10 text-slate-600'} flex items-center justify-center font-black shadow-xl">
+                                ${student.absent_no}
                             </div>
-                            <div>
-                                <div class="font-black text-white text-lg">${profile.username}</div>
-                                <div class="text-[10px] text-slate-500 uppercase font-black tracking-tighter">${profile.full_name}</div>
+                            <div class="min-w-0">
+                                <div class="font-black text-white text-sm uppercase truncate font-outfit tracking-tight">${student.full_name}</div>
+                                <div class="text-[9px] text-slate-500 uppercase font-black tracking-tighter">${profile.username}</div>
                             </div>
                         </div>
-                        <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            ${record.status?.label || '-'}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
-                            <svg ...>...</svg>
-                            ${time} WIB
-                        </div>
-                        <div class="text-xs text-slate-400 italic font-medium truncate max-w-[50%]">
-                            ${record.note || 'Tidak ada catatan'}
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${record ? `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20` : 'bg-slate-800/50 text-slate-600 border border-white/5'}">
+                                ${statusLabel === '-' ? 'BELUM' : statusLabel}
+                            </span>
+                            <span class="text-[8px] font-mono text-slate-600">${time === '-' ? '' : time} WIB</span>
                         </div>
                     </div>
+                    
+                    <div class="bg-white/5 p-4 rounded-2xl">
+                         <button 
+                            data-action="edit-note"
+                            data-student-id="${student.id}"
+                            data-note="${note === '-' ? '' : note}"
+                            class="w-full text-left"
+                         >
+                            <p class="text-[9px] font-black uppercase text-slate-600 tracking-widest mb-1">Catatan</p>
+                            <p class="text-xs text-slate-400 italic line-clamp-2">${note}</p>
+                         </button>
+                    </div>
+
+                    ${isAdminOrTeacher ? `
+                        <div class="flex justify-between items-center gap-2 pt-2 border-t border-white/5 overflow-x-auto no-scrollbar pb-1">
+                            <div class="flex gap-1.5 ">
+                                ${attendanceStatuses.map(s => `
+                                    <button 
+                                        data-action="quick-attendance"
+                                        data-student-id="${student.id}"
+                                        data-status-id="${s.id}"
+                                        class="px-3 py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer whitespace-nowrap
+                                        ${record?.status_id === s.id 
+                                            ? `bg-${s.color}-500 border-${s.color}-400 text-white` 
+                                            : `bg-slate-800/50 border-white/5 text-slate-500`}"
+                                    >
+                                        ${s.label}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             `;
-        }).join('');
+
+            return { desktop: desktopRow, mobile: mobileCard };
+        });
+
+        tbodyDesktop.innerHTML = rows.map(r => r.desktop).join('');
+        listMobile.innerHTML = rows.map(r => r.mobile).join('');
+
+        // Re-attach listeners via delegation
+        setupDelegation();
+    }
+
+    function setupDelegation() {
+        const containers = ['attendance-list-desktop', 'attendance-list-mobile'];
+        containers.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            // Clean old listener
+            const newEl = el.cloneNode(true);
+            el.parentNode?.replaceChild(newEl, el);
+
+            newEl.addEventListener('click', async (e: any) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                const action = target.dataset.action;
+                const studentId = target.dataset.studentId;
+                const statusId = target.dataset.statusId;
+                const recordId = target.dataset.recordId;
+                const currentNote = target.dataset.note;
+
+                if (action === 'quick-attendance') {
+                    if (studentId && statusId) await quickAttendance(studentId, statusId);
+                } else if (action === 'edit-note') {
+                    if (studentId) await updateNote(studentId, currentNote || '');
+                } else if (action === 'delete') {
+                    if (recordId) await deleteAttendance(recordId);
+                }
+            });
+        });
+    }
+
+    async function updateNote(studentId: string | number, currentNote: string) {
+        const newNote = prompt('Masukkan keterangan (misal: Sakit Demam, Ijin Lomba, dll):', currentNote);
+        if (newNote === null) return;
+
+        const { data: existing } = await supabase
+            .from('attendance')
+            .select('id')
+            .eq('student_id', studentId)
+            .eq('date', currentDate)
+            .maybeSingle();
+
+        if (existing) {
+            await supabase.from('attendance').update({ note: newNote }).eq('id', existing.id);
+        } else {
+            alert('Silahkan pilih status terlebih dahulu sebelum mengisi catatan.');
+        }
+        loadAttendanceList();
+    }
+
+    async function quickAttendance(studentId: string | number, statusId: string | number) {
+        // Find student in local array (handle both string and number)
+        const student = allStudents.find(s => s.id == studentId);
+        
+        // Manual check-and-upsert to be safer
+        const { data: existing } = await supabase
+            .from('attendance')
+            .select('id')
+            .eq('student_id', studentId)
+            .eq('date', currentDate)
+            .maybeSingle();
+
+        let error;
+        if (existing) {
+            const res = await supabase
+                .from('attendance')
+                .update({ status_id: statusId, check_in_time: new Date().toISOString() })
+                .eq('id', existing.id);
+            error = res.error;
+        } else {
+            const res = await supabase
+                .from('attendance')
+                .insert({
+                    student_id: studentId,
+                    user_id: student?.linked_user_id || null,
+                    status_id: statusId,
+                    date: currentDate,
+                    check_in_time: new Date().toISOString()
+                });
+            error = res.error;
+        }
+
+        if (error) {
+            console.error('Supabase Error:', error);
+            alert('Error: ' + error.message);
+        }
+        loadAttendanceList();
+        loadAnalyticsData();
+    }
+
+    async function deleteAttendance(id: string | number) {
+        if (!confirm('Hapus data absensi ini?')) return;
+        const { error } = await supabase.from('attendance').delete().eq('id', id);
+        if (error) alert(error.message);
+        loadAttendanceList();
+        loadAnalyticsData();
     }
 
     function renderStatsCalendar() {
@@ -440,11 +691,11 @@ import Layout from '../layouts/Layout.astro';
         const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
         const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-        const { count: totalStudents } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        const totalStudents = 36; // Fixed per directory
         const { data: attendanceData } = await supabase.from('attendance').select('*, status:attendance_status(label, color)').gte('date', startDate).lte('date', endDate);
         const { data: statuses } = await supabase.from('attendance_status').select('*');
 
-        if (!attendanceData || !statuses || !totalStudents) return;
+        if (!attendanceData || !statuses) return;
 
         const dateGroups: any = {};
         const statusSummary: any = {};
@@ -566,7 +817,7 @@ import Layout from '../layouts/Layout.astro';
                 labels: Object.keys(statusSummary),
                 datasets: [{
                     data: Object.values(statusSummary),
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#64748b'],
+                    backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#a855f7', '#f97316', '#ef4444'],
                     borderWidth: 0,
                     spacing: 5
                 }]
@@ -590,15 +841,26 @@ import Layout from '../layouts/Layout.astro';
         e.preventDefault();
         if (!currentUser) return;
         
+        let studentId: any = null;
+        let userId: any = null;
+
+        if (isAdminOrTeacher) {
+            studentId = (document.getElementById('student-select') as HTMLSelectElement).value;
+            const student = allStudents.find(s => s.id == studentId);
+            userId = student?.linked_user_id || null;
+        } else {
+            const student = allStudents.find(s => s.linked_user_id === currentUser?.id);
+            if (!student) { alert('Akun Anda belum tertaut dengan daftar siswa. Silahkan hubungi admin.'); return; }
+            studentId = student.id;
+            userId = currentUser.id;
+        }
+
         const statusId = (document.getElementById('status-select') as HTMLSelectElement).value;
         const note = (document.getElementById('checkin-note') as HTMLTextAreaElement).value;
-
-        const { data: memberClasses } = await supabase.from('class_members').select('class_id').eq('user_id', currentUser.id).limit(1);
-        if (!memberClasses?.length) { alert('Kelas tidak ditemukan'); return; }
         
         const { error } = await supabase.from('attendance').insert({
-            user_id: currentUser.id,
-            class_id: memberClasses[0].class_id,
+            student_id: studentId,
+            user_id: userId,
             status_id: statusId,
             note: note,
             date: currentDate

@@ -49,33 +49,34 @@ import Layout from '../layouts/Layout.astro';
         </div>
     </div>
 
-    <!-- Recent Activity Section -->
-    <div class="mb-12">
-        <div class="flex items-center gap-3 mb-6">
-             <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-             <h3 class="text-xl font-bold">Log Aktivitas Sistem</h3>
+    <!-- Today's Schedule & Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <!-- Schedule Widget -->
+        <div class="lg:col-span-2">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                    <h3 class="text-xl font-bold">Jadwal Hari Ini</h3>
+                </div>
+                <a href="/schedule" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest">Lihat Semua</a>
+            </div>
+            <div id="today-schedule" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Skeletons -->
+                <div class="h-32 animate-skeleton rounded-3xl"></div>
+                <div class="h-32 animate-skeleton rounded-3xl"></div>
+            </div>
         </div>
-        <div id="activity-list" class="bg-slate-900/50 rounded-3xl border border-white/5 p-8 min-h-[300px] space-y-4">
-            <div class="flex gap-4">
-                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
-                <div class="flex-1 space-y-2 py-1">
-                    <div class="h-2 animate-skeleton w-3/4"></div>
-                    <div class="h-2 animate-skeleton w-1/4"></div>
-                </div>
+
+        <!-- Activity Logs Sidebar -->
+        <div>
+            <div class="flex items-center gap-3 mb-6">
+                 <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                 <h3 class="text-xl font-bold">Aktivitas Sistem</h3>
             </div>
-            <div class="flex gap-4">
-                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
-                <div class="flex-1 space-y-2 py-1">
-                    <div class="h-2 animate-skeleton w-1/2"></div>
-                    <div class="h-2 animate-skeleton w-1/3"></div>
-                </div>
-            </div>
-            <div class="flex gap-4">
-                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
-                <div class="flex-1 space-y-2 py-1">
-                    <div class="h-2 animate-skeleton w-2/3"></div>
-                    <div class="h-2 animate-skeleton w-1/4"></div>
-                </div>
+            <div id="activity-list" class="bg-slate-900/50 rounded-3xl border border-white/5 p-6 h-[276px] overflow-y-auto no-scrollbar relative">
+                <!-- Loaded via JS -->
+                 <div class="h-4 animate-skeleton w-full mb-4"></div>
+                 <div class="h-4 animate-skeleton w-2/3 mb-4"></div>
             </div>
         </div>
     </div>
@@ -133,6 +134,61 @@ import Layout from '../layouts/Layout.astro';
         }
 
         loadData();
+        loadSchedule();
+    }
+
+    async function loadSchedule() {
+        const now = new Date();
+        const day = now.getDay() - 1; // 0 = Mon
+        if (day < 0 || day > 5) {
+            const container = document.getElementById('today-schedule');
+            if (container) container.innerHTML = '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic">Weekend! Tidak ada jadwal hari ini. 💤</div>';
+            return;
+        }
+
+        const { data: schedule } = await supabase
+            .from('schedule')
+            .select('*, subject:subjects(*)')
+            .eq('day_of_week', day)
+            .order('start_time');
+        
+        const container = document.getElementById('today-schedule');
+        if (!container) return;
+
+        if (!schedule || schedule.length === 0) {
+            container.innerHTML = '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic text-sm">Jadwal belum diatur untuk hari ini.</div>';
+            return;
+        }
+
+        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60;
+
+        container.innerHTML = schedule.map(item => {
+            const [sh, sm] = item.start_time.split(':').map(Number);
+            const [eh, em] = item.end_time.split(':').map(Number);
+            const start = sh * 3600 + sm * 60;
+            const end = eh * 3600 + em * 60;
+            const isActive = currentTime >= start && currentTime <= end;
+
+            return `
+                <div class="p-5 rounded-[2rem] bg-slate-900 border border-white/5 relative overflow-hidden group hover:bg-white/5 transition-all duration-500 ${isActive ? 'ring-2 ring-orange-500/50 shadow-2xl shadow-orange-500/10' : ''}">
+                    ${isActive ? '<div class="absolute right-4 top-4 flex items-center gap-1.5"><span class="w-2 h-2 bg-orange-500 rounded-full animate-ping"></span><span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Active</span></div>' : ''}
+                    <div class="flex flex-col h-full justify-between gap-4">
+                        <div class="space-y-1">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${item.start_time.substring(0,5)} - ${item.end_time.substring(0,5)}</span>
+                            <h4 class="text-lg font-black text-white group-hover:text-orange-400 transition-colors uppercase leading-tight line-clamp-1">${item.subject.name}</h4>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">${item.room || 'R. KELAS'}</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-xl bg-orange-600/10 flex items-center justify-center text-orange-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     async function loadData() {
@@ -225,8 +281,8 @@ import Layout from '../layouts/Layout.astro';
         }).join('');
 
         // Load Stats
-        const { count: studentCount } = await supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role_id', (await supabase.from('roles').select('id').eq('name', 'student').single()).data?.id);
-        document.getElementById('stat-total-students')!.innerText = studentCount?.toString() || '0';
+        const { count: studentCount } = await supabase.from('student_directory').select('*', { count: 'exact', head: true });
+        document.getElementById('stat-total-students')!.innerText = studentCount?.toString() || '36';
         
         const { count: attCount } = await supabase.from('attendance').select('*', { count: 'exact', head: true }).eq('date', new Date().toISOString().split('T')[0]);
         document.getElementById('stat-attendance')!.innerText = attCount?.toString() || '0';
