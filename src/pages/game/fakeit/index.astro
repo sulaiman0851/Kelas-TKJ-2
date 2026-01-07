@@ -137,7 +137,7 @@ export const prerender = false;
             .select(`
                 *,
                 fakeit_categories(name, icon),
-                fakeit_players(id)
+                fakeit_players(id, status)
             `)
             .in('status', ['waiting', 'question', 'answer', 'discussion', 'voting'])
             .order('created_at', { ascending: false })
@@ -154,9 +154,11 @@ export const prerender = false;
         }
 
         container.innerHTML = rooms.map(room => {
-            // Count players properly
-            const playerCount = Array.isArray(room.fakeit_players) ? room.fakeit_players.length : 0;
-            console.log(`Room ${room.code}: ${playerCount} players`, room.fakeit_players); // DEBUG
+            // Count active players (exclude 'quit')
+            const players = Array.isArray(room.fakeit_players) ? room.fakeit_players : [];
+            const activePlayers = players.filter((p: any) => p.status !== 'quit');
+            const playerCount = activePlayers.length;
+            
             const statusColors: Record<string, string> = {
                 waiting: 'bg-yellow-500/20 text-yellow-400',
                 question: 'bg-blue-500/20 text-blue-400',

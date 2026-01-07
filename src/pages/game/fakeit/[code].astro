@@ -109,23 +109,27 @@ const { code } = Astro.params;
 
         // Setup presence tracking
         setupPresenceTracking();
+
+        // Immediate first heartbeat
+        updatePresence();
+    }
+
+    async function updatePresence() {
+        if (!myPlayer) return;
+        await supabase
+            .from('fakeit_players')
+            .update({ 
+                last_seen: new Date().toISOString(),
+                status: 'online'
+            })
+            .eq('id', myPlayer.id);
     }
 
     function setupPresenceTracking() {
         if (!currentUser || !room) return;
 
-        // Heartbeat every 5 seconds
-        const heartbeatInterval = setInterval(async () => {
-            if (!myPlayer) return;
-            
-            await supabase
-                .from('fakeit_players')
-                .update({ 
-                    last_seen: new Date().toISOString(),
-                    status: 'online'
-                })
-                .eq('id', myPlayer.id);
-        }, 5000);
+        // Heartbeat every 3 seconds for better accuracy
+        const heartbeatInterval = setInterval(updatePresence, 3000);
 
         // Detect tab visibility (AFK)
         document.addEventListener('visibilitychange', async () => {
@@ -256,8 +260,15 @@ const { code } = Astro.params;
         if (!existing.data) {
             await supabase.from('fakeit_players').insert({
                 room_id: room.id,
-                user_id: currentUser.id
+                user_id: currentUser.id,
+                status: 'online'
             });
+        } else {
+            // Re-activate if was quit
+            await supabase
+                .from('fakeit_players')
+                .update({ status: 'online', last_seen: new Date().toISOString() })
+                .eq('id', existing.data.id);
         }
     }
 

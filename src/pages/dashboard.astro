@@ -43,7 +43,7 @@ import Layout from '../layouts/Layout.astro';
                 </div>
                 <div>
                     <p class="text-sm text-slate-400">Game Status</p>
-                    <h3 class="text-2xl font-bold text-purple-400">Active</h3>
+                    <h3 class="text-2xl font-bold text-purple-400" id="stat-game-players">...</h3>
                 </div>
             </div>
         </div>
@@ -135,6 +135,20 @@ import Layout from '../layouts/Layout.astro';
 
         loadData();
         loadSchedule();
+
+        // Realtime for Game Players
+        supabase
+            .channel('dashboard_game_presence')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_players' }, async () => {
+                const { count } = await supabase
+                    .from('fakeit_players')
+                    .select('*', { count: 'exact', head: true })
+                    .in('status', ['online', 'afk']);
+                
+                const el = document.getElementById('stat-game-players');
+                if (el) el.innerText = `${count || 0} Pemain`;
+            })
+            .subscribe();
     }
 
     async function loadSchedule() {
@@ -286,6 +300,17 @@ import Layout from '../layouts/Layout.astro';
         
         const { count: attCount } = await supabase.from('attendance').select('*', { count: 'exact', head: true }).eq('date', new Date().toISOString().split('T')[0]);
         document.getElementById('stat-attendance')!.innerText = attCount?.toString() || '0';
+
+        // Load Game Players count
+        const { count: gamePlayers } = await supabase
+            .from('fakeit_players')
+            .select('*', { count: 'exact', head: true })
+            .in('status', ['online', 'afk']);
+        
+        const gameStatEl = document.getElementById('stat-game-players');
+        if (gameStatEl) {
+            gameStatEl.innerText = gamePlayers !== null ? `${gamePlayers} Pemain` : '0 Pemain';
+        }
 
         // Load Activity Logs
         const { data: logs } = await supabase

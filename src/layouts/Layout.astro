@@ -34,7 +34,7 @@ const { title, showSidebar = true, isBlog = false } = Astro.props;
         {showSidebar ? (
             <div class="flex h-screen overflow-hidden group/layout" id="layout-root" data-blog={isBlog}>
                 <!-- Mobile Fixed Header -->
-                <header class="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-50 flex items-center justify-between px-4 transition-all duration-300">
+                <header class="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-[70] flex items-center justify-between px-4 transition-all duration-300">
                     <button id="sidebar-toggle" class="p-2 text-slate-400 hover:text-white cursor-pointer rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                     </button>
@@ -66,6 +66,7 @@ const { title, showSidebar = true, isBlog = false } = Astro.props;
             /* Sidebar states */
             .sidebar-open aside {
                 transform: translateX(0) !important;
+                translate: 0 !important;
             }
             .sidebar-open #sidebar-overlay {
                 display: block;
