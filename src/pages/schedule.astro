@@ -193,86 +193,160 @@ import Layout from '../layouts/Layout.astro';
             { label: '7 - 8', start: '13:00', end: '14:30' }
         ];
 
-        // Create Grid Structure
-        let html = `
-            <div class="overflow-x-auto pb-6">
-                <table class="w-full border-collapse rounded-3xl overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/5 shadow-2xl min-w-[800px]">
-                    <thead>
-                        <tr class="bg-white/5">
-                            <th class="p-6 border-b border-r border-white/5 w-32"></th>
-                            ${slots.map(s => `
-                                <th class="p-6 border-b border-r border-white/10 text-center">
-                                    <div class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">Jam Ke</div>
-                                    <div class="text-xl font-black text-white">${s.label}</div>
-                                    <div class="text-[8px] font-bold text-slate-600 font-mono mt-1">${s.start} - ${s.end}</div>
-                                </th>
-                            `).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
+        // Create Grid Structure (Weekly View)
+        let htmlChunks = [];
+        htmlChunks.push(`
+            <div class="mb-14">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-2 h-8 bg-orange-600 rounded-full"></div>
+                    <h3 class="text-2xl font-black text-white uppercase tracking-tight">Tabel Mata Pelajaran</h3>
+                </div>
+                <div class="overflow-x-auto pb-6">
+                    <table class="w-full border-collapse rounded-3xl overflow-hidden bg-slate-900/50 backdrop-blur-xl border border-white/5 shadow-2xl min-w-[800px]">
+                        <thead>
+                            <tr class="bg-white/5">
+                                <th class="p-6 border-b border-r border-white/5 w-32"></th>
+                                ${slots.map(s => `
+                                    <th class="p-6 border-b border-r border-white/10 text-center">
+                                        <div class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">Jam Ke</div>
+                                        <div class="text-xl font-black text-white">${s.label}</div>
+                                        <div class="text-[8px] font-bold text-slate-600 font-mono mt-1">${s.start} - ${s.end}</div>
+                                    </th>
+                                `).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+        `);
 
         const now = new Date();
         const currentD = now.getDay() - 1; 
         const currentTime = now.getHours() * 3600 + now.getMinutes() * 60;
 
         days.forEach((day, dIdx) => {
-            html += `
+            htmlChunks.push(`
                 <tr class="hover:bg-white/5 group border-b border-white/5">
                     <td class="p-6 border-r border-white/10 bg-white/2">
                         <div class="text-sm font-black text-slate-400 group-hover:text-orange-400 transition-colors tracking-widest">${day}</div>
                     </td>
-            `;
+            `);
 
             slots.forEach(slot => {
                 const item = scheduleData?.find(s => s.day_of_week === dIdx && s.start_time.startsWith(slot.start));
                 const subject = item?.subject;
-                
-                // Active status check
                 const [sh, sm] = slot.start.split(':').map(Number);
                 const [eh, em] = slot.end.split(':').map(Number);
                 const isActive = dIdx === currentD && currentTime >= (sh*60+sm) && currentTime <= (eh*60+em);
 
-                html += `
+                htmlChunks.push(`
                     <td class="p-6 border-r border-white/5 text-center relative ${isActive ? 'bg-orange-600/10' : ''} transition-all">
                         ${isActive ? '<div class="absolute left-0 top-0 w-full h-1 bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.5)] animate-pulse"></div>' : ''}
-                        
                         ${subject ? `
                             <div class="space-y-1">
                                 <div class="text-2xl font-black text-white group-hover:text-blue-400 leading-none transition-colors">${subject.code || subject.name}</div>
                                 <div class="text-[8px] font-bold text-slate-600 uppercase tracking-tighter leading-tight italic break-words max-w-[120px] mx-auto">${subject.teacher_name || ''}</div>
-                                ${isAdmin ? `
-                                    <button onclick="deleteSchedule(${item.id})" class="mt-2 text-[8px] font-black text-red-500/30 hover:text-red-500 uppercase tracking-widest cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">Hapus</button>
-                                ` : ''}
                             </div>
-                        ` : `
-                            <div class="text-slate-800 font-black text-sm italic">-</div>
-                        `}
+                        ` : '<div class="text-slate-800 font-black text-sm italic">-</div>'}
                     </td>
-                `;
+                `);
             });
-
-            html += `</tr>`;
+            htmlChunks.push(`</tr>`);
         });
 
-        html += `
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-4 flex items-center justify-center gap-6">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-orange-600 shadow-[0_0_5px_rgba(234,88,12,1)]"></div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Sedang Berlangsung</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-slate-800"></div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Jadwal Lain</span>
+        htmlChunks.push(`
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        `;
 
-        container.classList.remove('pl-8', 'border-l');
-        container.innerHTML = html;
+            <!-- Daily Rundown View -->
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                        <h3 class="text-2xl font-black text-white uppercase tracking-tight">Rundown Harian</h3>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                        ${days.map((day, idx) => `
+                            <button 
+                                onclick="switchRundownDay(${idx})"
+                                id="rundown-tab-${idx}"
+                                class="rundown-tab px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 ${idx === (currentDay >= 0 && currentDay < 5 ? currentDay : 0) ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-500 hover:bg-white/5'}"
+                            >
+                                ${day}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div id="daily-timeline" class="relative pl-8 border-l border-white/5 space-y-6 min-h-[300px]">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+        `);
+
+        container.innerHTML = htmlChunks.join('');
+        switchRundownDay(currentDay >= 0 && currentDay < 5 ? currentDay : 0);
+    }
+
+    (window as any).switchRundownDay = async (day: number) => {
+        const container = document.getElementById('daily-timeline');
+        if (!container) return;
+
+        // Update Tabs
+        document.querySelectorAll('.rundown-tab').forEach((t, i) => {
+            if (i === day) {
+                t.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+                t.classList.remove('bg-slate-900', 'text-slate-500');
+            } else {
+                t.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                t.classList.add('bg-slate-900', 'text-slate-500');
+            }
+        });
+
+        const { data: daySchedule } = await supabase
+            .from('schedule')
+            .select('*, subject:subjects(*)')
+            .eq('day_of_week', day)
+            .order('start_time');
+
+        if (!daySchedule || daySchedule.length === 0) {
+            container.innerHTML = '<p class="text-slate-600 font-black uppercase text-xs tracking-widest italic p-10">Tidak ada jadwal untuk hari ini</p>';
+            return;
+        }
+
+        container.innerHTML = daySchedule.map((item) => {
+            const subject = item.subject;
+            const startStr = item.start_time.substring(0, 5);
+            const endStr = item.end_time.substring(0, 5);
+            
+            return `
+                <div class="relative group">
+                    <div class="absolute -left-[37px] top-6 w-4 h-4 rounded-full border-4 border-slate-950 bg-blue-600 z-10 group-hover:scale-125 transition-transform duration-300"></div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="md:w-32 pt-5">
+                            <span class="text-xs font-black text-slate-500 group-hover:text-blue-400 transition-colors uppercase tracking-widest">${startStr} - ${endStr}</span>
+                        </div>
+                        <div class="flex-1 bg-slate-900 border border-white/5 p-6 rounded-[2rem] hover:bg-white/5 transition-all shadow-xl group/card relative overflow-hidden">
+                            <div class="absolute right-0 top-0 h-full w-1.5 bg-${subject.color || 'blue'}-500/50"></div>
+                            <div class="flex justify-between items-start">
+                                <div class="space-y-3">
+                                    <h4 class="text-xl font-black text-white group-hover/card:text-blue-400 transition-colors uppercase leading-tight">${subject.name}</h4>
+                                    <div class="flex items-center gap-2 text-slate-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="opacity-50"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <span class="text-xs font-black uppercase tracking-tighter">${subject.teacher_name || 'Guru Pengampu'}</span>
+                                    </div>
+                                </div>
+                                ${isAdmin ? `
+                                    <button onclick="deleteSchedule(${item.id})" class="p-3 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     async function updateTimelineStatus() {
