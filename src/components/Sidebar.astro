@@ -1,11 +1,11 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
 const { pathname } = Astro.url;
 const isBlogRoute = pathname.startsWith('/blog');
 
 // Fetch blog posts if we are on a blog route
-let blogPosts = [];
+let blogPosts: CollectionEntry<'blog'>[] = [];
 if (isBlogRoute) {
     const allPosts = await getCollection('blog');
     blogPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 5);
