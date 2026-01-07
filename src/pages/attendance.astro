@@ -416,7 +416,7 @@ import Layout from '../layouts/Layout.astro';
             const statusFullLabel = record?.status?.label?.split(' ')[0] || '-';
             const statusColor = record?.status?.color || 'slate';
             const note = record?.note || '';
-            const displayNote = note.trim() !== '' ? note : statusFullLabel;
+            const displayNote = note.trim() !== '' ? note : (record ? statusFullLabel : '-');
 
             // Desktop Row
             const desktopRow = `
@@ -440,7 +440,7 @@ import Layout from '../layouts/Layout.astro';
                                     <span class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black uppercase bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20 shadow-sm">
                                         ${statusCode}
                                     </span>
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter sm:hidden lg:inline">${record.status.label}</span>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter sm:hidden lg:inline">${record.status?.label || '-'}</span>
                                 </div>
                             ` : `
                                 <span class="text-[9px] font-black uppercase text-slate-700 tracking-widest italic">Belum Absen</span>
@@ -506,7 +506,7 @@ import Layout from '../layouts/Layout.astro';
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${record ? `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20` : 'bg-slate-800/50 text-slate-600 border border-white/5'}">
-                                ${statusLabel === '-' ? 'BELUM' : statusLabel}
+                                ${record ? statusFullLabel : 'BELUM'}
                             </span>
                             <span class="text-[8px] font-mono text-slate-600">${time === '-' ? '' : time} WIB</span>
                         </div>
@@ -516,11 +516,11 @@ import Layout from '../layouts/Layout.astro';
                          <button 
                             data-action="edit-note"
                             data-student-id="${student.id}"
-                            data-note="${note === '-' ? '' : note}"
+                            data-note="${note}"
                             class="w-full text-left"
                          >
                             <p class="text-[9px] font-black uppercase text-slate-600 tracking-widest mb-1">Catatan</p>
-                            <p class="text-xs text-slate-400 italic line-clamp-2">${note}</p>
+                            <p class="text-xs text-slate-400 italic line-clamp-2">${displayNote}</p>
                          </button>
                     </div>
 
