@@ -1,0 +1,891 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+export const prerender = false;
+
+const { code } = Astro.params;
+---
+
+<Layout title={`Fakeit - Room ${code}`}>
+    <div class="min-h-screen bg-slate-950 relative overflow-hidden">
+        <!-- Animated Background -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-red-600/10 rounded-full blur-[120px]"></div>
+            <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[120px]"></div>
+        </div>
+
+        <div class="relative z-10 max-w-4xl mx-auto px-4 py-8">
+            <!-- Header -->
+            <header class="flex items-center justify-between mb-6">
+                <a href="/game/fakeit" id="back-btn" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Keluar
+                </a>
+                <div class="text-center">
+                    <div class="text-sm text-slate-500">Room Code</div>
+                    <div class="text-2xl font-mono font-bold text-white tracking-widest" id="room-code">{code}</div>
+                </div>
+                <div class="text-right">
+                    <div id="timer" class="text-3xl font-mono font-bold text-red-400 hidden">00:00</div>
+                </div>
+            </header>
+
+            <!-- Game Container -->
+            <div id="game-container" class="space-y-6">
+                <div class="text-center py-20 text-slate-500">
+                    <div class="text-4xl mb-4 animate-bounce">🎭</div>
+                    <p>Memuat game...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script define:vars={{ code }}>
+    window.ROOM_CODE = code;
+</script>
+
+<script>
+    // Gemini API Key from env
+    (window as any).GEMINI_API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || '';
+</script>
+
+<script>
+    import { supabase } from '../../../lib/supabase';
+    import type { User } from '@supabase/supabase-js';
+
+    declare global {
+        interface Window { ROOM_CODE: string; GEMINI_API_KEY: string; }
+    }
+
+    const ROOM_CODE = window.ROOM_CODE;
+    let currentUser: User | null = null;
+    let room: any = null;
+    let players: any[] = [];
+    let myPlayer: any = null;
+    let timerInterval: any = null;
+    let currentQuestion: string = '';
+
+
+    async function init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUser = session.user;
+
+        // Load room
+        await loadRoom();
+        if (!room) {
+            renderError('Room tidak ditemukan');
+            return;
+        }
+
+        // Join if not already
+        await joinRoom();
+        
+        // Load players
+        await loadPlayers();
+        
+        // Render based on status
+        renderGame();
+
+        // Subscribe to changes
+        supabase
+            .channel(`fakeit_room_${room.id}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_rooms', filter: `id=eq.${room.id}` }, async () => {
+                await loadRoom();
+                await loadPlayers();
+                renderGame();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_players', filter: `room_id=eq.${room.id}` }, async () => {
+                await loadPlayers();
+                renderGame();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_votes', filter: `room_id=eq.${room.id}` }, async () => {
+                if (room.status === 'voting') renderGame();
+            })
+            .subscribe();
+
+        // Setup presence tracking
+        setupPresenceTracking();
+    }
+
+    function setupPresenceTracking() {
+        if (!currentUser || !room) return;
+
+        // Heartbeat every 5 seconds
+        const heartbeatInterval = setInterval(async () => {
+            if (!myPlayer) return;
+            
+            await supabase
+                .from('fakeit_players')
+                .update({ 
+                    last_seen: new Date().toISOString(),
+                    status: 'online'
+                })
+                .eq('id', myPlayer.id);
+        }, 5000);
+
+        // Detect tab visibility (AFK)
+        document.addEventListener('visibilitychange', async () => {
+            if (!myPlayer) return;
+
+            if (document.hidden) {
+                // Tab hidden - mark as AFK
+                await supabase
+                    .from('fakeit_players')
+                    .update({ status: 'afk' })
+                    .eq('id', myPlayer.id);
+            } else {
+                // Tab visible - mark as online
+                await supabase
+                    .from('fakeit_players')
+                    .update({ 
+                        status: 'online',
+                        last_seen: new Date().toISOString()
+                    })
+                    .eq('id', myPlayer.id);
+            }
+        });
+
+        // Detect page unload (QUIT)
+        window.addEventListener('beforeunload', async () => {
+            if (!myPlayer) return;
+
+            // Use sendBeacon for reliable delivery
+            const data = new FormData();
+            data.append('player_id', myPlayer.id);
+            data.append('status', 'quit');
+            
+            // Fallback: direct update
+            await supabase
+                .from('fakeit_players')
+                .update({ status: 'quit' })
+                .eq('id', myPlayer.id);
+        });
+
+        // Detect online/offline (connection loss)
+        window.addEventListener('online', async () => {
+            if (!myPlayer) return;
+            
+            // Reconnect - mark as online and reload game state
+            await supabase
+                .from('fakeit_players')
+                .update({ 
+                    status: 'online',
+                    last_seen: new Date().toISOString()
+                })
+                .eq('id', myPlayer.id);
+            
+            // Reload room and players to sync state
+            await loadRoom();
+            await loadPlayers();
+            renderGame();
+            
+            // Show notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce';
+            notification.textContent = '✅ Koneksi kembali! Game di-sync...';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        });
+
+        window.addEventListener('offline', async () => {
+            if (!myPlayer) return;
+            
+            await supabase
+                .from('fakeit_players')
+                .update({ status: 'quit' })
+                .eq('id', myPlayer.id);
+            
+            // Show offline notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.textContent = '❌ Koneksi terputus! Reconnecting...';
+            document.body.appendChild(notification);
+            
+            // Remove when back online
+            const removeOnOnline = () => {
+                notification.remove();
+                window.removeEventListener('online', removeOnOnline);
+            };
+            window.addEventListener('online', removeOnOnline);
+        });
+
+        // Cleanup on component unmount
+        window.addEventListener('unload', () => {
+            clearInterval(heartbeatInterval);
+        });
+    }
+
+    async function loadRoom() {
+        const { data } = await supabase
+            .from('fakeit_rooms')
+            .select(`*, fakeit_categories(name, icon), fakeit_questions(question)`)
+            .eq('code', ROOM_CODE)
+            .single();
+        room = data;
+    }
+
+    async function loadPlayers() {
+        const { data, error } = await supabase
+            .from('fakeit_players')
+            .select(`*, profiles:user_id(username)`)
+            .eq('room_id', room.id)
+            .order('joined_at');
+        
+        if (error) {
+            console.error('Error loading players:', error);
+        }
+        
+        players = data || [];
+        myPlayer = players.find(p => p.user_id === currentUser?.id);
+    }
+
+    async function joinRoom() {
+        if (!currentUser || !room) return;
+
+        const existing = await supabase
+            .from('fakeit_players')
+            .select('id')
+            .eq('room_id', room.id)
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (!existing.data) {
+            await supabase.from('fakeit_players').insert({
+                room_id: room.id,
+                user_id: currentUser.id
+            });
+        }
+    }
+
+    function renderError(msg: string) {
+        const container = document.getElementById('game-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-20">
+                    <div class="text-4xl mb-4">❌</div>
+                    <p class="text-red-400">${msg}</p>
+                    <a href="/game/fakeit" class="inline-block mt-4 px-6 py-2 bg-slate-800 rounded-lg">Kembali</a>
+                </div>
+            `;
+        }
+    }
+
+    function startTimer(endTime: Date) {
+        const timerEl = document.getElementById('timer');
+        if (!timerEl) return;
+        timerEl.classList.remove('hidden');
+
+        if (timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const end = endTime.getTime();
+            const diff = Math.max(0, end - now);
+            
+            const mins = Math.floor(diff / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            if (diff <= 0) {
+                clearInterval(timerInterval);
+                timerEl.textContent = '00:00';
+            }
+        }, 100);
+    }
+
+    function renderGame() {
+        const container = document.getElementById('game-container');
+        if (!container || !room) return;
+
+        const isHost = room.host_id === currentUser?.id;
+
+        switch (room.status) {
+            case 'waiting':
+                renderWaiting(container, isHost);
+                break;
+            case 'question':
+                renderQuestion(container);
+                break;
+            case 'answer':
+                renderAnswer(container);
+                break;
+            case 'discussion':
+                renderDiscussion(container);
+                break;
+            case 'voting':
+                renderVoting(container);
+                break;
+            case 'reveal':
+                renderReveal(container, isHost);
+                break;
+            case 'finished':
+                renderFinished(container);
+                break;
+        }
+    }
+
+    function renderWaiting(container: HTMLElement, isHost: boolean) {
+        document.getElementById('timer')?.classList.add('hidden');
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8">
+                <div class="text-center mb-8">
+                    <div class="text-6xl mb-4">${room.fakeit_categories?.icon || '🎭'}</div>
+                    <h2 class="text-2xl font-bold">${room.fakeit_categories?.name || 'Kategori'}</h2>
+                    <p class="text-slate-400 mt-2">Menunggu pemain...</p>
+                </div>
+
+                <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                    <div class="text-sm text-slate-400 mb-2">Kode Room:</div>
+                    <div class="text-4xl font-mono font-bold text-center tracking-widest">${room.code}</div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="text-sm text-slate-400 mb-3">Pemain (${players.length})</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        ${players.map(p => {
+                            const statusColors: Record<string, string> = {
+                                online: 'bg-green-500/20 text-green-400',
+                                afk: 'bg-yellow-500/20 text-yellow-400',
+                                quit: 'bg-red-500/20 text-red-400'
+                            };
+                            const statusIcons: Record<string, string> = {
+                                online: '🟢',
+                                afk: '💤',
+                                quit: '❌'
+                            };
+                            const status = (p.status || 'online') as string;
+                            
+                            return `
+                            <div class="flex items-center gap-2 bg-slate-800/50 rounded-lg p-3 ${status === 'quit' ? 'opacity-50' : ''}">
+                                <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-sm font-bold relative">
+                                    ${(p.profiles?.username || 'U')[0].toUpperCase()}
+                                    <span class="absolute -bottom-1 -right-1 text-xs">${statusIcons[status] || '🟢'}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="font-medium block">${p.profiles?.username || 'Unknown'}</span>
+                                    <div class="flex gap-1 mt-1">
+                                        ${p.user_id === room.host_id ? '<span class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">Host</span>' : ''}
+                                        <span class="text-xs ${statusColors[status] || statusColors.online} px-2 py-0.5 rounded">${status.toUpperCase()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+
+                ${isHost ? `
+                    <button id="start-btn" class="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] ${players.length < 2 ? 'opacity-50 cursor-not-allowed' : ''}" ${players.length < 2 ? 'disabled' : ''}>
+                        🚀 Mulai Game ${players.length < 2 ? '(Min. 2 pemain)' : ''}
+                    </button>
+                ` : `
+                    <div class="text-center text-slate-400 py-4">
+                        Menunggu host memulai game...
+                    </div>
+                `}
+            </div>
+        `;
+
+        if (isHost) {
+            document.getElementById('start-btn')?.addEventListener('click', startGame);
+        }
+    }
+
+    async function startGame() {
+        if (players.length < 2) return;
+
+        const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+        if (startBtn) {
+            startBtn.disabled = true;
+            startBtn.innerHTML = '🤖 AI Generating Question...';
+        }
+
+        try {
+            // Generate question using Gemini AI
+            const categoryName = room.fakeit_categories?.name || 'Umum';
+            const aiQuestion = await generateAIQuestion(categoryName);
+
+            // Assign fakers randomly
+            const shuffled = [...players].sort(() => Math.random() - 0.5);
+            const fakerIds = shuffled.slice(0, room.faker_count).map(p => p.id);
+
+            for (const player of players) {
+                await supabase
+                    .from('fakeit_players')
+                    .update({ is_faker: fakerIds.includes(player.id), answer: null })
+                    .eq('id', player.id);
+            }
+
+            // Update room with AI-generated question
+            await supabase
+                .from('fakeit_rooms')
+                .update({ 
+                    status: 'question',
+                    ai_question: aiQuestion,
+                    phase_ends_at: new Date(Date.now() + 15000).toISOString() // 15 seconds
+                })
+                .eq('id', room.id);
+            
+            // Trigger reload to show question phase
+            await loadRoom();
+            renderGame();
+
+        } catch (error) {
+            console.error('Error starting game:', error);
+            alert('Error starting game. Please try again.');
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '🚀 Mulai Game';
+            }
+        }
+    }
+
+    async function generateAIQuestion(category: string): Promise<string> {
+        const apiKey = (window as any).GEMINI_API_KEY;
+        
+        if (!apiKey) {
+            console.warn('Gemini API key not found, using fallback');
+            return getFallbackQuestion(category);
+        }
+
+        const prompt = `Kamu adalah pembuat pertanyaan untuk game Fakeit (mirip game viral di TikTok).
+Buat 1 pertanyaan UNIK dan MENARIK untuk kategori "${category}".
+
+Aturan:
+- Pertanyaan harus dalam Bahasa Indonesia
+- Pertanyaan harus personal dan mudah dijawab semua orang
+- Pertanyaan TIDAK boleh terlalu spesifik atau teknis
+- Pertanyaan harus FUN dan bisa memancing berbagai jawaban
+- Jangan gunakan pertanyaan yang terlalu umum
+- Buat pertanyaan yang kreatif dan unik
+
+HANYA OUTPUT PERTANYAAN SAJA, tanpa tanda kutip, tanpa penjelasan.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.9, maxOutputTokens: 100 }
+                })
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            
+            if (text) {
+                return text.replace(/^["']|["']$/g, '').trim();
+            }
+            throw new Error('Empty response');
+        } catch (error) {
+            console.error('Gemini API error:', error);
+            return getFallbackQuestion(category);
+        }
+    }
+
+    function getFallbackQuestion(category: string): string {
+        const fallbacks: Record<string, string[]> = {
+            'Makanan': [
+                'Makanan apa yang bikin kamu kangen rumah?',
+                'Kalau cuma boleh makan 1 makanan seumur hidup, pilih apa?',
+                'Makanan apa yang selalu bikin mood kamu membaik?'
+            ],
+            'Tempat': [
+                'Tempat apa yang pengen banget kamu kunjungi sebelum umur 30?',
+                'Kalau bisa teleport sekarang, mau ke mana?',
+                'Tempat mana yang selalu bikin kamu tenang?'
+            ],
+            'Hewan': [
+                'Kalau bisa jadi hewan sehari, mau jadi apa?',
+                'Hewan apa yang paling menggambarkan kepribadianmu?',
+                'Hewan peliharaan impian yang belum kesampaian?'
+            ],
+            'Film & Musik': [
+                'Lagu apa yang menggambarkan hidupmu sekarang?',
+                'Film apa yang bisa kamu tonton berkali-kali tanpa bosan?',
+                'Soundtrack hidup kamu apa?'
+            ],
+            'Sekolah': [
+                'Moment paling memalukan di sekolah?',
+                'Guru yang paling berkesan dan kenapa?',
+                'Kalau bisa mengulang masa sekolah, apa yang mau diubah?'
+            ],
+            'Teknologi': [
+                'Aplikasi pertama yang dibuka tiap pagi apa?',
+                'Gadget apa yang ga bisa hidup tanpanya?',
+                'Social media mana yang paling menghabiskan waktumu?'
+            ]
+        };
+        const questions = fallbacks[category] || fallbacks['Makanan'];
+        return questions[Math.floor(Math.random() * questions.length)];
+    }
+
+
+    function renderQuestion(container: HTMLElement) {
+        if (room.phase_ends_at) {
+            startTimer(new Date(room.phase_ends_at));
+        }
+
+        const isFaker = myPlayer?.is_faker;
+        // Get question from room data
+        currentQuestion = room.ai_question || room.fakeit_questions?.question || 'Pertanyaan tidak tersedia';
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8 text-center">
+                <div class="text-sm text-slate-400 mb-4 uppercase tracking-widest">Fase Pertanyaan</div>
+                
+                ${isFaker ? `
+                    <div class="bg-red-900/30 border border-red-500/50 rounded-xl p-8 mb-6">
+                        <div class="text-6xl mb-4">🎭</div>
+                        <h2 class="text-3xl font-bold text-red-400 mb-4">KAMU ADALAH FAKER!</h2>
+                        <p class="text-xl text-slate-300 mb-2">Kategori: <strong>${room.fakeit_categories?.name}</strong></p>
+                        <p class="text-slate-400">Kamu TIDAK tahu pertanyaannya.<br>Jawab senatural mungkin agar tidak ketahuan!</p>
+                    </div>
+                ` : `
+                    <div class="bg-emerald-900/30 border border-emerald-500/50 rounded-xl p-8 mb-6">
+                        <div class="text-6xl mb-4">📝</div>
+                        <h2 class="text-2xl font-bold text-emerald-400 mb-4">PERTANYAANMU:</h2>
+                        <p class="text-2xl text-white font-medium">"${currentQuestion}"</p>
+                    </div>
+                `}
+
+                <p class="text-slate-400">Hafalkan! Pertanyaan akan hilang sebentar lagi...</p>
+                
+                <button id="ready-btn" class="mt-6 px-8 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold transition-all">
+                    ✓ Siap!
+                </button>
+            </div>
+        `;
+
+        document.getElementById('ready-btn')?.addEventListener('click', async () => {
+            // Check if host and all ready, then move to answer phase
+            if (room.host_id === currentUser?.id) {
+                await supabase
+                    .from('fakeit_rooms')
+                    .update({ 
+                        status: 'answer',
+                        phase_ends_at: new Date(Date.now() + 60000).toISOString() // 60 seconds
+                    })
+                    .eq('id', room.id);
+            }
+        });
+    }
+
+    function renderAnswer(container: HTMLElement) {
+        if (room.phase_ends_at) {
+            startTimer(new Date(room.phase_ends_at));
+        }
+
+        const hasAnswered = !!myPlayer?.answer;
+        const answeredCount = players.filter(p => p.answer).length;
+        
+        // Get question from room data
+        currentQuestion = room.ai_question || room.fakeit_questions?.question || '';
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8">
+                <div class="text-sm text-slate-400 mb-4 uppercase tracking-widest text-center">Fase Jawaban</div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-lg text-slate-300">Kategori: <strong>${room.fakeit_categories?.name}</strong></div>
+                    <div class="text-sm text-slate-500">${answeredCount}/${players.length} sudah menjawab</div>
+                </div>
+
+                ${myPlayer?.is_faker ? `
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-4 text-center text-sm text-red-400">
+                        🎭 Ingat, kamu FAKER! Kamu tidak tau pertanyaannya. Jawab yang masuk akal!
+                    </div>
+                ` : `
+                    <div class="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-3 mb-4 text-center text-sm text-emerald-400">
+                        📝 "${currentQuestion}"
+                    </div>
+                `}
+
+                ${hasAnswered ? `
+                    <div class="bg-slate-800/50 rounded-xl p-6 text-center">
+                        <div class="text-4xl mb-2">✅</div>
+                        <p class="text-slate-300">Jawaban kamu: "${myPlayer.answer}"</p>
+                        <p class="text-sm text-slate-500 mt-2">Menunggu pemain lain...</p>
+                    </div>
+                ` : `
+                    <form id="answer-form" class="space-y-4">
+                        <textarea id="answer-input" placeholder="Ketik jawabanmu..." 
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg p-4 text-white resize-none h-24"
+                            maxlength="200" required></textarea>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-lg font-bold">
+                            Kirim Jawaban
+                        </button>
+                    </form>
+                `}
+
+                ${room.host_id === currentUser?.id ? `
+                    <button id="next-phase-btn" class="w-full mt-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold ${answeredCount < players.length ? 'opacity-50' : ''}">
+                        Lanjut ke Diskusi →
+                    </button>
+                ` : ''}
+            </div>
+        `;
+
+        document.getElementById('answer-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const answer = (document.getElementById('answer-input') as HTMLTextAreaElement).value.trim();
+            if (!answer) return;
+
+            await supabase
+                .from('fakeit_players')
+                .update({ answer, answered_at: new Date().toISOString() })
+                .eq('id', myPlayer.id);
+        });
+
+        document.getElementById('next-phase-btn')?.addEventListener('click', async () => {
+            await supabase
+                .from('fakeit_rooms')
+                .update({ 
+                    status: 'discussion',
+                    phase_ends_at: new Date(Date.now() + 120000).toISOString() // 2 minutes
+                })
+                .eq('id', room.id);
+        });
+    }
+
+    function renderDiscussion(container: HTMLElement) {
+        if (room.phase_ends_at) {
+            startTimer(new Date(room.phase_ends_at));
+        }
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8">
+                <div class="text-sm text-slate-400 mb-4 uppercase tracking-widest text-center">Fase Diskusi</div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-xl font-bold">Cari siapa yang FAKER!</div>
+                    <div class="text-sm text-slate-500">Diskusikan jawaban-jawaban berikut</div>
+                </div>
+
+                <div class="space-y-4">
+                    ${players.map(p => `
+                        <div class="bg-slate-800/50 rounded-xl p-4 ${p.is_faker && room.host_id === currentUser?.id ? 'border border-red-500/50' : ''}">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center font-bold">
+                                    ${(p.profiles?.username || 'U')[0].toUpperCase()}
+                                </div>
+                                <span class="font-medium">${p.profiles?.username || 'Unknown'}</span>
+                            </div>
+                            <p class="text-slate-300 pl-13">"${p.answer || 'Tidak menjawab'}"</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${room.host_id === currentUser?.id ? `
+                    <button id="vote-btn" class="w-full mt-6 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-xl font-bold text-lg">
+                        🗳️ Mulai Voting
+                    </button>
+                ` : `
+                    <div class="text-center text-slate-400 mt-6">
+                        Diskusikan dengan teman-temanmu!
+                    </div>
+                `}
+            </div>
+        `;
+
+        document.getElementById('vote-btn')?.addEventListener('click', async () => {
+            await supabase
+                .from('fakeit_rooms')
+                .update({ 
+                    status: 'voting',
+                    phase_ends_at: new Date(Date.now() + 30000).toISOString() // 30 seconds
+                })
+                .eq('id', room.id);
+        });
+    }
+
+    async function renderVoting(container: HTMLElement) {
+        if (room.phase_ends_at) {
+            startTimer(new Date(room.phase_ends_at));
+        }
+
+        // Check if already voted
+        const { data: myVote } = await supabase
+            .from('fakeit_votes')
+            .select('*')
+            .eq('room_id', room.id)
+            .eq('voter_id', currentUser?.id)
+            .single();
+
+        const { data: allVotes } = await supabase
+            .from('fakeit_votes')
+            .select('*')
+            .eq('room_id', room.id);
+
+        const votedCount = allVotes?.length || 0;
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8">
+                <div class="text-sm text-slate-400 mb-4 uppercase tracking-widest text-center">Fase Voting</div>
+                
+                <div class="text-center mb-6">
+                    <div class="text-xl font-bold">Siapa yang FAKER?</div>
+                    <div class="text-sm text-slate-500">${votedCount}/${players.length} sudah vote</div>
+                </div>
+
+                ${myVote ? `
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-2">✅</div>
+                        <p class="text-slate-300">Kamu sudah vote!</p>
+                        <p class="text-sm text-slate-500">Menunggu pemain lain...</p>
+                    </div>
+                ` : `
+                    <div class="grid grid-cols-2 gap-3">
+                        ${players.filter(p => p.user_id !== currentUser?.id).map(p => `
+                            <button class="vote-btn bg-slate-800 hover:bg-red-900/30 hover:border-red-500/50 border border-slate-700 rounded-xl p-4 transition-all text-left"
+                                data-user-id="${p.user_id}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center font-bold">
+                                        ${(p.profiles?.username || 'U')[0].toUpperCase()}
+                                    </div>
+                                    <span class="font-medium">${p.profiles?.username || 'Unknown'}</span>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
+                `}
+
+                ${room.host_id === currentUser?.id && votedCount === players.length ? `
+                    <button id="reveal-btn" class="w-full mt-6 py-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl font-bold text-lg">
+                        🎭 Reveal Faker!
+                    </button>
+                ` : ''}
+            </div>
+        `;
+
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const suspectId = btn.getAttribute('data-user-id');
+                await supabase.from('fakeit_votes').insert({
+                    room_id: room.id,
+                    voter_id: currentUser?.id,
+                    suspect_id: suspectId
+                });
+                renderGame();
+            });
+        });
+
+        document.getElementById('reveal-btn')?.addEventListener('click', async () => {
+            await supabase
+                .from('fakeit_rooms')
+                .update({ status: 'reveal' })
+                .eq('id', room.id);
+        });
+    }
+
+    async function renderReveal(container: HTMLElement, isHost: boolean) {
+        document.getElementById('timer')?.classList.add('hidden');
+
+        const { data: votes } = await supabase
+            .from('fakeit_votes')
+            .select('*')
+            .eq('room_id', room.id);
+
+        // Count votes
+        const voteCounts: Record<string, number> = {};
+        votes?.forEach(v => {
+            voteCounts[v.suspect_id] = (voteCounts[v.suspect_id] || 0) + 1;
+        });
+
+        const fakers = players.filter(p => p.is_faker);
+        const mostVoted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0];
+        const mostVotedPlayer = players.find(p => p.user_id === mostVoted?.[0]);
+        const fakerCaught = fakers.some(f => f.user_id === mostVoted?.[0]);
+        
+        container.innerHTML = `
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-8 text-center">
+                <div class="text-6xl mb-6">${fakerCaught ? '🎉' : '😈'}</div>
+                
+                <h2 class="text-3xl font-bold mb-4">
+                    ${fakerCaught ? 'FAKER TERTANGKAP!' : 'FAKER MENANG!'}
+                </h2>
+
+                <div class="bg-slate-800/50 rounded-xl p-6 mb-6">
+                    <div class="text-sm text-slate-400 mb-2">Yang paling banyak divote:</div>
+                    <div class="text-xl font-bold">${mostVotedPlayer?.profiles?.username || 'Unknown'} (${mostVoted?.[1] || 0} vote)</div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="text-sm text-slate-400 mb-2">FAKER sebenarnya:</div>
+                    <div class="flex justify-center gap-4">
+                        ${fakers.map(f => `
+                            <div class="bg-red-900/30 border border-red-500/50 rounded-xl p-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-2">
+                                    ${(f.profiles?.username || 'U')[0].toUpperCase()}
+                                </div>
+                                <div class="font-bold text-red-400">${f.profiles?.username || 'Unknown'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+                    <div class="text-sm text-slate-400 mb-2">Pertanyaan yang sebenarnya:</div>
+                    <div class="text-lg font-medium">"${room.ai_question || room.fakeit_questions?.question || currentQuestion}"</div>
+                </div>
+
+                ${isHost ? `
+                    <div class="flex gap-4">
+                        <button id="play-again-btn" class="flex-1 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-xl font-bold">
+                            🔄 Main Lagi
+                        </button>
+                        <button id="end-btn" class="flex-1 py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold">
+                            🏠 Selesai
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        document.getElementById('play-again-btn')?.addEventListener('click', async () => {
+            // Reset players
+            for (const p of players) {
+                await supabase
+                    .from('fakeit_players')
+                    .update({ is_faker: false, answer: null, answered_at: null })
+                    .eq('id', p.id);
+            }
+            // Delete votes
+            await supabase.from('fakeit_votes').delete().eq('room_id', room.id);
+            // Reset room
+            await supabase
+                .from('fakeit_rooms')
+                .update({ status: 'waiting', question_id: null })
+                .eq('id', room.id);
+        });
+
+        document.getElementById('end-btn')?.addEventListener('click', async () => {
+            await supabase
+                .from('fakeit_rooms')
+                .update({ status: 'finished' })
+                .eq('id', room.id);
+            window.location.href = '/game/fakeit';
+        });
+    }
+
+    function renderFinished(container: HTMLElement) {
+        container.innerHTML = `
+            <div class="text-center py-20">
+                <div class="text-6xl mb-4">👋</div>
+                <h2 class="text-2xl font-bold mb-4">Game Selesai!</h2>
+                <a href="/game/fakeit" class="inline-block px-8 py-3 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg font-bold">
+                    Kembali ke Lobby
+                </a>
+            </div>
+        `;
+    }
+
+    init();
+</script>

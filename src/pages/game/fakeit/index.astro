@@ -1,0 +1,245 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+export const prerender = false;
+---
+
+<Layout title="Fakeit - Kelas TKJ">
+    <div class="min-h-screen bg-slate-950 relative overflow-hidden">
+        <!-- Animated Background -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-red-600/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div class="relative z-10 max-w-4xl mx-auto px-4 py-8">
+            <!-- Header -->
+            <header class="flex items-center justify-between mb-8">
+                <a href="/game" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Kembali
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="text-4xl">🎭</span>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">FAKEIT</span>
+                </div>
+                <div class="w-20"></div>
+            </header>
+
+            <!-- Main Content -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Create Room -->
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🎮</span>
+                        Buat Room Baru
+                    </h2>
+                    
+                    <form id="create-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">Pilih Kategori</label>
+                            <select id="category-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
+                                <option value="">Memuat...</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">Jumlah Faker</label>
+                            <select id="faker-count" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white">
+                                <option value="1">1 Faker</option>
+                                <option value="2">2 Faker</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-lg font-bold transition-all transform hover:scale-[1.02] cursor-pointer">
+                            🚀 Buat Room
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Join Room -->
+                <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🔗</span>
+                        Gabung Room
+                    </h2>
+                    
+                    <form id="join-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">Kode Room</label>
+                            <input type="text" id="room-code" placeholder="Masukkan kode..." 
+                                class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white text-center text-2xl font-mono uppercase tracking-widest"
+                                maxlength="6" pattern="[A-Za-z0-9]+" required>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold transition-all cursor-pointer">
+                            Gabung →
+                        </button>
+                    </form>
+
+                    <div class="mt-6 pt-6 border-t border-slate-800">
+                        <p class="text-sm text-slate-500 text-center">
+                            Minta kode room dari host untuk bergabung
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Rooms -->
+            <div class="mt-8">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🏠</span>
+                    Room Aktif
+                </h2>
+                <div id="rooms-list" class="grid gap-4">
+                    <div class="text-center py-8 text-slate-500">Memuat...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../../../lib/supabase';
+    import type { User } from '@supabase/supabase-js';
+
+    let currentUser: User | null = null;
+
+    async function init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUser = session.user;
+
+        loadCategories();
+        loadRooms();
+
+        // Realtime subscription for rooms
+        supabase
+            .channel('fakeit_lobby')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_rooms' }, loadRooms)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_players' }, loadRooms)
+            .subscribe();
+    }
+
+    async function loadCategories() {
+        const { data } = await supabase.from('fakeit_categories').select('*').eq('is_active', true);
+        const select = document.getElementById('category-select') as HTMLSelectElement;
+        if (data && select) {
+            select.innerHTML = data.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+        }
+    }
+
+    async function loadRooms() {
+        const { data: rooms } = await supabase
+            .from('fakeit_rooms')
+            .select(`
+                *,
+                fakeit_categories(name, icon),
+                fakeit_players(id)
+            `)
+            .in('status', ['waiting', 'question', 'answer', 'discussion', 'voting'])
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        const container = document.getElementById('rooms-list');
+        if (!container) return;
+
+        console.log('Rooms loaded:', rooms); // DEBUG
+
+        if (!rooms || rooms.length === 0) {
+            container.innerHTML = `<div class="text-center py-8 text-slate-500">Tidak ada room aktif. Buat room baru!</div>`;
+            return;
+        }
+
+        container.innerHTML = rooms.map(room => {
+            // Count players properly
+            const playerCount = Array.isArray(room.fakeit_players) ? room.fakeit_players.length : 0;
+            console.log(`Room ${room.code}: ${playerCount} players`, room.fakeit_players); // DEBUG
+            const statusColors: Record<string, string> = {
+                waiting: 'bg-yellow-500/20 text-yellow-400',
+                question: 'bg-blue-500/20 text-blue-400',
+                answer: 'bg-green-500/20 text-green-400',
+                discussion: 'bg-purple-500/20 text-purple-400',
+                voting: 'bg-red-500/20 text-red-400'
+            };
+            
+            return `
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between hover:border-slate-700 transition-colors cursor-pointer"
+                     onclick="window.location.href='/game/fakeit/${room.code}'">
+                    <div class="flex items-center gap-4">
+                        <span class="text-3xl">${room.fakeit_categories?.icon || '🎭'}</span>
+                        <div>
+                            <div class="font-bold text-lg">${room.fakeit_categories?.name || 'Unknown'}</div>
+                            <div class="text-sm text-slate-500">Kode: <span class="font-mono text-white">${room.code}</span></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <div class="text-sm text-slate-400">${playerCount} pemain</div>
+                            <span class="text-xs px-2 py-1 rounded ${statusColors[room.status] || 'bg-slate-700 text-slate-400'}">${room.status}</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-500"><path d="m9 18 6-6-6-6"/></svg>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function generateCode(): string {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+
+    document.getElementById('create-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        const categoryId = (document.getElementById('category-select') as HTMLSelectElement).value;
+        const fakerCount = parseInt((document.getElementById('faker-count') as HTMLSelectElement).value);
+        const code = generateCode();
+
+        const { data: room, error } = await supabase.from('fakeit_rooms').insert({
+            code,
+            host_id: currentUser.id,
+            category_id: categoryId,
+            faker_count: fakerCount,
+            status: 'waiting'
+        }).select().single();
+
+        if (error) {
+            alert('Error: ' + error.message);
+            return;
+        }
+
+        // Auto-join as player
+        await supabase.from('fakeit_players').insert({
+            room_id: room.id,
+            user_id: currentUser.id
+        });
+
+        window.location.href = `/game/fakeit/${code}`;
+    });
+
+    document.getElementById('join-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = (document.getElementById('room-code') as HTMLInputElement).value.toUpperCase();
+        
+        // Check if room exists
+        const { data: room } = await supabase.from('fakeit_rooms').select('id').eq('code', code).single();
+        
+        if (!room) {
+            alert('Room tidak ditemukan!');
+            return;
+        }
+
+        window.location.href = `/game/fakeit/${code}`;
+    });
+
+    init();
+</script>

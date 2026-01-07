@@ -1,0 +1,271 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Absensi - Kelas TKJ">
+    <header class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold">Absensi Kelas</h2>
+        <div id="action-container">
+            <!-- Dynamic Action Buttons -->
+        </div>
+    </header>
+
+    <div class="bg-slate-900 rounded-2xl border border-white/5 overflow-hidden">
+        <div class="p-4 border-b border-white/5 bg-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <h3 class="font-bold flex items-center gap-2">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                Daftar Kehadiran
+            </h3>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <label class="text-xs text-slate-500 uppercase font-bold">Tanggal:</label>
+                <input type="date" class="bg-slate-800 border border-slate-700 text-white px-3 py-1.5 rounded-lg flex-1 md:flex-initial" id="date-filter">
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left hidden md:table">
+                <thead class="bg-white/5 text-slate-400 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="p-4 font-bold">Siswa</th>
+                        <th class="p-4 font-bold">Waktu</th>
+                        <th class="p-4 font-bold">Status</th>
+                        <th class="p-4 font-bold">Keterangan</th>
+                        <th class="p-4 font-bold text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="attendance-list-desktop" class="divide-y divide-white/5">
+                    <!-- Skeletons -->
+                    {[1, 2, 3, 4, 5].map(() => (
+                        <tr class="animate-pulse">
+                            <td class="p-4"><div class="h-4 bg-white/5 rounded w-32"></div></td>
+                            <td class="p-4"><div class="h-4 bg-white/5 rounded w-20"></div></td>
+                            <td class="p-4"><div class="h-6 bg-white/5 rounded-full w-24"></div></td>
+                            <td class="p-4"><div class="h-4 bg-white/5 rounded w-48"></div></td>
+                            <td class="p-4"><div class="h-4 bg-white/5 rounded w-12 ml-auto"></div></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <!-- Mobile Card View -->
+            <div id="attendance-list-mobile" class="md:hidden divide-y divide-white/5">
+                 <!-- Skeletons -->
+                 {[1, 2, 3].map(() => (
+                    <div class="p-4 animate-pulse space-y-3">
+                        <div class="flex justify-between">
+                            <div class="h-4 bg-white/5 rounded w-32"></div>
+                            <div class="h-4 bg-white/5 rounded w-16"></div>
+                        </div>
+                        <div class="h-3 bg-white/5 rounded w-full"></div>
+                        <div class="h-3 bg-white/5 rounded w-2/3"></div>
+                    </div>
+                 ))}
+            </div>
+        </div>
+    </div>
+
+    <!-- Check-in Modal -->
+    <dialog id="checkin-modal" class="bg-slate-900 text-white border border-slate-700 rounded-2xl p-6 backdrop:bg-slate-950/80 w-full max-w-md">
+        <h3 class="text-xl font-bold mb-4">Check-In Kehadiran</h3>
+        <form id="checkin-form" class="space-y-4">
+            <div>
+                <label class="block text-sm mb-1 text-slate-400">Status</label>
+                <select id="status-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+                    <!-- Loaded dynamically -->
+                </select>
+            </div>
+             <div>
+                <label class="block text-sm mb-1 text-slate-400">Catatan (Optional)</label>
+                <textarea id="checkin-note" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white" rows="3"></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                 <button type="button" onclick="document.getElementById('checkin-modal').close()" class="px-4 py-2 rounded-lg hover:bg-white/10 cursor-pointer">Batal</button>
+                 <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold cursor-pointer">Simpan</button>
+            </div>
+        </form>
+    </dialog>
+</Layout>
+
+<script>
+    import { supabase } from '../lib/supabase';
+    import type { User } from '@supabase/supabase-js';
+
+    let currentUser: User | null = null;
+    let isAdminOrTeacher = false;
+    let currentDate = new Date().toISOString().split('T')[0];
+
+    async function init() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+        currentUser = session.user;
+
+        // Check Role via RPC or direct table query if simpler
+        const { data: roles } = await supabase.from('user_roles').select('roles(name)').eq('user_id', currentUser.id);
+        const roleNames = roles?.map((r: any) => r.roles.name) || [];
+        isAdminOrTeacher = roleNames.includes('admin') || roleNames.includes('teacher');
+
+        // Show admin section if user is admin
+        if (roleNames.includes('admin')) {
+            const adminSection = document.getElementById('admin-section');
+            if (adminSection) {
+                adminSection.classList.remove('hidden');
+            }
+        }
+
+        renderActions();
+        loadAttendanceStatuses();
+        loadAttendance();
+
+        document.getElementById('date-filter')?.addEventListener('change', (e: any) => {
+            currentDate = e.target.value;
+            loadAttendance();
+        });
+    }
+
+    function renderActions() {
+        const container = document.getElementById('action-container');
+        if (!container) return;
+
+        // Student Check-in Button
+        if (!isAdminOrTeacher) {
+            const btn = document.createElement('button');
+            btn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/20 cursor-pointer";
+            btn.innerText = "Check-In Sekolah";
+            btn.onclick = () => (document.getElementById('checkin-modal') as HTMLDialogElement)?.showModal();
+            container.appendChild(btn);
+        }
+    }
+
+    async function loadAttendanceStatuses() {
+        const { data } = await supabase.from('attendance_status').select('*').eq('is_active', true);
+        const select = document.getElementById('status-select');
+        if (select && data) {
+            select.innerHTML = data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
+        }
+    }
+
+    async function loadAttendance() {
+        const tbodyDesktop = document.getElementById('attendance-list-desktop');
+        const listMobile = document.getElementById('attendance-list-mobile');
+        if(!tbodyDesktop || !listMobile) return;
+
+        tbodyDesktop.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat...</td></tr>';
+        listMobile.innerHTML = '<div class="p-8 text-center text-slate-500">Memuat...</div>';
+
+        const { data: attData, error } = await supabase
+            .from('attendance')
+            .select(`*, status:attendance_status(*)`)
+            .eq('date', currentDate);
+            
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        if (!attData || attData.length === 0) {
+            const emptyMsg = 'Tidak ada data absensi untuk tanggal ini.';
+            tbodyDesktop.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">${emptyMsg}</td></tr>`;
+            listMobile.innerHTML = `<div class="p-8 text-center text-slate-500">${emptyMsg}</div>`;
+            return;
+        }
+
+        const userIdsUnique = [...new Set(attData.map((d: any) => d.user_id))];
+        const { data: profiles } = await supabase.from('profiles').select('id, full_name, username').in('id', userIdsUnique);
+        const profileMap = Object.fromEntries(profiles?.map((p:any) => [p.id, p]) || []);
+
+        // Desktop View
+        tbodyDesktop.innerHTML = attData.map((record: any) => {
+            const profile = profileMap[record.user_id] || { username: 'Unknown', full_name: 'Unknown User' };
+            const time = new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <tr class="hover:bg-white/5 transition-colors group">
+                    <td class="p-4">
+                        <div class="font-medium text-white group-hover:text-emerald-400 transition-colors">${profile.username}</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wider">${profile.full_name}</div>
+                    </td>
+                    <td class="p-4 text-slate-300 font-mono text-sm">${time}</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${record.status?.label || '-'}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-400 text-sm italic">${record.note || '-'}</td>
+                    <td class="p-4 text-right">
+                        ${isAdminOrTeacher ? `<button class="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-colors cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Mobile View
+        listMobile.innerHTML = attData.map((record: any) => {
+            const profile = profileMap[record.user_id] || { username: 'Unknown', full_name: 'Unknown User' };
+            const time = new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="p-4 space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-800 border border-white/5 flex items-center justify-center font-bold text-emerald-500">
+                                ${profile.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="font-bold text-white">${profile.username}</div>
+                                <div class="text-[10px] text-slate-500 uppercase">${profile.full_name}</div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            ${record.status?.label || '-'}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="text-slate-400 flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            ${time}
+                        </div>
+                        <div class="text-slate-500 italic truncate max-w-[60%]">
+                            ${record.note || 'No notes'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.getElementById('checkin-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentUser) {
+            alert('User tidak terautentikasi');
+            return;
+        }
+        
+        const statusId = (document.getElementById('status-select') as HTMLSelectElement).value;
+        const note = (document.getElementById('checkin-note') as HTMLTextAreaElement).value;
+
+        // Need the class_id. For MVP, we'll pick the first class found for user, or default.
+        // I need to fetch a class I'm a member of.
+        const { data: memberClasses } = await supabase.from('class_members').select('class_id').eq('user_id', currentUser.id).limit(1);
+        
+        if (!memberClasses || memberClasses.length === 0) {
+            alert('Anda tidak terdaftar di kelas manapun.');
+            return;
+        }
+        
+        const classId = memberClasses[0].class_id;
+
+        const { error } = await supabase.from('attendance').insert({
+            user_id: currentUser.id,
+            class_id: classId,
+            status_id: statusId,
+            note: note,
+            date: currentDate
+        });
+
+        if (error) {
+            alert(error.message);
+        } else {
+            (document.getElementById('checkin-modal') as HTMLDialogElement).close();
+            loadAttendance();
+        }
+    });
+
+    init();
+</script>

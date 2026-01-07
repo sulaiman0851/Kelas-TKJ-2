@@ -1,0 +1,130 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import Sidebar from '../components/Sidebar.astro';
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+    showSidebar?: boolean;
+    isBlog?: boolean;
+}
+
+const { title, showSidebar = true, isBlog = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Kelas TKJ - Learning & Gaming Platform" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		
+		<!-- Favicon -->
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="apple-touch-icon" href="/favicon.png" />
+		
+		<!-- Theme Color -->
+		<meta name="theme-color" content="#0f172a" />
+		
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+        <ViewTransitions />
+	</head>
+	<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-blue-500/30">
+        {showSidebar ? (
+            <div class="flex h-screen overflow-hidden group/layout" id="layout-root" data-blog={isBlog}>
+                <!-- Mobile Fixed Header -->
+                <header class="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900/80 backdrop-blur-md border-b border-white/5 z-50 flex items-center justify-between px-4 transition-all duration-300">
+                    <button id="sidebar-toggle" class="p-2 text-slate-400 hover:text-white cursor-pointer rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <span class="font-black tracking-tight text-white">KELAS TKJ</span>
+                    <div class="w-10"></div>
+                </header>
+
+                <!-- Desktop Sidebar Toggle (Blog Only) -->
+                {isBlog && (
+                    <button id="sidebar-toggle-desktop" class="hidden md:flex fixed top-6 left-6 z-[70] p-3 bg-slate-900 border border-white/10 text-slate-400 hover:text-blue-400 rounded-2xl shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer sidebar-toggle-btn group">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                )}
+
+                <Sidebar />
+                
+                <!-- Sidebar Overlay -->
+                <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-[55] hidden opacity-0 transition-opacity duration-300"></div>
+
+                <main class={`flex-1 overflow-auto bg-slate-950 p-4 md:p-8 pt-20 md:pt-8 transition-all duration-300 ${!isBlog ? 'ml-0 md:ml-64' : 'ml-0'}`} id="main-content">
+                    <slot />
+                </main>
+            </div>
+        ) : (
+            <slot />
+        )}
+
+        <style is:global>
+            /* Sidebar states */
+            .sidebar-open aside {
+                transform: translateX(0) !important;
+            }
+            .sidebar-open #sidebar-overlay {
+                display: block;
+                opacity: 1;
+            }
+            @media (min-width: 768px) {
+                body.sidebar-open .group\/layout[data-blog="true"] main {
+                    margin-left: 256px;
+                }
+                body.sidebar-open #sidebar-toggle-desktop {
+                    left: 270px;
+                    background-color: transparent;
+                    border-color: transparent;
+                    box-shadow: none;
+                }
+            }
+        </style>
+
+        <script>
+            function setupSidebar() {
+                const mobileToggle = document.getElementById('sidebar-toggle');
+                const overlay = document.getElementById('sidebar-overlay');
+                
+                const openSidebar = () => {
+                    document.body.classList.add('sidebar-open');
+                };
+
+                const closeSidebar = () => {
+                    document.body.classList.remove('sidebar-open');
+                };
+
+                // Add to mobile toggle
+                mobileToggle?.addEventListener('click', () => {
+                    if (document.body.classList.contains('sidebar-open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                });
+
+                // Add to all desktop/extra toggles (including the new blog desktop toggle)
+                document.querySelectorAll('.sidebar-toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (document.body.classList.contains('sidebar-open')) {
+                            closeSidebar();
+                        } else {
+                            openSidebar();
+                        }
+                    });
+                });
+
+                overlay?.addEventListener('click', closeSidebar);
+            }
+
+            // Run on init
+            setupSidebar();
+            // Re-run on View Transitions
+            document.addEventListener('astro:after-swap', setupSidebar);
+        </script>
+	</body>
+</html>

@@ -1,0 +1,307 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Dashboard - Kelas TKJ">
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Dashboard</h2>
+            <p class="text-slate-400">Selamat datang kembali, <span id="user-name" class="text-white">User</span></p>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <!-- Stats Cards -->
+        <div class="bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-500/20 p-6 rounded-2xl">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="p-3 bg-blue-500/20 text-blue-400 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-400">Total Siswa</p>
+                    <h3 class="text-2xl font-bold" id="stat-total-students">...</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-emerald-600/20 to-emerald-900/10 border border-emerald-500/20 p-6 rounded-2xl">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-400">Hadir Hari Ini</p>
+                    <h3 class="text-2xl font-bold" id="stat-attendance">...</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-600/20 to-purple-900/10 border border-purple-500/20 p-6 rounded-2xl">
+             <div class="flex items-center gap-4 mb-4">
+                <div class="p-3 bg-purple-500/20 text-purple-400 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-swords"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="10"/><line x1="9" x2="11" y1="11" y2="13"/><line x1="12.5" x2="10" y1="15" y2="17.5"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-400">Game Status</p>
+                    <h3 class="text-2xl font-bold text-purple-400">Active</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-6">
+             <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+             <h3 class="text-xl font-bold">Log Aktivitas Sistem</h3>
+        </div>
+        <div id="activity-list" class="bg-slate-900/50 rounded-3xl border border-white/5 p-8 min-h-[300px] space-y-4">
+            <div class="flex gap-4">
+                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
+                <div class="flex-1 space-y-2 py-1">
+                    <div class="h-2 animate-skeleton w-3/4"></div>
+                    <div class="h-2 animate-skeleton w-1/4"></div>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
+                <div class="flex-1 space-y-2 py-1">
+                    <div class="h-2 animate-skeleton w-1/2"></div>
+                    <div class="h-2 animate-skeleton w-1/3"></div>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="w-8 h-8 animate-skeleton rounded-full flex-shrink-0"></div>
+                <div class="flex-1 space-y-2 py-1">
+                    <div class="h-2 animate-skeleton w-2/3"></div>
+                    <div class="h-2 animate-skeleton w-1/4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mading Kelas (Combined Announcements & Tasks) -->
+    <div class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-black tracking-tight flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-500 rounded-full"></span>
+                Mading Kelas & Tugas
+            </h3>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400">Terbaru</span>
+            </div>
+        </div>
+        <div id="mading-feed" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Skeletons -->
+            <div class="h-48 animate-skeleton rounded-3xl"></div>
+            <div class="h-48 animate-skeleton rounded-3xl"></div>
+        </div>
+    </div>
+
+</Layout>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    async function init() {
+        // Auth Check
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+           window.location.href = '/login';
+           return;
+        }
+
+        // Fetch Profile
+        const { data: profile } = await supabase.from('profiles').select('full_name, username').eq('id', session.user.id).single();
+        const userNameEl = document.getElementById('user-name');
+        if (userNameEl && profile) {
+            userNameEl.innerText = profile.username || profile.full_name || 'User';
+        }
+
+        // Check if admin and show admin section
+        const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('*, roles(*)')
+            .eq('user_id', session.user.id);
+        
+        const isAdmin = userRoles?.some((ur: any) => ur.roles?.name === 'admin');
+        if (isAdmin) {
+            const adminSection = document.getElementById('admin-section');
+            if (adminSection) {
+                adminSection.classList.remove('hidden');
+            }
+        }
+
+        loadData();
+    }
+
+    async function loadData() {
+        const madingFeed = document.getElementById('mading-feed');
+        if (!madingFeed) return;
+
+        // Fetch Both concurrently
+        const [annsRes, asgsRes] = await Promise.all([
+            supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5),
+            supabase.from('assignments').select('*').order('created_at', { ascending: false }).limit(5)
+        ]);
+
+        const announcements = annsRes.data || [];
+        const assignments = asgsRes.data || [];
+
+        // Combine and Sort
+        const combined = [
+            ...announcements.map(a => ({ ...a, itemType: 'announcement' })),
+            ...assignments.map(a => ({ ...a, itemType: 'assignment' }))
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        if (combined.length === 0) {
+            madingFeed.innerHTML = `
+                <div class="col-span-full bg-slate-900/50 border border-white/5 rounded-3xl p-12 text-center">
+                    <p class="text-slate-500 italic">Belum ada pengumuman atau tugas hari ini.</p>
+                </div>
+            `;
+            return;
+        }
+
+        madingFeed.innerHTML = combined.map(item => {
+            if (item.itemType === 'announcement') {
+                const colors = {
+                    info: 'from-blue-500/10 to-blue-600/5 border-blue-500/20 text-blue-400',
+                    warning: 'from-yellow-500/10 to-yellow-600/5 border-yellow-500/20 text-yellow-400',
+                    success: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 text-emerald-400'
+                };
+                const colorClass = (colors as any)[item.type] || colors.info;
+                const icon = item.type === 'warning' ? 'alert-triangle' : (item.type === 'success' ? 'check-circle' : 'info');
+                
+                return `
+                    <div class="bg-gradient-to-br ${colorClass} border rounded-3xl p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest">${item.type}</span>
+                                <span class="text-[10px] font-mono opacity-50 uppercase">${new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-white mb-2">${item.title}</h4>
+                            <p class="text-sm text-slate-300 leading-relaxed">${item.content}</p>
+                        </div>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-3xl p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-[10px] font-black uppercase tracking-widest">Tugas Sekolah</span>
+                                <span class="text-[10px] font-mono text-slate-500 uppercase">${new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                            </div>
+                            <div class="mb-4">
+                                <span class="text-[10px] font-bold text-purple-500/80 uppercase tracking-widest">${item.subject}</span>
+                                <h4 class="text-xl font-bold text-white mt-1 group-hover:text-purple-400 transition-colors">${item.title}</h4>
+                            </div>
+                            <p class="text-sm text-slate-400 mb-6 line-clamp-2">${item.description || 'Selesaikan tepat waktu ya!'}</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+                                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    </div>
+                                    <div class="text-[10px]">
+                                        <p class="text-slate-500 uppercase font-bold">Deadline</p>
+                                        <p class="text-slate-200 font-mono">${new Date(item.due_date).toLocaleDateString('id-ID')} ${new Date(item.due_date).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</p>
+                                    </div>
+                                </div>
+                                <button class="p-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+
+        // Load Stats
+        const { count: studentCount } = await supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role_id', (await supabase.from('roles').select('id').eq('name', 'student').single()).data?.id);
+        document.getElementById('stat-total-students')!.innerText = studentCount?.toString() || '0';
+        
+        const { count: attCount } = await supabase.from('attendance').select('*', { count: 'exact', head: true }).eq('date', new Date().toISOString().split('T')[0]);
+        document.getElementById('stat-attendance')!.innerText = attCount?.toString() || '0';
+
+        // Load Activity Logs
+        const { data: logs } = await supabase
+            .from('activity_logs')
+            .select('*, profiles(username, full_name)')
+            .order('created_at', { ascending: false })
+            .limit(10);
+        
+        const activityList = document.getElementById('activity-list');
+        if (activityList) {
+            if (!logs || logs.length === 0) {
+                activityList.innerHTML = '<p class="text-slate-600 text-center py-8 italic text-sm">Belum ada aktifitas terbaru.</p>';
+            } else {
+                activityList.innerHTML = `
+                    <div class="flow-root">
+                        <ul role="list" class="-mb-8">
+                            ${logs.map((log, idx) => {
+                                const isLast = idx === logs.length - 1;
+                                const time = new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                                const name = log.profiles?.username || 'System';
+                                
+                                const icons: Record<string, string> = {
+                                    attendance: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>',
+                                    content: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>',
+                                    game: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15 10a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>',
+                                    admin: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>'
+                                };
+
+                                const bgColors: Record<string, string> = {
+                                    attendance: 'bg-emerald-500',
+                                    content: 'bg-blue-500',
+                                    game: 'bg-purple-500',
+                                    admin: 'bg-slate-500'
+                                };
+
+                                return `
+                                    <li>
+                                        <div class="relative pb-8">
+                                            ${!isLast ? '<span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-white/5" aria-hidden="true"></span>' : ''}
+                                            <div class="relative flex space-x-3">
+                                                <div>
+                                                    <span class="h-8 w-8 rounded-full ${bgColors[log.category] || 'bg-slate-500'} flex items-center justify-center ring-8 ring-slate-950">
+                                                        ${icons[log.category] || icons.admin}
+                                                    </span>
+                                                </div>
+                                                <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                                    <div>
+                                                        <p class="text-xs text-slate-400">
+                                                            <span class="font-bold text-slate-100">${name}</span> ${log.description}
+                                                        </p>
+                                                    </div>
+                                                    <div class="whitespace-nowrap text-right text-[10px] text-slate-500 font-mono">
+                                                        <time>${time}</time>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                `;
+                            }).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+    });
+
+    init();
+</script>

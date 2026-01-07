@@ -1,0 +1,216 @@
+---
+import Layout from '../../layouts/Layout.astro';
+export const prerender = false;
+---
+
+<Layout title="Manage Content - Admin">
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Manage Content</h2>
+            <p class="text-slate-400">Input Pengumuman dan Tugas Sekolah</p>
+        </div>
+    </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Form Pengumuman -->
+                <section class="bg-slate-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M22 8h-2"/><path d="M2 8h2"/><path d="M12 2v2"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold">Buat Pengumuman Baru</h3>
+                    </div>
+
+                    <form id="announcement-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Judul Pengumuman</label>
+                            <input type="text" id="ann-title" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Contoh: Libur Semester">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Isi Pengumuman</label>
+                            <textarea id="ann-content" required rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Tulis pengumuman di sini..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Tipe</label>
+                            <select id="ann-type" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                                <option value="info">Info (Biru)</option>
+                                <option value="warning">Penting (Kuning)</option>
+                                <option value="success">Normal (Hijau)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
+                            Posting Pengumuman
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Form Tugas -->
+                <section class="bg-slate-900/50 border border-white/5 rounded-2xl p-6 backdrop-blur-sm">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-purple-500/20 text-purple-400 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 3 3L11 18l-3-3 7.5-7.5Z"/><path d="m4 13.5 1.5-1.5"/><path d="m10.5 20-1.5 1.5"/><path d="m4 18.5 3-3"/><path d="m5.5 20 3-3"/><path d="m3.5 8 8 8"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold">Input Tugas Baru (PR)</h3>
+                    </div>
+
+                    <form id="assignment-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Mata Pelajaran</label>
+                            <input type="text" id="asg-subject" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50" placeholder="Contoh: Pemrograman Web">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Judul Tugas/PR</label>
+                            <input type="text" id="asg-title" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50" placeholder="Contoh: Membuat Landing Page V1">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Deskripsi & Instruksi</label>
+                            <textarea id="asg-desc" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50" placeholder="Apa yang harus dikerjakan?"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-1">Deadline (Tenggat Waktu)</label>
+                            <input type="datetime-local" id="asg-deadline" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-600/20 cursor-pointer">
+                            Simpan Tugas
+                        </button>
+                    </form>
+                </section>
+            </div>
+            
+            <!-- List Konten (Opsi: Lihat postingan terakhir) -->
+            <div class="mt-8">
+                <h3 class="text-xl font-bold mb-4">Postingan Terakhir</h3>
+                <div class="bg-slate-900/50 rounded-2xl border border-white/5 p-6 overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-slate-500 text-sm">
+                            <tr>
+                                <th class="pb-4 font-medium">Judul</th>
+                                <th class="pb-4 font-medium">Tipe</th>
+                                <th class="pb-4 font-medium">Dibuat Pada</th>
+                                <th class="pb-4 font-medium text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-content" class="text-sm divide-y divide-white/5">
+                            {[1, 2, 3].map(() => (
+                                <tr class="animate-pulse">
+                                    <td class="py-3"><div class="h-4 bg-white/5 rounded w-32"></div></td>
+                                    <td class="py-3"><div class="h-4 bg-white/5 rounded w-20"></div></td>
+                                    <td class="py-3"><div class="h-4 bg-white/5 rounded w-24"></div></td>
+                                    <td class="py-3 text-right"><div class="h-4 bg-white/5 rounded w-12 ml-auto"></div></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+</Layout>
+
+<script>
+    import { supabase } from '../../lib/supabase';
+
+    let currentUserId = '';
+
+    // Auth & Permission Check
+    async function checkAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUserId = session.user.id;
+
+        const { data: roles } = await supabase.from('user_roles').select('roles(name)').eq('user_id', currentUserId);
+        const isAdmin = roles?.some((r: any) => r.roles.name === 'admin');
+        if (!isAdmin) {
+            alert('Wait! You are not an admin.');
+            window.location.href = '/dashboard';
+        }
+    }
+
+    // Handle Announcement
+    document.getElementById('announcement-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = (document.getElementById('ann-title') as HTMLInputElement).value;
+        const content = (document.getElementById('ann-content') as HTMLTextAreaElement).value;
+        const type = (document.getElementById('ann-type') as HTMLSelectElement).value;
+
+        const { error } = await supabase.from('announcements').insert({
+            title, content, type, author_id: currentUserId
+        });
+
+        if (error) alert(error.message);
+        else {
+            alert('Pengumuman berhasil diposting!');
+            (e.target as HTMLFormElement).reset();
+            loadRecent();
+        }
+    });
+
+    // Handle Assignment
+    document.getElementById('assignment-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const subject = (document.getElementById('asg-subject') as HTMLInputElement).value;
+        const title = (document.getElementById('asg-title') as HTMLInputElement).value;
+        const description = (document.getElementById('asg-desc') as HTMLTextAreaElement).value;
+        const due_date = (document.getElementById('asg-deadline') as HTMLInputElement).value;
+
+        const { error } = await supabase.from('assignments').insert({
+            subject, title, description, due_date, author_id: currentUserId
+        });
+
+        if (error) alert(error.message);
+        else {
+            alert('Tugas berhasil disimpan!');
+            (e.target as HTMLFormElement).reset();
+            loadRecent();
+        }
+    });
+
+    async function loadRecent() {
+        // Fetch both and merge for simple list
+        const { data: ann } = await supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5);
+        const { data: asg } = await supabase.from('assignments').select('*').order('created_at', { ascending: false }).limit(5);
+
+        const tbody = document.getElementById('recent-content');
+        if (!tbody) return;
+
+        let html = '';
+        ann?.forEach(a => {
+            html += `<tr class="group hover:bg-white/5 transition-colors">
+                <td class="py-4">📌 ${a.title}</td>
+                <td class="py-4"><span class="px-2 py-0.5 rounded text-[10px] bg-blue-500/20 text-blue-400">Pengumuman</span></td>
+                <td class="py-4 text-slate-500">${new Date(a.created_at).toLocaleDateString()}</td>
+                <td class="py-4 text-right">
+                    <button class="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-2" onclick="deleteItem('announcements', '${a.id}')">Hapus</button>
+                </td>
+            </tr>`;
+        });
+        asg?.forEach(a => {
+            html += `<tr class="group hover:bg-white/5 transition-colors">
+                <td class="py-4">📝 [${a.subject}] ${a.title}</td>
+                <td class="py-4"><span class="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-400">Tugas</span></td>
+                <td class="py-4 text-slate-500">${new Date(a.created_at).toLocaleDateString()}</td>
+                <td class="py-4 text-right">
+                    <button class="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-2" onclick="deleteItem('assignments', '${a.id}')">Hapus</button>
+                </td>
+            </tr>`;
+        });
+        tbody.innerHTML = html || '<tr><td colspan="4" class="py-8 text-center text-slate-600">Belum ada postingan</td></tr>';
+    }
+
+    (window as any).deleteItem = async (table: string, id: string) => {
+        if (!confirm('Hapus konten ini?')) return;
+        const { error } = await supabase.from(table).delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadRecent();
+    };
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+    });
+
+    checkAuth();
+    loadRecent();
+</script>

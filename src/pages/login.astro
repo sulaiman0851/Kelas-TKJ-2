@@ -1,0 +1,126 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Login - Kelas TKJ" showSidebar={false}>
+    <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+
+        <div class="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative z-10">
+            <h2 class="text-3xl font-bold mb-2 text-center">Selamat Datang</h2>
+            <p class="text-slate-400 text-center mb-8">Silahkan login untuk melanjutkan</p>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Username atau Email</label>
+                    <input type="text" id="identifier" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="username atau email@sekolah.sch.id">
+                    <p class="text-xs text-slate-500 mt-1">Bisa pakai username atau email</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+                    <input type="password" id="password" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="••••••••">
+                </div>
+
+                <div id="error-message" class="hidden p-3 rounded-lg bg-red-500/10 border border-red-500/50 text-red-300 text-sm"></div>
+
+                <button type="submit" 
+                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-bold shadow-lg hover:shadow-blue-500/25 transition-all transform hover:scale-[1.02]">
+                    <span id="login-text">Masuk</span>
+                    <span id="login-loading" class="hidden">Memproses...</span>
+                </button>
+            </form>
+
+            <p class="text-center mt-6 text-sm text-slate-400">
+                Belum punya akun? <a href="/register" class="text-blue-400 hover:text-blue-300 font-medium">Daftar di sini</a>
+            </p>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    const form = document.getElementById('login-form');
+    const errorMessage = document.getElementById('error-message');
+    const loginText = document.getElementById('login-text');
+    const loginLoading = document.getElementById('login-loading');
+
+    function showError(message: string) {
+        if (!errorMessage) return;
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('hidden');
+        
+        setTimeout(() => {
+            errorMessage.classList.add('hidden');
+        }, 5000);
+    }
+
+    function setLoading(loading: boolean) {
+        if (loginText && loginLoading) {
+            if (loading) {
+                loginText.classList.add('hidden');
+                loginLoading.classList.remove('hidden');
+            } else {
+                loginText.classList.remove('hidden');
+                loginLoading.classList.add('hidden');
+            }
+        }
+    }
+
+    // Helper function to check if input is email
+    function isEmail(input: string): boolean {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        
+        const identifier = (document.getElementById('identifier') as HTMLInputElement).value.trim();
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+
+        try {
+            let email = identifier;
+            
+            // If input is not an email, assume it's a username and lookup the email
+            if (!isEmail(identifier)) {
+                // Use RPC function to get email from username
+                const { data: emailData, error: rpcError } = await supabase.rpc('get_email_from_username', {
+                    username_input: identifier
+                });
+                
+                if (rpcError) {
+                    console.error('RPC Error:', rpcError);
+                    throw new Error('Gagal mencari username');
+                }
+                
+                if (!emailData) {
+                    throw new Error('Username tidak ditemukan');
+                }
+                
+                email = emailData;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+            
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
+        } catch (error: any) {
+            console.error('Login error:', error);
+            showError(error.message || 'Login gagal. Periksa username/email dan password Anda.');
+        } finally {
+            setLoading(false);
+        }
+    });
+</script>

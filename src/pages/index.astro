@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Kelas TKJ" showSidebar={false}>
+	<main class="flex flex-col items-center justify-center h-screen text-center p-4">
+		<h1 class="text-6xl font-black bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-4">
+			KELAS TKJ
+		</h1>
+		<p class="text-xl text-slate-400 mb-8 max-w-md">
+			Platform manajemen kelas terpadu dengan sistem absensi otomatis dan permainan sosial yang seru.
+		</p>
+		
+		<div class="flex gap-4">
+			<a href="/login" class="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 font-bold transition-all shadow-lg hover:shadow-blue-500/25">
+				Masuk
+			</a>
+			<a href="/register" class="px-8 py-3 rounded-full border border-slate-700 hover:bg-slate-800 font-bold transition-all">
+				Daftar Gratis
+			</a>
+		</div>
+	</main>
+</Layout>

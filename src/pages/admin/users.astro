@@ -1,0 +1,472 @@
+---
+import Layout from '../../layouts/Layout.astro';
+export const prerender = false;
+---
+
+<Layout title="User Management - Admin">
+    <!-- Header -->
+    <div class="mb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">User Management</h1>
+            <p class="text-slate-400">Kelola pengguna, role, dan password</p>
+        </div>
+    </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-6 mb-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div class="text-sm text-slate-400 mb-1">Total Users</div>
+                    <div id="total-users" class="text-3xl font-bold">-</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div class="text-sm text-slate-400 mb-1">Admins</div>
+                    <div id="total-admins" class="text-3xl font-bold text-blue-400">-</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div class="text-sm text-slate-400 mb-1">Teachers</div>
+                    <div id="total-teachers" class="text-3xl font-bold text-purple-400">-</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div class="text-sm text-slate-400 mb-1">Students</div>
+                    <div id="total-students" class="text-3xl font-bold text-emerald-400">-</div>
+                </div>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                <div class="flex gap-4">
+                    <input type="text" id="search-input" placeholder="Cari username atau email..." 
+                        class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white">
+                    <select id="role-filter" class="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white">
+                        <option value="">Semua Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                    </select>
+                    <button id="refresh-btn" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-colors">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-slate-800/50 border-b border-slate-700">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">User</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Email</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Role</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Status</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300">Joined</th>
+                            <th class="px-6 py-4 text-right text-sm font-semibold text-slate-300">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table" class="divide-y divide-slate-800">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(() => (
+                            <tr class="animate-pulse">
+                                <td class="px-6 py-4"><div class="h-4 bg-white/5 rounded w-32"></div></td>
+                                <td class="px-6 py-4"><div class="h-4 bg-white/5 rounded w-48"></div></td>
+                                <td class="px-6 py-4"><div class="h-6 bg-white/5 rounded-full w-20"></div></td>
+                                <td class="px-6 py-4"><div class="h-4 bg-white/5 rounded w-16"></div></td>
+                                <td class="px-6 py-4"><div class="h-4 bg-white/5 rounded w-24"></div></td>
+                                <td class="px-6 py-4 text-right"><div class="h-4 bg-white/5 rounded w-12 ml-auto"></div></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Role Management Modal -->
+    <div id="role-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6">
+            <h2 class="text-xl font-bold mb-4">Kelola Role</h2>
+            
+            <div class="mb-6">
+                <div class="text-sm text-slate-400 mb-1">User:</div>
+                <div id="role-username" class="font-medium text-lg text-white"></div>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-sm text-slate-400">Pilih role untuk pengguna ini:</p>
+                <div id="roles-options" class="grid gap-3">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button type="button" id="close-role-modal" class="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg font-medium transition-colors cursor-pointer">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="reset-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6">
+            <h2 class="text-xl font-bold mb-4">Reset Password</h2>
+            
+            <div class="mb-4">
+                <div class="text-sm text-slate-400 mb-1">User:</div>
+                <div id="reset-username" class="font-medium text-lg text-white"></div>
+            </div>
+
+            <form id="reset-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">New Password</label>
+                    <input type="password" id="new-password" 
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                        placeholder="Minimal 6 karakter" minlength="6" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Confirm Password</label>
+                    <input type="password" id="confirm-password" 
+                        class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white"
+                        placeholder="Ketik ulang password" minlength="6" required>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" id="cancel-reset" class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-medium transition-colors cursor-pointer">
+                        Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../../lib/supabase';
+
+    let currentUser: any = null;
+    let users: any[] = [];
+    let availableRoles: any[] = [];
+    let selectedUserId: string = '';
+
+    async function init() {
+        // Check auth
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUser = session.user;
+
+        // Check if admin
+        const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('*, roles(*)')
+            .eq('user_id', currentUser.id);
+
+        const isAdmin = userRoles?.some((ur: any) => ur.roles?.name === 'admin');
+        
+        if (!isAdmin) {
+            alert('Akses ditolak! Hanya admin yang bisa mengakses halaman ini.');
+            window.location.href = '/dashboard';
+            return;
+        }
+
+        // Load available roles
+        const { data: rolesData } = await supabase.from('roles').select('*');
+        availableRoles = rolesData || [];
+
+        // Load users
+        loadUsers();
+    }
+
+    async function loadUsers() {
+        // Get profiles
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (profilesError) {
+            console.error('Error loading profiles:', profilesError);
+            return;
+        }
+
+        // Get user roles separately
+        const { data: allUserRoles } = await supabase
+            .from('user_roles')
+            .select('user_id, roles(name)');
+
+        // Merge roles into profiles
+        users = (profiles || []).map(profile => {
+            const userRoles = allUserRoles?.filter(ur => ur.user_id === profile.id) || [];
+            return {
+                ...profile,
+                user_roles: userRoles
+            };
+        });
+
+        console.log('Users loaded:', users); // DEBUG
+        updateStats();
+        renderUsers();
+    }
+
+    function updateStats() {
+        const totalUsers = users.length;
+        const admins = users.filter(u => u.user_roles?.some((ur: any) => ur.roles?.name === 'admin')).length;
+        const teachers = users.filter(u => u.user_roles?.some((ur: any) => ur.roles?.name === 'teacher')).length;
+        const students = users.filter(u => u.user_roles?.some((ur: any) => ur.roles?.name === 'student')).length;
+
+        document.getElementById('total-users')!.textContent = totalUsers.toString();
+        document.getElementById('total-admins')!.textContent = admins.toString();
+        document.getElementById('total-teachers')!.textContent = teachers.toString();
+        document.getElementById('total-students')!.textContent = students.toString();
+    }
+
+    function renderUsers() {
+        const searchTerm = (document.getElementById('search-input') as HTMLInputElement).value.toLowerCase();
+        const roleFilter = (document.getElementById('role-filter') as HTMLSelectElement).value;
+
+        let filtered = users.filter(user => {
+            const username = user.username?.toLowerCase() || '';
+            const email = user.email?.toLowerCase() || '';
+            const matchSearch = username.includes(searchTerm) || email.includes(searchTerm);
+            
+            if (!roleFilter) return matchSearch;
+            
+            const hasRole = user.user_roles?.some((ur: any) => ur.roles?.name === roleFilter);
+            return matchSearch && hasRole;
+        });
+
+        const tbody = document.getElementById('users-table')!;
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-slate-500">
+                        Tidak ada user ditemukan
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(user => {
+            const roles = user.user_roles?.map((ur: any) => ur.roles?.name).filter(Boolean) || [];
+            const roleColors: Record<string, string> = {
+                admin: 'bg-blue-500/20 text-blue-400',
+                teacher: 'bg-purple-500/20 text-purple-400',
+                student: 'bg-emerald-500/20 text-emerald-400'
+            };
+
+            return `
+                <tr class="hover:bg-slate-800/50">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-sm font-bold">
+                                ${(user.username || 'U')[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="font-medium">${user.username || 'Unknown'}</div>
+                                <div class="text-xs text-slate-500">ID: ${user.id.slice(0, 8)}...</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-slate-300">${user.email || '-'}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-1">
+                            ${roles.map((role: string) => `
+                                <span class="text-xs px-2 py-1 rounded ${roleColors[role] || 'bg-slate-700 text-slate-400'}">
+                                    ${role}
+                                </span>
+                            `).join('')}
+                            ${roles.length === 0 ? '<span class="text-xs text-slate-500">No role</span>' : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">Active</span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 text-sm">
+                        ${new Date(user.created_at).toLocaleDateString('id-ID')}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="openRoleModal('${user.id}', '${user.username}')" 
+                                class="p-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors cursor-pointer" title="Manage Roles">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </button>
+                            <button onclick="openResetModal('${user.id}', '${user.username}')" 
+                                class="p-2 bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 rounded-lg transition-colors cursor-pointer" title="Reset Password">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.4-.4.4-1 0-1.4l-1.4-1.4c-.4-.4-1-.4-1.4 0l-1.4 1.4V15h-2l-1.4-1.4c-.4-.4-1-.4-1.4 0l-1.4 1.4-1.4-1.4c-.4-.4-1-.4-1.4 0l-1.4 1.4L2 13.6c-.4-.4-1-.4-1.4 0l-1.4 1.4L2 18z"/><circle cx="15" cy="9" r="4"/><path d="m11 5 2 2"/><path d="m12 17 2 2"/></svg>
+                            </button>
+                            ${user.id !== currentUser.id ? `
+                                <button onclick="deleteUser('${user.id}', '${user.username}')" 
+                                    class="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors cursor-pointer" title="Delete User">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    (window as any).openRoleModal = async (userId: string, username: string) => {
+        selectedUserId = userId;
+        document.getElementById('role-username')!.textContent = username;
+        
+        const user = users.find(u => u.id === userId);
+        const userRoleIds = user.user_roles?.map((ur: any) => ur.role_id) || [];
+        
+        const rolesOptions = document.getElementById('roles-options')!;
+        rolesOptions.innerHTML = availableRoles.map(role => {
+            const isChecked = userRoleIds.includes(role.id);
+            // Safety Check: Admin cannot remove their own admin role
+            const isSelfAdmin = userId === currentUser.id && role.name === 'admin';
+            
+            return `
+                <label class="flex items-center justify-between p-4 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-600 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+                            ${role.name === 'admin' ? '🛡️' : role.name === 'teacher' ? '👨‍🏫' : '🎓'}
+                        </div>
+                        <span class="font-medium capitalize text-slate-200">${role.name}</span>
+                    </div>
+                    <input type="checkbox" 
+                        class="w-5 h-5 rounded border-slate-600 bg-slate-900 text-blue-600 focus:ring-blue-500"
+                        onchange="toggleRole('${userId}', '${role.id}', this.checked, '${role.name}')"
+                        ${isChecked ? 'checked' : ''}
+                        ${isSelfAdmin ? 'disabled' : ''}>
+                </label>
+            `;
+        }).join('');
+        
+        document.getElementById('role-modal')!.classList.remove('hidden');
+    };
+
+    (window as any).toggleRole = async (userId: string, roleId: string, shouldAdd: boolean, roleName: string) => {
+        if (userId === currentUser.id && roleName === 'admin' && !shouldAdd) {
+            alert('Anda tidak bisa menghapus role admin dari diri sendiri!');
+            return;
+        }
+
+        try {
+            if (shouldAdd) {
+                await supabase.from('user_roles').insert({ user_id: userId, role_id: roleId });
+            } else {
+                await supabase.from('user_roles').delete().eq('user_id', userId).eq('role_id', roleId);
+            }
+            loadUsers(); // Refresh data
+        } catch (error: any) {
+            alert('Error: ' + error.message);
+        }
+    };
+
+    (window as any).deleteUser = async (userId: string, username: string) => {
+        if (userId === currentUser.id) {
+            alert('Anda tidak bisa menghapus diri sendiri!');
+            return;
+        }
+
+        if (!confirm(`Apakah Anda yakin ingin menghapus user "${username}"?\nTindakan ini tidak dapat dibatalkan.`)) {
+            return;
+        }
+
+        try {
+            // Delete from auth (using our admin API)
+            const response = await fetch('/api/admin/delete-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Failed to delete user');
+
+            alert('✅ User berhasil dihapus!');
+            loadUsers();
+        } catch (error: any) {
+            alert('❌ Gagal menghapus user: ' + error.message);
+        }
+    };
+
+    document.getElementById('close-role-modal')?.addEventListener('click', () => {
+        document.getElementById('role-modal')!.classList.add('hidden');
+    });
+
+    (window as any).openResetModal = (userId: string, username: string) => {
+        selectedUserId = userId;
+        document.getElementById('reset-username')!.textContent = username;
+        document.getElementById('reset-modal')!.classList.remove('hidden');
+        (document.getElementById('new-password') as HTMLInputElement).value = '';
+        (document.getElementById('confirm-password') as HTMLInputElement).value = '';
+    };
+
+    document.getElementById('cancel-reset')?.addEventListener('click', () => {
+        document.getElementById('reset-modal')!.classList.add('hidden');
+    });
+
+    document.getElementById('reset-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const newPassword = (document.getElementById('new-password') as HTMLInputElement).value;
+        const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement).value;
+
+        if (newPassword !== confirmPassword) {
+            alert('Password tidak cocok!');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            alert('Password minimal 6 karakter!');
+            return;
+        }
+
+        // Show loading
+        const submitBtn = e.target as HTMLFormElement;
+        const originalText = submitBtn.querySelector('button[type="submit"]')!.textContent;
+        submitBtn.querySelector('button[type="submit"]')!.textContent = 'Resetting...';
+
+        try {
+            // Call API endpoint
+            const response = await fetch('/api/admin/reset-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: selectedUserId,
+                    newPassword: newPassword
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to reset password');
+            }
+
+            alert('✅ Password berhasil direset!');
+            document.getElementById('reset-modal')!.classList.add('hidden');
+        } catch (error: any) {
+            alert('❌ Error: ' + error.message);
+        } finally {
+            submitBtn.querySelector('button[type="submit"]')!.textContent = originalText;
+        }
+    });
+
+    document.getElementById('search-input')?.addEventListener('input', renderUsers);
+    document.getElementById('role-filter')?.addEventListener('change', renderUsers);
+    document.getElementById('refresh-btn')?.addEventListener('click', loadUsers);
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/login';
+    });
+
+    // Initial load with auth check
+    init();
+</script>

@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Admin Panel - Kelas TKJ">
+    <div class="min-h-screen bg-slate-950 p-8">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                 <a href="/dashboard" class="text-sm text-slate-500 hover:text-white mb-2 block">← Back to Dashboard</a>
+                <h1 class="text-3xl font-bold">Admin Panel</h1>
+            </div>
+        </header>
+
+        <div class="grid gap-8">
+            <!-- User Role Management section -->
+            <section class="bg-slate-900 border border-white/10 rounded-2xl p-6">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Manajemen User & Role
+                </h2>
+                
+                <div class="flex gap-4 mb-4">
+                    <input type="text" id="user-search" placeholder="Cari user (email/nama)..." class="flex-1 bg-slate-800 border-slate-700 rounded-lg px-4 py-2 text-white">
+                </div>
+
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-slate-400">
+                        <tr>
+                            <th class="p-3">User</th>
+                            <th class="p-3">Role Saat Ini</th>
+                            <th class="p-3">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list" class="divide-y divide-white/5">
+                        <!-- Skeletons -->
+                        {[1, 2, 3, 4, 5].map(() => (
+                            <tr class="animate-pulse">
+                                <td class="p-3">
+                                    <div class="h-4 bg-white/5 rounded w-32 mb-2"></div>
+                                    <div class="h-2 bg-white/5 rounded w-48"></div>
+                                </td>
+                                <td class="p-3">
+                                    <div class="h-6 bg-white/5 rounded w-20"></div>
+                                </td>
+                                <td class="p-3 text-right">
+                                    <div class="h-4 bg-white/5 rounded w-16 ml-auto"></div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    let currentUser = null;
+
+    async function init() {
+         const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+        
+        // Check if admin
+        const { data: roles } = await supabase.from('user_roles').select('roles(name)').eq('user_id', session.user.id);
+        const isAdmin = roles?.some((r: any) => r.roles.name === 'admin');
+        
+        if (!isAdmin) {
+            alert('Akses ditolak. Halaman ini khusus Admin.');
+            window.location.href = '/dashboard';
+            return;
+        }
+
+        loadUsers();
+    }
+
+    async function loadUsers() {
+        // Fetch users (Requires Service Role or exposing auth.users via View/RPC for Admin)
+        // Since we can't query auth.users directly from client usually, we rely on 'profiles'.
+        // And we join with user_roles
+        
+        const { data: profiles, error } = await supabase
+            .from('profiles')
+            .select(`
+                id,
+                full_name,
+                user_roles (
+                    roles (id, name)
+                )
+            `)
+            .limit(50);
+
+        if(error) console.error(error);
+
+        const tbody = document.getElementById('user-list');
+        if (tbody && profiles) {
+            tbody.innerHTML = profiles.map((p: any) => {
+                const roles = p.user_roles.map((ur: any) => ur.roles.name).join(', ');
+                return `
+                    <tr>
+                        <td class="p-3">
+                            <div class="font-bold">${p.full_name || 'No Name'}</div>
+                            <div class="text-xs text-slate-500">${p.id}</div>
+                        </td>
+                        <td class="p-3">
+                            <span class="bg-blue-900 text-blue-300 px-2 py-1 rounded text-xs uppercase font-bold">${roles || 'Student'}</span>
+                        </td>
+                        <td class="p-3">
+                            <button class="text-sm text-blue-400 underline" onclick="manageRole('${p.id}')">Edit Role</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+    
+    // Stub for manageRole
+    (window as any).manageRole = (userId: string) => {
+        const newRole = prompt('Assign Role (admin/teacher/student):');
+        if(newRole) {
+            // Call Supabase to insert into user_roles.
+            // Needs logic to find role_id by name first.
+            alert('Fitur ini perlu implementasi lookup role_id.');
+        }
+    };
+
+    init();
+</script>

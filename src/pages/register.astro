@@ -1,0 +1,236 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Register - Kelas TKJ" showSidebar={false}>
+    <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+
+        <div class="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative z-10">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-2">Daftar Akun Baru</h2>
+                <p class="text-slate-400">Bergabung dengan Kelas TKJ</p>
+            </div>
+
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Nama Lengkap</label>
+                    <input type="text" id="full_name" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="Nama Lengkap Anda">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Username (Nama Panggilan)</label>
+                    <input type="text" id="username" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="username_unik"
+                        pattern="[a-zA-Z0-9_]+"
+                        minlength="3"
+                        maxlength="20">
+                    <div id="username-feedback" class="mt-1 text-xs"></div>
+                    <p class="text-xs text-slate-500 mt-1">3-20 karakter, hanya huruf, angka, dan underscore</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                    <input type="email" id="email" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="nama@sekolah.sch.id">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+                    <input type="password" id="password" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="Minimal 6 karakter">
+                    <p class="text-xs text-slate-500 mt-1">Minimal 6 karakter</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Konfirmasi Password</label>
+                    <input type="password" id="confirm_password" required
+                        class="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white placeholder-slate-500 transition-all"
+                        placeholder="Ulangi password">
+                </div>
+
+                <div class="flex items-start gap-2 pt-2">
+                    <input type="checkbox" id="terms" required
+                        class="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500">
+                    <label for="terms" class="text-sm text-slate-400">
+                        Saya setuju dengan <a href="#" class="text-emerald-400 hover:text-emerald-300">syarat dan ketentuan</a> yang berlaku
+                    </label>
+                </div>
+
+                <button type="submit" 
+                    class="w-full py-3 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 rounded-lg font-bold shadow-lg hover:shadow-emerald-500/25 transition-all transform hover:scale-[1.02]">
+                    Daftar Sekarang
+                </button>
+            </form>
+
+            <p class="text-center mt-6 text-sm text-slate-400">
+                Sudah punya akun? <a href="/login" class="text-emerald-400 hover:text-emerald-300 font-medium">Masuk di sini</a>
+            </p>
+
+            <!-- Success/Error Message -->
+            <div id="message-box" class="hidden mt-4 p-4 rounded-lg"></div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    const form = document.getElementById('register-form');
+    const messageBox = document.getElementById('message-box');
+    const usernameInput = document.getElementById('username') as HTMLInputElement;
+    const usernameFeedback = document.getElementById('username-feedback');
+    
+    let usernameAvailable = false;
+    let checkTimeout: NodeJS.Timeout;
+
+    // Real-time username availability check
+    usernameInput?.addEventListener('input', async (e) => {
+        const username = (e.target as HTMLInputElement).value.trim();
+        
+        // Clear previous timeout
+        clearTimeout(checkTimeout);
+        
+        if (!usernameFeedback) return;
+        
+        // Validate format first
+        if (username.length < 3) {
+            usernameFeedback.textContent = '';
+            usernameAvailable = false;
+            return;
+        }
+        
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            usernameFeedback.textContent = '❌ Hanya boleh huruf, angka, dan underscore';
+            usernameFeedback.className = 'mt-1 text-xs text-red-400';
+            usernameAvailable = false;
+            return;
+        }
+        
+        // Show checking state
+        usernameFeedback.textContent = '⏳ Mengecek ketersediaan...';
+        usernameFeedback.className = 'mt-1 text-xs text-slate-400';
+        
+        // Debounce the check
+        checkTimeout = setTimeout(async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('username', username)
+                .maybeSingle();
+            
+            if (error) {
+                console.error('Error checking username:', error);
+                usernameFeedback.textContent = '⚠️ Gagal mengecek username';
+                usernameFeedback.className = 'mt-1 text-xs text-yellow-400';
+                usernameAvailable = false;
+                return;
+            }
+            
+            if (data) {
+                usernameFeedback.textContent = '❌ Username sudah digunakan';
+                usernameFeedback.className = 'mt-1 text-xs text-red-400';
+                usernameAvailable = false;
+            } else {
+                usernameFeedback.textContent = '✅ Username tersedia!';
+                usernameFeedback.className = 'mt-1 text-xs text-emerald-400';
+                usernameAvailable = true;
+            }
+        }, 500); // 500ms debounce
+    });
+
+    function showMessage(message: string, isError: boolean = false) {
+        if (!messageBox) return;
+        
+        messageBox.textContent = message;
+        messageBox.className = `mt-4 p-4 rounded-lg ${
+            isError 
+                ? 'bg-red-500/10 border border-red-500/50 text-red-300' 
+                : 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-300'
+        }`;
+        messageBox.classList.remove('hidden');
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            messageBox.classList.add('hidden');
+        }, 5000);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = (document.getElementById('username') as HTMLInputElement).value.trim();
+        const fullName = (document.getElementById('full_name') as HTMLInputElement).value;
+        const email = (document.getElementById('email') as HTMLInputElement).value;
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+        const confirmPassword = (document.getElementById('confirm_password') as HTMLInputElement).value;
+        const terms = (document.getElementById('terms') as HTMLInputElement).checked;
+
+        // Validation
+        if (!usernameAvailable) {
+            showMessage('Username tidak tersedia atau tidak valid!', true);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showMessage('Password dan konfirmasi password tidak cocok!', true);
+            return;
+        }
+
+        if (password.length < 6) {
+            showMessage('Password minimal 6 karakter!', true);
+            return;
+        }
+
+        if (!terms) {
+            showMessage('Anda harus menyetujui syarat dan ketentuan!', true);
+            return;
+        }
+
+        try {
+            // Register user with Supabase Auth
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        username: username,
+                        full_name: fullName
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            // Check if email confirmation is required
+            if (data.user && !data.session) {
+                showMessage('Pendaftaran berhasil! Silakan cek email Anda untuk konfirmasi.', false);
+                
+                // Reset form
+                (form as HTMLFormElement).reset();
+                
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 3000);
+            } else {
+                // User successfully registered
+                showMessage('Pendaftaran berhasil! Mengalihkan ke dashboard...', false);
+                
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            }
+        } catch (error: any) {
+            console.error('Registration error:', error);
+            showMessage(error.message || 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.', true);
+        }
+    });
+</script>

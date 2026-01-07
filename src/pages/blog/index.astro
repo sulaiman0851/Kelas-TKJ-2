@@ -1,0 +1,110 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog');
+const sortedPosts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featuredPosts = sortedPosts.filter(post => post.data.featured);
+const recentPosts = sortedPosts.filter(post => !post.data.featured);
+---
+
+<Layout title="Blog - Kelas TKJ" showSidebar={true} isBlog={true}>
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <header class="text-center mb-16">
+            <a href="/dashboard" class="inline-block group">
+                <h1 class="text-4xl font-black tracking-tighter text-white mb-2 group-hover:text-blue-400 transition-colors">KELAS TKJ</h1>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Learning & Gaming Platform</p>
+            </a>
+            
+            <nav class="flex justify-center gap-12 mt-12 text-xs font-black uppercase tracking-widest">
+                <a href="/dashboard" class="text-slate-500 hover:text-white transition-colors">Dashboard</a>
+                <a href="/game" class="text-slate-500 hover:text-white transition-colors">Games</a>
+                <a href="/blog" class="text-blue-500 border-b-2 border-blue-500 pb-2">Blog Room</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Hero -->
+            <div class="mb-16">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
+                    Blog
+                </h1>
+                <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl">
+                    Panduan, tutorial, dan insight seputar Game Zone, pembelajaran interaktif, dan teknologi edukasi.
+                </p>
+            </div>
+
+            <!-- Featured Posts -->
+            {featuredPosts.length > 0 && (
+                <section class="mb-16">
+                    <h2 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-6 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        Featured
+                    </h2>
+                    <div class="space-y-8">
+                        {featuredPosts.map(post => (
+                            <article class="group">
+                                <a href={`/blog/${post.slug}`} class="block">
+                                    <div class="flex flex-col gap-3">
+                                        <time class="text-sm text-slate-500 dark:text-slate-500">
+                                            {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                        </time>
+                                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {post.data.title}
+                                        </h3>
+                                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            {post.data.description}
+                                        </p>
+                                        <div class="flex flex-wrap gap-2">
+                                            {post.data.tags.map((tag: string) => (
+                                                <span class="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </a>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            <!-- All Posts -->
+            <section>
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-6">
+                    {featuredPosts.length > 0 ? 'Recent Posts' : 'All Posts'}
+                </h2>
+                <div class="space-y-8">
+                    {recentPosts.map(post => (
+                        <article class="group">
+                            <a href={`/blog/${post.slug}`} class="block">
+                                <div class="flex flex-col gap-2">
+                                    <time class="text-sm text-slate-500 dark:text-slate-500">
+                                        {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                    </time>
+                                    <h3 class="text-xl font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                        {post.data.title}
+                                    </h3>
+                                    <p class="text-slate-600 dark:text-slate-400 text-sm">
+                                        {post.data.description}
+                                    </p>
+                                </div>
+                            </a>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            <!-- Empty State -->
+            {sortedPosts.length === 0 && (
+                <div class="text-center py-20">
+                    <p class="text-slate-500 dark:text-slate-400">No posts yet. Stay tuned!</p>
+                </div>
+            )}
+        </main>
+
+    </div>
+</Layout>
