@@ -244,4 +244,11 @@ export const prerender = false;
     });
 
     init();
+
+    // Re-init on view transitions
+    document.addEventListener('astro:after-swap', () => {
+        if (window.location.pathname === '/game/fakeit') {
+            init();
+        }
+    });
 </script>

@@ -114,6 +114,13 @@ const { code } = Astro.params;
         updatePresence();
     }
 
+    // Support for ViewTransitions
+    document.addEventListener('astro:after-swap', () => {
+        if (window.location.pathname.includes('/game/fakeit/')) {
+            init();
+        }
+    });
+
     async function updatePresence() {
         if (!myPlayer) return;
         await supabase
@@ -223,11 +230,18 @@ const { code } = Astro.params;
         });
     }
 
+    // Support for ViewTransitions
+    document.addEventListener('astro:after-swap', () => {
+        if (window.location.pathname.includes('/game/fakeit/')) {
+            init();
+        }
+    });
+
     async function loadRoom() {
         const { data } = await supabase
             .from('fakeit_rooms')
             .select(`*, fakeit_categories(name, icon), fakeit_questions(question)`)
-            .eq('code', ROOM_CODE)
+            .ilike('code', ROOM_CODE) // Use ilike for case-insensitive
             .single();
         room = data;
     }
@@ -235,16 +249,20 @@ const { code } = Astro.params;
     async function loadPlayers() {
         const { data, error } = await supabase
             .from('fakeit_players')
-            .select(`*, profiles:user_id(username)`)
+            .select(`
+                *,
+                profiles:user_id(username)
+            `)
             .eq('room_id', room.id)
             .order('joined_at');
         
         if (error) {
-            console.error('Error loading players:', error);
+            console.error('Multiplayer Error:', error.message);
         }
         
         players = data || [];
         myPlayer = players.find(p => p.user_id === currentUser?.id);
+        console.log("Current Players in Room:", players.length); // DEBUG
     }
 
     async function joinRoom() {
