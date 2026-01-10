@@ -1,0 +1,314 @@
+---
+import Layout from '../../layouts/Layout.astro';
+export const prerender = false;
+---
+
+<Layout title="Manage Blog - Admin">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+            <div>
+                <h2 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-slate-500 tracking-tighter">Content Studio</h2>
+                <p class="text-slate-500 font-medium uppercase text-[10px] tracking-[0.3em] mt-2">Blog management & editor</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="window.location.href='/blog'" class="px-6 py-3 bg-slate-900 border border-white/10 text-slate-400 hover:text-white rounded-2xl font-black transition-all text-xs uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2.5 12h19"/><path d="m13.5 19.5 7.5-7.5-7.5-7.5"/></svg>
+                    Lihat Blog
+                </button>
+                <button id="add-post-btn" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all text-xs uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    Buat Postingan
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- List Section -->
+            <div class="lg:col-span-1 space-y-6">
+                 <div class="bg-slate-900/50 border border-white/5 rounded-3xl p-8 backdrop-blur-xl">
+                    <h3 class="text-xl font-black text-white mb-6 flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+                        Daftar Postingan
+                    </h3>
+                    <div id="posts-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Skeletons -->
+                        <div class="animate-pulse space-y-4">
+                            {[1,2,3].map(() => (
+                                <div class="h-20 bg-white/5 rounded-2xl"></div>
+                            ))}
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Editor Section -->
+            <div class="lg:col-span-2 space-y-8">
+                <div id="editor-container" class="hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div class="bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 md:p-12 backdrop-blur-xl shadow-2xl overflow-hidden relative">
+                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]"></div>
+                        
+                        <form id="blog-form" class="space-y-8 relative z-10">
+                            <input type="hidden" id="post-id">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Judul Postingan</label>
+                                        <input type="text" id="post-title" required class="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-700" placeholder="Masukkan judul yang menarik...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Slug (URL)</label>
+                                        <input type="text" id="post-slug" required class="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-slate-400 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm" placeholder="judul-postingan-anda">
+                                    </div>
+                                </div>
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Cover Image URL</label>
+                                        <input type="url" id="post-cover" class="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm" placeholder="https://unsplash.com/...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Tags (Pisahkan dengan koma)</label>
+                                        <input type="text" id="post-tags" class="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm" placeholder="tutorial, tkj, teknologi">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Deskripsi Singkat</label>
+                                <textarea id="post-desc" required rows="2" class="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-sm resize-none" placeholder="Tulis ringkasan singkat artikel..."></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-2 pl-1">Konten Artikel</label>
+                                <div class="bg-slate-950 border border-white/10 rounded-3xl overflow-hidden">
+                                    <!-- Simple Tool Bar -->
+                                    <div class="flex flex-wrap gap-1 p-2 bg-white/5 border-b border-white/5">
+                                        <button type="button" onclick="formatDoc('bold')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Bold"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+                                        <button type="button" onclick="formatDoc('italic')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Italic"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg></button>
+                                        <button type="button" onclick="formatDoc('insertUnorderedList')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Bullet List"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="9" x2="21" y1="6" y2="6"/><line x1="9" x2="21" y1="12" y2="12"/><line x1="9" x2="21" y1="18" y2="18"/><line x1="5" x2="5.01" y1="6" y2="6"/><line x1="5" x2="5.01" y1="12" y2="12"/><line x1="5" x2="5.01" y1="18" y2="18"/></svg></button>
+                                        <button type="button" onclick="formatDoc('formatBlock', 'H2')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all font-black text-xs">H2</button>
+                                        <button type="button" onclick="formatDoc('formatBlock', 'H3')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all font-black text-xs">H3</button>
+                                        <button type="button" onclick="insertImage()" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Add Image"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></button>
+                                        <button type="button" onclick="formatDoc('createLink', prompt('Masukkan URL:'))" class="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Add Link"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+                                    </div>
+                                    <div id="editor" contenteditable="true" class="min-h-[400px] p-8 text-slate-300 outline-none prose prose-invert prose-blue max-w-none prose-img:rounded-2xl">
+                                        Mulai menulis di sini...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-8 border-t border-white/5">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" id="post-published" class="hidden peer">
+                                    <div class="w-12 h-6 bg-slate-800 rounded-full relative peer-checked:bg-blue-600 transition-colors">
+                                        <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
+                                    </div>
+                                    <span class="text-sm font-black text-slate-500 group-hover:text-white transition-colors uppercase tracking-widest">Publish Post</span>
+                                </label>
+
+                                <div class="flex gap-4">
+                                    <button type="button" id="cancel-btn" class="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black transition-all text-xs uppercase tracking-widest">Batal</button>
+                                    <button type="submit" class="px-12 py-4 bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/30 transition-all text-xs uppercase tracking-widest">Simpan Perubahan</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Welcome State -->
+                <div id="welcome-state" class="flex flex-col items-center justify-center min-h-[500px] text-center bg-slate-900/40 border border-white/5 border-dashed rounded-[3rem]">
+                    <div class="w-24 h-24 bg-blue-600/10 rounded-full flex items-center justify-center text-blue-500 mb-8 animate-bounce">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-white mb-2">Editor Blog Siap</h3>
+                    <p class="text-slate-500 max-w-md mx-auto">Pilih postingan dari daftar di samping untuk mengedit, atau buat postingan baru dengan tombol di atas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from '../../lib/supabase';
+
+    let currentUserId = '';
+    let isAdmin = false;
+
+    // Rich Text Editor Functions
+    (window as any).formatDoc = (cmd: string, val: any = null) => {
+        document.execCommand(cmd, false, val);
+        document.getElementById('editor')?.focus();
+    };
+
+    (window as any).insertImage = () => {
+        const url = prompt('Masukkan URL Gambar:');
+        if (url) {
+            document.execCommand('insertImage', false, url);
+        }
+    };
+
+    // Auto-slug generation
+    const titleInput = document.getElementById('post-title') as HTMLInputElement;
+    const slugInput = document.getElementById('post-slug') as HTMLInputElement;
+    titleInput?.addEventListener('input', () => {
+        if (!document.getElementById('post-id')?.getAttribute('value')) { // Only auto-slug for new posts
+            slugInput.value = titleInput.value
+                .toLowerCase()
+                .replace(/[^\w ]+/g, '')
+                .replace(/ +/g, '-');
+        }
+    });
+
+    async function checkAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { window.location.href = '/login'; return; }
+        currentUserId = session.user.id;
+
+        const { data: roles } = await supabase.from('user_roles').select('roles(name)').eq('user_id', currentUserId);
+        isAdmin = roles?.some((r: any) => r.roles.name === 'admin') || false;
+        if (!isAdmin) {
+            alert('Akses Ditolak: Khusus Admin');
+            window.location.href = '/dashboard';
+            return;
+        }
+        loadPosts();
+    }
+
+    async function loadPosts() {
+        const { data: posts, error } = await supabase
+            .from('blog_posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        const list = document.getElementById('posts-list');
+        if (!list) return;
+
+        if (error || !posts || posts.length === 0) {
+            list.innerHTML = `<div class="py-12 text-center text-slate-600 text-xs font-bold uppercase tracking-widest">Belum ada postingan</div>`;
+            return;
+        }
+
+        list.innerHTML = posts.map(p => `
+            <div class="group relative bg-slate-950 border border-white/5 rounded-2xl p-4 hover:border-blue-500/50 transition-all cursor-pointer" onclick="editPost('${p.id}')">
+                <div class="flex gap-4">
+                    <img src="${p.cover_image || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=200'}" class="w-16 h-16 rounded-xl object-cover opacity-60">
+                    <div class="min-w-0 flex-1">
+                        <h4 class="text-white font-bold text-sm truncate group-hover:text-blue-400 transition-colors">${p.title}</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${p.is_published ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500'}">
+                                ${p.is_published ? 'Published' : 'Draft'}
+                            </span>
+                            <span class="text-[8px] font-bold text-slate-600 uppercase tracking-tighter">${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); deletePost('${p.id}')" class="p-2 text-red-500/20 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all h-fit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    const editorContainer = document.getElementById('editor-container');
+    const welcomeState = document.getElementById('welcome-state');
+    const addPostBtn = document.getElementById('add-post-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const form = document.getElementById('blog-form') as HTMLFormElement;
+
+    addPostBtn?.addEventListener('click', () => {
+        form.reset();
+        document.getElementById('post-id')?.setAttribute('value', '');
+        document.getElementById('editor')!.innerHTML = 'Mulai menulis di sini...';
+        editorContainer?.classList.remove('hidden');
+        welcomeState?.classList.add('hidden');
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+        editorContainer?.classList.add('hidden');
+        welcomeState?.classList.remove('hidden');
+    });
+
+    (window as any).editPost = async (id: string) => {
+        const { data: p } = await supabase.from('blog_posts').select('*').eq('id', id).single();
+        if (!p) return;
+
+        (document.getElementById('post-id') as HTMLInputElement).value = p.id;
+        (document.getElementById('post-title') as HTMLInputElement).value = p.title;
+        (document.getElementById('post-slug') as HTMLInputElement).value = p.slug;
+        (document.getElementById('post-cover') as HTMLInputElement).value = p.cover_image || '';
+        (document.getElementById('post-tags') as HTMLInputElement).value = (p.tags || []).join(', ');
+        (document.getElementById('post-desc') as HTMLTextAreaElement).value = p.description;
+        document.getElementById('editor')!.innerHTML = p.content;
+        (document.getElementById('post-published') as HTMLInputElement).checked = p.is_published;
+
+        editorContainer?.classList.remove('hidden');
+        welcomeState?.classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    (window as any).deletePost = async (id: string) => {
+        if (!confirm('Hapus artikel ini secara permanen?')) return;
+        const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+        if (error) alert(error.message);
+        else {
+            loadPosts();
+            if ((document.getElementById('post-id') as HTMLInputElement).value === id) {
+                cancelBtn?.click();
+            }
+        }
+    };
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = (document.getElementById('post-id') as HTMLInputElement).value;
+        const title = (document.getElementById('post-title') as HTMLInputElement).value;
+        const slug = (document.getElementById('post-slug') as HTMLInputElement).value;
+        const cover_image = (document.getElementById('post-cover') as HTMLInputElement).value;
+        const tags = (document.getElementById('post-tags') as HTMLInputElement).value.split(',').map(t => t.trim()).filter(t => t !== '');
+        const description = (document.getElementById('post-desc') as HTMLTextAreaElement).value;
+        const content = document.getElementById('editor')!.innerHTML;
+        const is_published = (document.getElementById('post-published') as HTMLInputElement).checked;
+
+        const postData = {
+            title, slug, cover_image, tags, description, content, is_published, author_id: currentUserId
+        };
+
+        let res;
+        if (id) {
+            res = await supabase.from('blog_posts').update(postData).eq('id', id);
+        } else {
+            res = await supabase.from('blog_posts').insert(postData);
+        }
+
+        if (res.error) alert(res.error.message);
+        else {
+            alert('Artikel berhasil disimpan!');
+            editorContainer?.classList.add('hidden');
+            welcomeState?.classList.remove('hidden');
+            loadPosts();
+        }
+    });
+
+    checkAuth();
+</script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 10px;
+    }
+    .prose h2, .prose h3 {
+        color: white;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+    }
+    #editor:focus {
+        outline: none;
+    }
+</style>

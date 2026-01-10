@@ -1,99 +1,153 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { getEntry } from 'astro:content';
+import { supabase } from '../../lib/supabase';
 
-export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog');
-  return blogEntries.map(entry => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+let post: any = null;
+let isStatic = false;
+let Content: any = null;
+
+// 1. Try fetching from Static Content Collection
+const staticEntry = await getEntry('blog', slug!);
+if (staticEntry) {
+    post = {
+        title: staticEntry.data.title,
+        description: staticEntry.data.description,
+        created_at: staticEntry.data.pubDate.toISOString(),
+        tags: staticEntry.data.tags,
+        cover_image: null, // Default or specific image for static
+    };
+    const rendered = await staticEntry.render();
+    Content = rendered.Content;
+    isStatic = true;
+} else {
+    // 2. Try fetching from Supabase
+    const { data: dbPost } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+    
+    if (dbPost) {
+        post = dbPost;
+        isStatic = false;
+    }
 }
-
-const { entry } = Astro.props;
-const { Content } = await entry.render();
 ---
 
-<Layout title={entry.data.title} showSidebar={true} isBlog={true}>
-    <div class="max-w-3xl mx-auto px-6 py-12">
-        <header class="text-center mb-16">
-            <a href="/dashboard" class="inline-block group">
-                <h1 class="text-4xl font-black tracking-tighter text-white mb-2 group-hover:text-blue-400 transition-colors">KELAS TKJ</h1>
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">Learning & Gaming Platform</p>
-            </a>
-            
-            <nav class="flex justify-center items-center gap-10 mt-12 text-xs font-black uppercase tracking-widest">
-                <a href="/dashboard" class="text-slate-500 hover:text-white transition-colors">Dashboard</a>
-                <a href="/game" class="text-slate-500 hover:text-white transition-colors">Games</a>
-                <a href="/blog" class="text-blue-500 border-b-2 border-blue-500 pb-2">Blog Room</a>
-            </nav>
-        </header>
-
-        <!-- Article -->
-        <article class="max-w-3xl mx-auto px-6 py-16">
-            <!-- Meta -->
-            <div class="mb-12">
-                <time class="text-sm text-slate-500 dark:text-slate-500">
-                    {entry.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                </time>
-                
-                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mt-4 mb-6 leading-tight tracking-tight">
-                    {entry.data.title}
-                </h1>
-                
-                <div class="flex flex-wrap gap-2 mb-6">
-                    {entry.data.tags.map((tag: string) => (
-                        <span class="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                            #{tag}
-                        </span>
-                    ))}
-                </div>
-
-                <div class="h-px bg-slate-200 dark:bg-slate-800"></div>
-            </div>
-
-            <!-- Content -->
-            <div class="prose prose-slate dark:prose-invert max-w-none
-                        prose-headings:font-bold prose-headings:tracking-tight
-                        prose-h1:text-4xl prose-h1:mb-6
-                        prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4
-                        prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-                        prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-7
-                        prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-slate-900 dark:prose-strong:text-white prose-strong:font-semibold
-                        prose-code:text-blue-600 dark:prose-code:text-blue-400 prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-code:font-normal
-                        prose-pre:bg-slate-900 dark:prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-slate-800
-                        prose-ul:text-slate-700 dark:prose-ul:text-slate-300
-                        prose-ol:text-slate-700 dark:prose-ol:text-slate-300
-                        prose-li:marker:text-slate-500 dark:prose-li:marker:text-slate-500
-                        prose-blockquote:border-l-blue-600 dark:prose-blockquote:border-l-blue-400 prose-blockquote:bg-slate-50 dark:prose-blockquote:bg-slate-900 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:not-italic
-                        prose-hr:border-slate-200 dark:prose-hr:border-slate-800
-                        prose-table:text-sm
-                        prose-th:bg-slate-50 dark:prose-th:bg-slate-900 prose-th:border-slate-200 dark:prose-th:border-slate-800 prose-th:font-semibold
-                        prose-td:border-slate-200 dark:prose-td:border-slate-800
-                        prose-img:rounded-lg">
-                <Content />
-            </div>
-
-            <!-- Footer Actions -->
-            <div class="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
-                <div class="flex justify-between items-center">
-                    <a href="/blog" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        All posts
+<Layout title={`${post?.title || 'Not Found'} - Kelas TKJ`}>
+    {post ? (
+        <div class="min-h-screen">
+            <div class="relative h-[60vh] overflow-hidden">
+                <img 
+                    src={post.cover_image || 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1600'} 
+                    class="w-full h-full object-cover"
+                    alt={post.title}
+                />
+                <div class="absolute inset-0 bg-gradient-to-b from-slate-950/20 via-slate-950/60 to-slate-950"></div>
+                <div class="absolute top-8 left-8 z-20">
+                    <a href="/blog" class="flex items-center gap-2 text-white/50 hover:text-white transition-all group font-black uppercase text-[10px] tracking-widest bg-black/20 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/5 hover:border-white/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m15 18-6-6 6-6"/></svg>
+                        Kembali ke Blog
                     </a>
-                    <div class="flex gap-3 text-sm">
-                        <button onclick="window.print()" class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                            Print
-                        </button>
-                        <button onclick="navigator.share ? navigator.share({title: document.title, url: window.location.href}) : alert('Share not supported')" 
-                                class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                            Share
-                        </button>
-                    </div>
                 </div>
             </div>
-        </article>
 
-    </div>
+            <div class="max-w-4xl mx-auto px-6 -mt-40 relative z-10 pb-24">
+                <article class="bg-slate-900/60 backdrop-blur-2xl border border-white/5 rounded-[3rem] p-8 md:p-16 shadow-2xl">
+                    <div class="flex flex-wrap gap-3 mb-8">
+                        {isStatic && (
+                            <span class="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs font-black text-orange-400 uppercase tracking-widest">
+                                # Static Archive
+                            </span>
+                        )}
+                        {(post.tags || []).map((tag: string) => (
+                            <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-black text-blue-400 uppercase tracking-widest">
+                                # {tag}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div class="mb-12">
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Dipublikasikan pada {new Date(post.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-black text-white leading-[1.1] tracking-tighter mb-8 bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-slate-500">
+                            {post.title}
+                        </h1>
+                        <p class="text-xl text-slate-400 leading-relaxed font-medium italic border-l-4 border-blue-600 pl-6">
+                            "{post.description}"
+                        </p>
+                    </div>
+
+                    <div class="prose prose-invert prose-lg max-w-none 
+                        prose-headings:font-black prose-headings:tracking-tighter prose-headings:text-white
+                        prose-p:text-slate-400 prose-p:leading-loose
+                        prose-strong:text-white prose-strong:font-black
+                        prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+                        prose-img:rounded-3xl prose-img:border prose-img:border-white/5
+                        prose-ul:text-slate-400 prose-li:marker:text-blue-500
+                    ">
+                        {isStatic ? <Content /> : <div set:html={post.content} />}
+                    </div>
+
+                    <div class="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white shadow-lg shadow-blue-600/20">
+                                TKJ
+                            </div>
+                            <div>
+                                <div class="text-xs font-black text-slate-500 uppercase tracking-widest">Penulis</div>
+                                <div class="text-white font-bold">{isStatic ? 'Admin Archive' : 'Admin Kelas TKJ'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    ) : (
+        <div class="flex flex-col items-center justify-center min-h-[70vh] text-center px-6">
+            <h1 class="text-6xl font-black text-white mb-4 tracking-tighter">404</h1>
+            <p class="text-slate-500 mb-8 max-w-xs">Postingan yang Anda cari tidak tersedia atau telah dihapus.</p>
+            <a href="/blog" class="px-8 py-4 bg-white text-black font-black rounded-2xl hover:bg-slate-200 transition-all uppercase text-[10px] tracking-widest">Back to Blog</a>
+        </div>
+    )}
 </Layout>
+
+<style is:global>
+    /* Custom Scrollbar for Blog */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #334155;
+    }
+
+    /* Content styling */
+    .prose img {
+        width: 100%;
+        margin: 2.5rem 0;
+    }
+    .prose h1, .prose h2, .prose h3 {
+        margin-top: 4rem;
+        margin-bottom: 2rem;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        color: white;
+    }
+    .prose h1 { font-size: 3rem; }
+    .prose h2 { font-size: 2.25rem; }
+    .prose p { margin-bottom: 1.5rem; }
+</style>

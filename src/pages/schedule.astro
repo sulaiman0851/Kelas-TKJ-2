@@ -3,13 +3,19 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Jadwal Pelajaran - Kelas TKJ">
-    <header class="flex justify-between items-center mb-10">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
             <h2 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-500 tracking-tight">Jadwal Pelajaran</h2>
             <p class="text-slate-400 mt-1">Kelola dan pantau agenda belajar harianmu</p>
         </div>
-        <div id="admin-actions" class="hidden">
-             <!-- Admin only buttons -->
+        <div class="flex gap-3">
+            <button id="export-word-btn" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black transition-all flex items-center gap-2 cursor-pointer active:scale-95 border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Word
+            </button>
+            <div id="admin-actions" class="hidden">
+                 <!-- Admin only buttons -->
+            </div>
         </div>
     </header>
 
@@ -112,12 +118,16 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
     import { supabase } from '../lib/supabase';
+    import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, TextRun } from "docx";
+    // @ts-ignore
+    import { saveAs } from "file-saver";
 
     let currentDay = new Date().getDay() - 1; // 0 = Mon
     if (currentDay < 0 || currentDay > 5) currentDay = 0; // Default to Monday if Sunday
 
     let allSubjects: any[] = [];
     let isAdmin = false;
+    let scheduleData: any[] = [];
 
     async function init() {
         const { data: { session } } = await supabase.auth.getSession();
@@ -134,7 +144,136 @@ import Layout from '../layouts/Layout.astro';
         
         await renderSchedule();
         updateTimelineStatus();
+        
+        // Export Word Event
+        document.getElementById('export-word-btn')?.addEventListener('click', exportToWord);
+
         setInterval(updateTimelineStatus, 60000); // Update every minute
+    }
+
+    async function exportToWord() {
+        const btn = document.getElementById('export-word-btn') as HTMLElement;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = 'Generating...';
+        btn.style.opacity = '0.5';
+
+        const days = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT'];
+        const slots = [
+            { label: '1 - 2', start: '07:00-08:30' },
+            { label: '3 - 4', start: '08:45-10:15' },
+            { label: '5 - 6', start: '10:30-12:00' },
+            { label: '7 - 8', start: '13:00-14:30' }
+        ];
+
+        // Create Header Row
+        const headerRow = new TableRow({
+            children: [
+                new TableCell({
+                    children: [new Paragraph({ text: "HARI / JAM", alignment: AlignmentType.CENTER })],
+                    shading: { fill: "1E293B", type: ShadingType.CLEAR, color: "auto" },
+                    verticalAlign: AlignmentType.CENTER,
+                }),
+                ...slots.map(slot => new TableCell({
+                    children: [
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: `JAM KE- ${slot.label}`, bold: true, color: "FFFFFF" }),
+                            ],
+                            alignment: AlignmentType.CENTER 
+                        }),
+                        new Paragraph({ 
+                            children: [
+                                new TextRun({ text: slot.start, size: 16, color: "CCCCCC" }),
+                            ],
+                            alignment: AlignmentType.CENTER 
+                        }),
+                    ],
+                    shading: { fill: "334155", type: ShadingType.CLEAR, color: "auto" },
+                }))
+            ]
+        });
+
+        // Create Data Rows
+        const dataRows = days.map((dayName, dIdx) => {
+            const isAlternate = dIdx % 2 === 0;
+            const rowBaseColor = isAlternate ? "F8FAFC" : "FFFFFF";
+
+            return new TableRow({
+                children: [
+                    new TableCell({
+                        children: [
+                            new Paragraph({ 
+                                children: [new TextRun({ text: dayName, bold: true })], 
+                                alignment: AlignmentType.CENTER 
+                            })
+                        ],
+                        shading: { fill: "F1F5F9" },
+                    }),
+                    ...slots.map(slot => {
+                        const [sh] = slot.start.split(':');
+                        const item = scheduleData.find(s => s.day_of_week === dIdx && s.start_time.startsWith(sh));
+                        const subject = item?.subject;
+
+                        return new TableCell({
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ 
+                                            text: subject ? (subject.code || subject.name) : "-", 
+                                            bold: true,
+                                            size: 24,
+                                            color: subject ? "000000" : "999999"
+                                        }),
+                                    ],
+                                    alignment: AlignmentType.CENTER
+                                }),
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ 
+                                            text: subject?.teacher_name || "", 
+                                            size: 16,
+                                            italics: true,
+                                            color: "666666"
+                                        }),
+                                    ],
+                                    alignment: AlignmentType.CENTER
+                                })
+                            ],
+                            shading: { fill: rowBaseColor }
+                        });
+                    })
+                ]
+            });
+        });
+
+        const doc = new Document({
+            sections: [{
+                children: [
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: "JADWAL PELAJARAN KELAS TKJ", bold: true, size: 36 }),
+                        ],
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 400 }
+                    }),
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        rows: [headerRow, ...dataRows],
+                    }),
+                    new Paragraph({
+                        text: `Data diekspor pada: ${new Date().toLocaleString('id-ID')}`,
+                        alignment: AlignmentType.RIGHT,
+                        spacing: { before: 200 }
+                    })
+                ],
+            }],
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, "Jadwal_Pelajaran_TKJ.docx");
+
+        btn.innerHTML = originalContent;
+        btn.style.opacity = '1';
     }
 
     function renderAdminActions() {
@@ -177,13 +316,92 @@ import Layout from '../layouts/Layout.astro';
 
     // dayTabs logic removed in favour of full grid view
 
+    async function switchRundownDay(day: number) {
+        const container = document.getElementById('daily-timeline');
+        if (!container) return;
+
+        // Update Tabs
+        document.querySelectorAll('.rundown-tab').forEach((t, i) => {
+            if (i === day) {
+                t.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+                t.classList.remove('bg-slate-900', 'text-slate-500');
+            } else {
+                t.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                t.classList.add('bg-slate-900', 'text-slate-500');
+            }
+        });
+
+        const { data: daySchedule } = await supabase
+            .from('schedule')
+            .select('*, subject:subjects(*)')
+            .eq('day_of_week', day)
+            .order('start_time');
+
+        if (!daySchedule || daySchedule.length === 0) {
+            container.innerHTML = '<p class="text-slate-600 font-black uppercase text-xs tracking-widest italic p-10">Tidak ada jadwal untuk hari ini</p>';
+            return;
+        }
+
+        container.innerHTML = daySchedule.map((item) => {
+            const subject = item.subject;
+            const startStr = item.start_time.substring(0, 5);
+            const endStr = item.end_time.substring(0, 5);
+            
+            const now = new Date();
+            const currentD = now.getDay() - 1;
+            const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+            
+            const [sh, sm] = item.start_time.split(':').map(Number);
+            const [eh, em] = item.end_time.split(':').map(Number);
+            const startTime = sh * 3600 + sm * 60;
+            const endTime = eh * 3600 + em * 60;
+            
+            const isActive = day === currentD && currentTime >= startTime && currentTime <= endTime;
+
+            return `
+                <div class="relative group">
+                    <div class="rundown-indicator absolute -left-[37px] top-6 w-4 h-4 rounded-full border-4 border-slate-950 ${isActive ? 'bg-blue-500' : 'bg-slate-700'} z-10 transition-all duration-500"></div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="md:w-32 pt-5">
+                            <span class="text-xs font-black ${isActive ? 'text-blue-400' : 'text-slate-500'} uppercase tracking-widest">${startStr} - ${endStr}</span>
+                        </div>
+                        <div class="flex-1 bg-slate-900 border border-white/5 p-6 rounded-[2rem] hover:bg-white/5 transition-all shadow-xl group/card relative overflow-hidden ${isActive ? 'glowing-rundown-active' : ''}">
+                            <div class="absolute right-0 top-0 h-full w-1.5 bg-${subject.color || 'blue'}-500/50"></div>
+                            <div class="flex justify-between items-start">
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-xl font-black text-white uppercase leading-tight">${subject.name}</h4>
+                                        ${isActive ? '<span class="px-2 py-0.5 rounded-lg bg-blue-500 text-[8px] font-black text-white animate-pulse uppercase tracking-widest">Live Now</span>' : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2 text-slate-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="opacity-50"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <span class="text-xs font-black uppercase tracking-tighter">${subject.teacher_name || 'Guru Pengampu'}</span>
+                                    </div>
+                                </div>
+                                ${isAdmin ? `
+                                    <button onclick="deleteSchedule(${item.id})" class="p-3 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    (window as any).switchRundownDay = switchRundownDay;
+
     async function renderSchedule() {
         const container = document.getElementById('schedule-container');
         if (!container) return;
 
-        const { data: scheduleData } = await supabase
+        const { data } = await supabase
             .from('schedule')
             .select('*, subject:subjects(*)');
+        
+        scheduleData = data || [];
 
         const days = ['SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT'];
         const slots = [
@@ -235,15 +453,18 @@ import Layout from '../layouts/Layout.astro';
                 const subject = item?.subject;
                 const [sh, sm] = slot.start.split(':').map(Number);
                 const [eh, em] = slot.end.split(':').map(Number);
-                const isActive = dIdx === currentD && currentTime >= (sh*60+sm) && currentTime <= (eh*60+em);
+                const startTime = sh * 3600 + sm * 60;
+                const endTime = eh * 3600 + em * 60;
+                const isActive = dIdx === currentD && currentTime >= startTime && currentTime <= endTime;
 
                 htmlChunks.push(`
-                    <td class="p-6 border-r border-white/5 text-center relative ${isActive ? 'bg-orange-600/10' : ''} transition-all">
-                        ${isActive ? '<div class="absolute left-0 top-0 w-full h-1 bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.5)] animate-pulse"></div>' : ''}
+                    <td class="p-6 border-r border-white/5 text-center relative ${isActive ? 'glowing-table-active' : ''} transition-all duration-500">
+                        ${isActive ? '<div class="absolute left-0 top-0 w-full h-1 bg-orange-500 glow-pulse"></div>' : ''}
+                        ${isActive ? '<div class="absolute right-2 top-2"><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span></span></div>' : ''}
                         ${subject ? `
-                            <div class="space-y-1">
-                                <div class="text-2xl font-black text-white group-hover:text-blue-400 leading-none transition-colors">${subject.code || subject.name}</div>
-                                <div class="text-[8px] font-bold text-slate-600 uppercase tracking-tighter leading-tight italic break-words max-w-[120px] mx-auto">${subject.teacher_name || ''}</div>
+                            <div class="space-y-1 relative z-10">
+                                <div class="text-2xl font-black ${isActive ? 'text-white' : 'text-white group-hover:text-blue-400'} leading-none transition-colors">${subject.code || subject.name}</div>
+                                <div class="text-[8px] font-bold ${isActive ? 'text-orange-200' : 'text-slate-600'} uppercase tracking-tighter leading-tight italic break-words max-w-[120px] mx-auto">${subject.teacher_name || ''}</div>
                             </div>
                         ` : '<div class="text-slate-800 font-black text-sm italic">-</div>'}
                     </td>
@@ -288,66 +509,6 @@ import Layout from '../layouts/Layout.astro';
         switchRundownDay(currentDay >= 0 && currentDay < 5 ? currentDay : 0);
     }
 
-    (window as any).switchRundownDay = async (day: number) => {
-        const container = document.getElementById('daily-timeline');
-        if (!container) return;
-
-        // Update Tabs
-        document.querySelectorAll('.rundown-tab').forEach((t, i) => {
-            if (i === day) {
-                t.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
-                t.classList.remove('bg-slate-900', 'text-slate-500');
-            } else {
-                t.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
-                t.classList.add('bg-slate-900', 'text-slate-500');
-            }
-        });
-
-        const { data: daySchedule } = await supabase
-            .from('schedule')
-            .select('*, subject:subjects(*)')
-            .eq('day_of_week', day)
-            .order('start_time');
-
-        if (!daySchedule || daySchedule.length === 0) {
-            container.innerHTML = '<p class="text-slate-600 font-black uppercase text-xs tracking-widest italic p-10">Tidak ada jadwal untuk hari ini</p>';
-            return;
-        }
-
-        container.innerHTML = daySchedule.map((item) => {
-            const subject = item.subject;
-            const startStr = item.start_time.substring(0, 5);
-            const endStr = item.end_time.substring(0, 5);
-            
-            return `
-                <div class="relative group">
-                    <div class="absolute -left-[37px] top-6 w-4 h-4 rounded-full border-4 border-slate-950 bg-blue-600 z-10 group-hover:scale-125 transition-transform duration-300"></div>
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <div class="md:w-32 pt-5">
-                            <span class="text-xs font-black text-slate-500 group-hover:text-blue-400 transition-colors uppercase tracking-widest">${startStr} - ${endStr}</span>
-                        </div>
-                        <div class="flex-1 bg-slate-900 border border-white/5 p-6 rounded-[2rem] hover:bg-white/5 transition-all shadow-xl group/card relative overflow-hidden">
-                            <div class="absolute right-0 top-0 h-full w-1.5 bg-${subject.color || 'blue'}-500/50"></div>
-                            <div class="flex justify-between items-start">
-                                <div class="space-y-3">
-                                    <h4 class="text-xl font-black text-white group-hover/card:text-blue-400 transition-colors uppercase leading-tight">${subject.name}</h4>
-                                    <div class="flex items-center gap-2 text-slate-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="opacity-50"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                        <span class="text-xs font-black uppercase tracking-tighter">${subject.teacher_name || 'Guru Pengampu'}</span>
-                                    </div>
-                                </div>
-                                ${isAdmin ? `
-                                    <button onclick="deleteSchedule(${item.id})" class="p-3 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-2xl transition-all cursor-pointer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                    </button>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
 
     async function updateTimelineStatus() {
         const now = new Date();
@@ -436,5 +597,52 @@ import Layout from '../layouts/Layout.astro';
     .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
+    }
+
+    /* Glowing Active Effects */
+    .glowing-table-active {
+        background: rgba(234, 88, 12, 0.15) !important;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(234, 88, 12, 0.5) !important;
+        box-shadow: 0 0 30px rgba(234, 88, 12, 0.2), inset 0 0 20px rgba(234, 88, 12, 0.1);
+        z-index: 10;
+        transform: scale(1.02);
+    }
+
+    .glowing-table-active::after {
+        content: '';
+        absolute: inset-0;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+        animation: shine 2s infinite;
+    }
+
+    .glowing-rundown-active {
+        border-color: rgba(37, 99, 235, 0.5) !important;
+        background: rgba(37, 99, 235, 0.1) !important;
+        box-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
+        transform: translateX(10px);
+    }
+
+    .glowing-rundown-active .rundown-indicator {
+        background: #2563eb !important;
+        box-shadow: 0 0 15px #2563eb, 0 0 30px #2563eb;
+        transform: scale(1.5);
+    }
+
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0.5; box-shadow: 0 0 10px rgba(234, 88, 12, 0.5); }
+        50% { opacity: 1; box-shadow: 0 0 25px rgba(234, 88, 12, 0.8); }
+    }
+
+    .glow-pulse {
+        animation: pulse-glow 2s infinite;
     }
 </style>

@@ -8,10 +8,28 @@ import Layout from '../layouts/Layout.astro';
             <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Absensi & Statistik</h2>
             <p class="text-slate-400">Manajemen kehadiran dan analisis data siswa</p>
         </div>
-        <div id="action-container">
+        <div id="action-container" class="flex gap-3">
             <!-- Dynamic Action Buttons -->
         </div>
     </header>
+
+    <!-- QR Modal (Admin Only) -->
+    <dialog id="qr-modal" class="bg-slate-950 text-white border border-white/10 rounded-[3rem] p-10 backdrop:bg-slate-950/90 w-full max-w-md shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"></div>
+        <div class="relative z-10 text-center">
+            <h3 class="text-3xl font-black mb-2 tracking-tight uppercase">QuickScan QR</h3>
+            <p class="text-slate-500 text-sm mb-8 font-medium italic">Sediakan kode ini di depan kelas</p>
+            
+            <div id="qr-container" class="bg-white p-8 rounded-3xl inline-block shadow-2xl shadow-emerald-500/10 mb-8 border-4 border-emerald-500/20">
+                <img id="qr-image" src="" class="w-48 h-48" alt="QR Code Absensi" />
+            </div>
+            
+            <div class="space-y-4">
+                <div id="qr-timer" class="text-[10px] font-black uppercase text-emerald-400 tracking-[0.3em]">Masa berlaku: 05:00</div>
+                <button onclick="document.getElementById('qr-modal').close()" class="w-full px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all cursor-pointer">Selesai</button>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Tab Navigation -->
     <div class="flex gap-2 mb-8 p-1.5 bg-slate-900/50 border border-white/5 rounded-2xl w-fit">
@@ -32,11 +50,28 @@ import Layout from '../layouts/Layout.astro';
                     Daftar Kehadiran Harian
                 </h3>
                 <div class="flex items-center gap-2 w-full md:w-auto">
-                    <button id="export-btn" class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer border border-white/5 group" title="Export CSV">
+                    <button id="export-btn" class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer border border-white/5 group" title="Export Word (.docx)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-hover:scale-110 transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                     </button>
                     <label class="text-xs text-slate-500 uppercase font-extrabold tracking-tighter">Pilih Tanggal:</label>
                     <input type="date" class="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-xl flex-1 md:flex-initial focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all" id="date-filter">
+                </div>
+            </div>
+            <!-- Search & Filter Bar -->
+            <div class="px-6 py-4 border-b border-white/5 bg-slate-800/10 flex flex-col md:flex-row gap-4 items-center">
+                <div class="relative w-full md:w-80">
+                    <input type="text" id="search-student" placeholder="Cari nama siswa..." class="w-full bg-slate-900 border border-white/10 rounded-2xl px-12 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-600">
+                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest hidden md:block">Filter:</label>
+                    <select id="filter-status" class="flex-1 md:flex-initial bg-slate-900 border border-white/10 rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-slate-300">
+                        <option value="all">Semua Status</option>
+                        <option value="none">Belum Absen</option>
+                        <!-- Loaded dynamically -->
+                    </select>
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -233,11 +268,16 @@ import Layout from '../layouts/Layout.astro';
 <script>
     import { supabase } from '../lib/supabase';
     import type { User } from '@supabase/supabase-js';
+    import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, TextRun } from "docx";
+    // @ts-ignore
+    import { saveAs } from "file-saver";
 
     let currentUser: User | null = null;
     let isAdminOrTeacher = false;
     let currentDate = new Date().toISOString().split('T')[0]; // For list
     let statsMonthDate = new Date(); // For stats calendar
+    let searchQuery = '';
+    let statusFilter = 'all';
     
     let trendChart: any = null;
     let distChart: any = null;
@@ -320,6 +360,24 @@ import Layout from '../layouts/Layout.astro';
             });
         }
 
+        // Search student
+        const searchInput = document.getElementById('search-student') as HTMLInputElement;
+        if (searchInput) {
+            searchInput.addEventListener('input', (e: any) => {
+                searchQuery = e.target.value.toLowerCase();
+                loadAttendanceList();
+            });
+        }
+
+        // Status filter
+        const filterStatus = document.getElementById('filter-status') as HTMLSelectElement;
+        if (filterStatus) {
+            filterStatus.addEventListener('change', (e: any) => {
+                statusFilter = e.target.value;
+                loadAttendanceList();
+            });
+        }
+
         // Stats month navigation
         document.getElementById('prevMonth')?.addEventListener('click', () => {
             statsMonthDate.setMonth(statsMonthDate.getMonth() - 1);
@@ -340,7 +398,7 @@ import Layout from '../layouts/Layout.astro';
     async function exportAttendance() {
         const { data: attData } = await supabase
             .from('attendance')
-            .select(`*, status:attendance_status(label), student:student_directory(full_name, absent_no)`)
+            .select(`*, status:attendance_status(label, color, code), student:student_directory(full_name, absent_no)`)
             .eq('date', currentDate)
             .order('student_id');
 
@@ -349,27 +407,105 @@ import Layout from '../layouts/Layout.astro';
             return;
         }
 
-        const csvRows = [
-            ['No Absen', 'Nama Siswa', 'Waktu', 'Status', 'Catatan'],
-            ...attData.map(r => [
-                r.student?.absent_no || '?',
-                `"${r.student?.full_name || 'Unknown'}"`,
-                new Date(r.check_in_time).toLocaleTimeString('id-ID'),
-                r.status?.label || '-',
-                `"${r.note || ''}"`
-            ])
-        ];
+        const btn = document.getElementById('export-btn') as HTMLElement;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<span class="text-[8px] font-black">...</span>';
 
-        const csvContent = csvRows.map(e => e.join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Absensi_TKJ_${currentDate}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // 1. Create Header
+        const headerRow = new TableRow({
+            children: [
+                new TableCell({ children: [new Paragraph({ text: "NO", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
+                new TableCell({ children: [new Paragraph({ text: "NAMA SISWA", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
+                new TableCell({ children: [new Paragraph({ text: "WAKTU", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
+                new TableCell({ children: [new Paragraph({ text: "STATUS", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
+                new TableCell({ children: [new Paragraph({ text: "KETERANGAN", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
+            ]
+        });
+
+        // 2. Create Data Rows with Colors
+        const dataRows = allStudents.map((student, index) => {
+            const record = attData.find(r => r.student_id === student.id);
+            const isAlternate = index % 2 === 0;
+            const rowBaseColor = isAlternate ? "F8FAFC" : "FFFFFF";
+            
+            // Dynamic Color Mapping from Database (Matching Web UI)
+            const webColorMap: Record<string, string> = {
+                emerald: "10B981",
+                amber: "F59E0B",
+                yellow: "EAB308",
+                blue: "3B82F6",
+                red: "EF4444",
+                rose: "F43F5E",
+                slate: "64748B"
+            };
+            
+            const dbColor = record?.status?.color || "slate";
+            const statusColor = webColorMap[dbColor] || "94A3B8";
+
+            return new TableRow({
+                children: [
+                    new TableCell({ 
+                        children: [new Paragraph({ text: student.absent_no.toString(), alignment: AlignmentType.CENTER })],
+                        shading: { fill: rowBaseColor }
+                    }),
+                    new TableCell({ 
+                        children: [new Paragraph({ text: student.full_name })],
+                        shading: { fill: rowBaseColor }
+                    }),
+                    new TableCell({ 
+                        children: [new Paragraph({ text: record ? new Date(record.check_in_time).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : "-", alignment: AlignmentType.CENTER })],
+                        shading: { fill: rowBaseColor }
+                    }),
+                    new TableCell({ 
+                        children: [new Paragraph({ 
+                            children: [new TextRun({ 
+                                text: record?.status?.label?.includes('Hadir') ? "✓" : (record?.status?.code || "-"), 
+                                color: "FFFFFF", 
+                                bold: true 
+                            })],
+                            alignment: AlignmentType.CENTER 
+                        })],
+                        shading: { fill: record ? statusColor : "334155" }
+                    }),
+                    new TableCell({ 
+                        children: [new Paragraph({ 
+                            children: [new TextRun({ 
+                                text: record ? `${record.status?.label}${record.note ? ` (${record.note})` : ''}` : "-", 
+                                italics: record?.note ? true : false,
+                                size: 18
+                            })]
+                        })],
+                        shading: { fill: rowBaseColor }
+                    }),
+                ]
+            });
+        });
+
+        const doc = new Document({
+            sections: [{
+                children: [
+                    new Paragraph({
+                        children: [new TextRun({ text: "LAPORAN KEHADIRAN SISWA TKJ", bold: true, size: 32 })],
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 200 }
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: `Tanggal: ${new Date(currentDate).toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}`, size: 20 })],
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 400 }
+                    }),
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        rows: [headerRow, ...dataRows],
+                    })
+                ],
+            }],
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `Absensi_TKJ_${currentDate}.docx`);
+        
+        btn.innerHTML = originalContent;
     }
 
     let attendanceStatuses: any[] = [];
@@ -378,18 +514,138 @@ import Layout from '../layouts/Layout.astro';
         const { data } = await supabase.from('attendance_status').select('*').eq('is_active', true);
         attendanceStatuses = data || [];
         const select = document.getElementById('status-select');
+        const filterSelect = document.getElementById('filter-status');
+        
         if (select && data) {
             select.innerHTML = data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
+        }
+        
+        if (filterSelect && data) {
+             const existing = filterSelect.innerHTML;
+             filterSelect.innerHTML = existing + data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
         }
         
         const actionContainer = document.getElementById('action-container');
         if (actionContainer) {
             actionContainer.innerHTML = `
-                <button onclick="document.getElementById('checkin-modal').showModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all cursor-pointer scale-100 hover:scale-105 active:scale-95 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                    ${isAdminOrTeacher ? 'Input Satuan' : 'Check-In Sekarang'}
-                </button>
+                <div class="flex gap-2">
+                    ${isAdminOrTeacher ? `
+                        <button id="qr-mode-btn" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black transition-all flex items-center gap-2 border border-white/10 cursor-pointer active:scale-95" title="Buka Mode QR Absensi">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-emerald-400"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                            QR Mode
+                        </button>
+                        <button id="reset-attendance-btn" class="px-6 py-3 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 rounded-2xl font-black transition-all cursor-pointer flex items-center gap-2 group" title="Hapus Seluruh Absensi Hari Ini">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-500"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            Reset
+                        </button>
+                        <button id="bulk-attendance-btn" class="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-2xl font-black transition-all cursor-pointer flex items-center gap-2 group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Konfirmasi Sekelas
+                        </button>
+                    ` : ''}
+                    <button onclick="document.getElementById('checkin-modal').showModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all cursor-pointer scale-100 hover:scale-105 active:scale-95 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        ${isAdminOrTeacher ? 'Input Satuan' : 'Check-In Sekarang'}
+                    </button>
+                </div>
             `;
+
+            document.getElementById('bulk-attendance-btn')?.addEventListener('click', bulkAttendance);
+            document.getElementById('reset-attendance-btn')?.addEventListener('click', resetAttendance);
+            document.getElementById('qr-mode-btn')?.addEventListener('click', generateQR);
+        }
+    }
+
+    async function generateQR() {
+        const token = Math.random().toString(36).substring(2, 15);
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        
+        const { error } = await supabase
+            .from('qr_attendance_tokens')
+            .insert({ token, expires_at: expiresAt });
+
+        if (error) {
+            alert('Gagal membuat QR: ' + error.message);
+            return;
+        }
+
+        const qrImg = document.getElementById('qr-image') as HTMLImageElement;
+        const scanUrl = `${window.location.origin}/attendance/scan?token=${token}`;
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
+        
+        (document.getElementById('qr-modal') as HTMLDialogElement).showModal();
+        
+        // Timer logic
+        let timeLeft = 300;
+        const timerEl = document.getElementById('qr-timer');
+        const interval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                (document.getElementById('qr-modal') as HTMLDialogElement).close();
+            }
+            if (timerEl) {
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerEl.textContent = `Masa berlaku: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+
+    async function resetAttendance() {
+        const firstConfirm = confirm('⚠️ PERINGATAN! Anda akan MENGHAPUS SELURUH data absensi hari ini untuk sekelas. Lanjutkan?');
+        if (!firstConfirm) return;
+
+        const secondConfirm = confirm('TINDAKAN INI FINAL. Seluruh catatan waktu dan status akan hilang secara permanen. Anda yakin ingin mereset absensi kelas hari ini?');
+        if (!secondConfirm) return;
+
+        const { error } = await supabase
+            .from('attendance')
+            .delete()
+            .eq('date', currentDate);
+
+        if (error) {
+            alert('Gagal mereset absensi: ' + error.message);
+        } else {
+            alert('Seluruh data absensi hari ini telah berhasil dibersihkan.');
+            loadAttendanceList();
+            loadAnalyticsData();
+        }
+    }
+
+    async function bulkAttendance() {
+        if (!confirm('Hadirkan semua siswa yang belum absen untuk hari ini?')) return;
+        
+        const hadirStatus = attendanceStatuses.find(s => s.label.includes('Hadir'));
+        if (!hadirStatus) {
+            alert('Status Hadir tidak ditemukan!');
+            return;
+        }
+
+        const { data: existing } = await supabase.from('attendance').select('student_id').eq('date', currentDate);
+        const existingIds = existing?.map(e => e.student_id) || [];
+        
+        const toInsert = allStudents
+            .filter(s => !existingIds.includes(s.id))
+            .map(s => ({
+                student_id: s.id,
+                user_id: s.linked_user_id || null,
+                status_id: hadirStatus.id,
+                date: currentDate,
+                check_in_time: new Date().toISOString()
+            }));
+
+        if (toInsert.length === 0) {
+            alert('Semua siswa sudah diabsen!');
+            return;
+        }
+
+        const { error } = await supabase.from('attendance').insert(toInsert);
+        if (error) alert(error.message);
+        else {
+            alert(`Berhasil menghadirkan ${toInsert.length} siswa!`);
+            loadAttendanceList();
+            loadAnalyticsData();
         }
     }
 
@@ -406,8 +662,23 @@ import Layout from '../layouts/Layout.astro';
             
         const attendanceMap = Object.fromEntries(attData?.map(a => [a.student_id, a]) || []);
 
+        // Filter students based on search and status
+        const filteredStudents = allStudents.filter((student: any) => {
+            const matchesSearch = student.full_name.toLowerCase().includes(searchQuery);
+            const record = attendanceMap[student.id];
+            
+            let matchesStatus = true;
+            if (statusFilter === 'none') {
+                matchesStatus = !record;
+            } else if (statusFilter !== 'all') {
+                matchesStatus = record?.status_id?.toString() === statusFilter;
+            }
+            
+            return matchesSearch && matchesStatus;
+        });
+
         // We assume allStudents is already loaded from init()
-        const rows = allStudents.map((student: any) => {
+        const rows = filteredStudents.map((student: any) => {
             const record = attendanceMap[student.id];
             const profile = student.linked_profile || { username: '-' };
             const time = record ? new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
@@ -483,9 +754,14 @@ import Layout from '../layouts/Layout.astro';
                     </td>
                     <td class="p-6 text-right">
                          ${isAdminOrTeacher && record ? `
-                            <button data-action="delete" data-record-id="${record.id}" class="p-2 text-red-500/50 hover:text-red-500 transition-colors cursor-pointer" title="Hapus">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                            </button>
+                            <div class="flex justify-end gap-1">
+                                <button data-action="edit-time" data-record-id="${record.id}" data-current-time="${record.check_in_time}" class="p-2 text-slate-500 hover:text-blue-400 transition-colors cursor-pointer" title="Edit Waktu">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                </button>
+                                <button data-action="delete" data-record-id="${record.id}" class="p-2 text-red-500/50 hover:text-red-500 transition-colors cursor-pointer" title="Hapus">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
                          ` : ''}
                     </td>
                 </tr>
@@ -526,7 +802,7 @@ import Layout from '../layouts/Layout.astro';
 
                     ${isAdminOrTeacher ? `
                         <div class="flex justify-between items-center gap-2 pt-2 border-t border-white/5 overflow-x-auto no-scrollbar pb-1">
-                            <div class="flex gap-1.5 ">
+                            <div class="flex gap-1.5 items-center">
                                 ${attendanceStatuses.map(s => `
                                     <button 
                                         data-action="quick-attendance"
@@ -541,6 +817,16 @@ import Layout from '../layouts/Layout.astro';
                                     </button>
                                 `).join('')}
                             </div>
+                            ${record ? `
+                                <div class="flex gap-1">
+                                    <button data-action="edit-time" data-record-id="${record.id}" data-current-time="${record.check_in_time}" class="p-2 text-slate-500 hover:text-blue-400 transition-colors cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    </button>
+                                     <button data-action="delete" data-record-id="${record.id}" class="p-2 text-red-500/50 hover:text-red-500 transition-colors cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     ` : ''}
                 </div>
@@ -579,6 +865,8 @@ import Layout from '../layouts/Layout.astro';
                     if (studentId && statusId) await quickAttendance(studentId, statusId);
                 } else if (action === 'edit-note') {
                     if (studentId) await updateNote(studentId, currentNote || '');
+                } else if (action === 'edit-time') {
+                    if (recordId) await editTime(recordId, target.dataset.currentTime);
                 } else if (action === 'delete') {
                     if (recordId) await deleteAttendance(recordId);
                 }
@@ -651,6 +939,30 @@ import Layout from '../layouts/Layout.astro';
         if (error) alert(error.message);
         loadAttendanceList();
         loadAnalyticsData();
+    }
+
+    async function editTime(recordId: string | number, currentTime: string) {
+        const currentLocal = new Date(currentTime).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+        const newTimeStr = prompt('Edit waktu check-in (Format HH:mm):', currentLocal);
+        if (!newTimeStr) return;
+
+        // Combine date from record with new time
+        const [hours, minutes] = newTimeStr.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes) || hours > 23 || minutes > 59) {
+            alert('Format waktu tidak valid!');
+            return;
+        }
+
+        const dateObj = new Date(currentTime);
+        dateObj.setHours(hours, minutes, 0, 0);
+
+        const { error } = await supabase
+            .from('attendance')
+            .update({ check_in_time: dateObj.toISOString() })
+            .eq('id', recordId);
+
+        if (error) alert(error.message);
+        else loadAttendanceList();
     }
 
     function renderStatsCalendar() {
