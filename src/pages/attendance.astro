@@ -1082,8 +1082,7 @@ import Layout from "../layouts/Layout.astro";
         }
 
         const qrImg = document.getElementById("qr-image") as HTMLImageElement;
-        const scanUrl = `${window.location.origin}/attendance/scan?token=${token}`;
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(token)}`;
 
         (document.getElementById("qr-modal") as HTMLDialogElement).showModal();
 

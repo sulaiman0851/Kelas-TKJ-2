@@ -306,6 +306,30 @@ export const prerender = false;
             </div>
         </div>
     </dialog>
+    <!-- Result Modal (Success/Error) -->
+    <dialog
+        id="result-modal"
+        class="bg-slate-900/95 backdrop-blur-2xl text-white border border-white/10 rounded-[3.5rem] p-12 w-full max-w-sm shadow-2xl overflow-hidden relative"
+    >
+        <div
+            class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"
+        >
+        </div>
+        <div class="relative z-10 text-center">
+            <div id="result-icon" class="mb-2"></div>
+            <p id="result-text" class="text-lg font-bold mb-10"></p>
+            <button
+                onclick="window.location.href='/dashboard'"
+                class="w-full px-8 py-5 bg-white text-black font-black rounded-3xl transition-all active:scale-95 shadow-xl"
+                >Dashboard</button
+            >
+            <button
+                onclick="document.getElementById('result-modal').close()"
+                class="w-full mt-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-slate-400 rounded-3xl font-bold transition-all"
+                >Scan Lagi</button
+            >
+        </div>
+    </dialog>
 </Layout>
 
 <script>
@@ -349,9 +373,10 @@ export const prerender = false;
             await html5QrCode.start(
                 cameraId,
                 {
-                    fps: 20,
-                    qrbox: { width: 250, height: 250 },
+                    fps: 30, // Faster scanning
+                    qrbox: { width: 280, height: 280 },
                     aspectRatio: 1.0,
+                    disableFlip: false,
                 },
                 onScanSuccess,
                 onScanFailure,
@@ -369,28 +394,151 @@ export const prerender = false;
         }
     }
 
-    function onScanSuccess(decodedText: string) {
-        updateFeedback("KODE QR TERDETEKSI!", "text-emerald-400");
+    async function onScanSuccess(decodedText: string) {
+        if (!isScanning) return; // Prevent double scans
 
         // Vibrate if supported
-        if ("vibrate" in navigator) navigator.vibrate(100);
+        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
 
-        // Process token
+        updateFeedback("MEMVERIFIKASI...", "text-blue-400 animate-pulse");
+
+        // Extract token
         let token = "";
-        if (decodedText.includes("/attendance/scan?token=")) {
-            const url = new URL(decodedText);
-            token = url.searchParams.get("token") || "";
-        } else {
+        try {
+            if (decodedText.startsWith("http")) {
+                const url = new URL(decodedText);
+                token = url.searchParams.get("token") || decodedText;
+            } else {
+                token = decodedText.trim();
+            }
+        } catch (e) {
             token = decodedText.trim();
         }
 
-        if (token && token.length > 5 && token.length < 20) {
-            stopAndRedirect(token);
+        if (!token) return;
+
+        // stop scanning while processing to prevent duplicate hits
+        await html5QrCode?.pause(true);
+
+        try {
+            const result = await processCheckIn(token);
+            if (result.success) {
+                showResultModal(true, result.message);
+            } else {
+                showResultModal(false, result.message);
+                // Resume scanning after 3 seconds on error
+                setTimeout(() => {
+                    html5QrCode?.resume();
+                }, 3000);
+            }
+        } catch (err) {
+            showResultModal(false, "Terjadi kesalahan sistem.");
+            setTimeout(() => html5QrCode?.resume(), 3000);
         }
     }
 
+    async function processCheckIn(token: string) {
+        const { supabase } = await import("../../lib/supabase");
+
+        // 1. Verify Token
+        const { data: tokenData, error: tokenError } = await supabase
+            .from("qr_attendance_tokens")
+            .select("*")
+            .eq("token", token)
+            .single();
+
+        if (tokenError || !tokenData)
+            return { success: false, message: "Token QR tidak valid!" };
+
+        if (new Date(tokenData.expires_at) < new Date())
+            return { success: false, message: "QR sudah kadaluarsa!" };
+
+        // 2. Get User & Student
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session)
+            return { success: false, message: "Harap login terlebih dahulu!" };
+
+        const { data: student } = await supabase
+            .from("student_directory")
+            .select("id, full_name")
+            .eq("linked_user_id", session.user.id)
+            .single();
+
+        if (!student)
+            return {
+                success: false,
+                message: "Akun belum tertaut data siswa!",
+            };
+
+        // 3. Get Status
+        const { data: statuses } = await supabase
+            .from("attendance_status")
+            .select("id, label")
+            .eq("is_active", true);
+
+        const hadirStatus = statuses?.find((s) =>
+            s.label.toLowerCase().includes("hadir"),
+        );
+        if (!hadirStatus)
+            return { success: false, message: "Sistem absensi nonaktif." };
+
+        const today = new Date().toISOString().split("T")[0];
+
+        // 4. Mark Attendance
+        const { error: attError } = await supabase.from("attendance").insert({
+            student_id: student.id,
+            user_id: session.user.id,
+            status_id: hadirStatus.id,
+            date: today,
+            check_in_time: new Date().toISOString(),
+            note: "Via Direct QR",
+        });
+
+        if (attError) {
+            if (attError.code === "23505")
+                return {
+                    success: true,
+                    message: `Halo ${student.full_name}, kamu sudah absen hari ini.`,
+                };
+            return {
+                success: false,
+                message: "Gagal mencatat: " + attError.message,
+            };
+        }
+
+        return {
+            success: true,
+            message: `Berhasil! Halo ${student.full_name}, kehadiran tercatat.`,
+        };
+    }
+
+    function showResultModal(isSuccess: boolean, message: string) {
+        const modal = document.getElementById(
+            "result-modal",
+        ) as HTMLDialogElement;
+        const icon = document.getElementById("result-icon");
+        const text = document.getElementById("result-text");
+
+        if (!modal || !icon || !text) return;
+
+        text.textContent = message;
+
+        if (isSuccess) {
+            icon.innerHTML = `<div class="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/50 mb-6 mx-auto"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" class="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+            text.className = "text-xl font-bold text-white text-center italic";
+        } else {
+            icon.innerHTML = `<div class="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center border border-red-500/50 mb-6 mx-auto"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" class="text-red-400"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+            text.className =
+                "text-xl font-bold text-red-400 text-center italic";
+        }
+
+        modal.showModal();
+    }
+
     function onScanFailure(error: string) {
-        // quiet fail for real-time scanning
+        // quiet
     }
 
     function updateFeedback(
@@ -454,15 +602,25 @@ export const prerender = false;
         ).showModal();
     });
 
-    document.getElementById("submit-token")?.addEventListener("click", () => {
-        const input = document.getElementById(
-            "manual-token",
-        ) as HTMLInputElement;
-        const token = input.value.trim();
-        if (token) {
-            stopAndRedirect(token);
-        }
-    });
+    document
+        .getElementById("submit-token")
+        ?.addEventListener("click", async () => {
+            const input = document.getElementById(
+                "manual-token",
+            ) as HTMLInputElement;
+            const token = input.value.trim();
+            if (token) {
+                (
+                    document.getElementById("manual-modal") as HTMLDialogElement
+                ).close();
+                updateFeedback(
+                    "MEMPROSES TOKEN...",
+                    "text-blue-400 animate-pulse",
+                );
+                const result = await processCheckIn(token);
+                showResultModal(result.success, result.message);
+            }
+        });
 
     document.getElementById("retry-perms")?.addEventListener("click", () => {
         window.location.reload();
