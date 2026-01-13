@@ -639,12 +639,9 @@ import Layout from "../layouts/Layout.astro";
     let currentUser: User | null = null;
     let isAdminOrTeacher = false;
     const getJakartaDate = () => {
-        const now = new Date();
-        const jakartaOffset = 7 * 60; // WIB is UTC+7
-        const localNow = new Date(
-            now.getTime() + (now.getTimezoneOffset() + jakartaOffset) * 60000,
-        );
-        return localNow.toISOString().split("T")[0];
+        return new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Jakarta",
+        }).format(new Date());
     };
 
     let currentDate = getJakartaDate(); // For list

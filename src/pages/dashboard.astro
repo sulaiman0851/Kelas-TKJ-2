@@ -477,12 +477,9 @@ import Layout from "../layouts/Layout.astro";
         document.getElementById("stat-total-students")!.innerText =
             studentCount?.toString() || "36";
 
-        const now = new Date();
-        const jakartaOffset = 7 * 60;
-        const localNow = new Date(
-            now.getTime() + (now.getTimezoneOffset() + jakartaOffset) * 60000,
-        );
-        const today = localNow.toISOString().split("T")[0];
+        const today = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Jakarta",
+        }).format(new Date());
 
         const { data: attData } = await supabase
             .from("attendance")

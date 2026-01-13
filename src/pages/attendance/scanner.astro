@@ -484,12 +484,7 @@ export const prerender = false;
         if (!hadirStatus)
             return { success: false, message: "Sistem absensi nonaktif." };
 
-        const now = new Date();
-        const jakartaOffset = 7 * 60;
-        const localNow = new Date(
-            now.getTime() + (now.getTimezoneOffset() + jakartaOffset) * 60000,
-        );
-        const today = localNow.toISOString().split("T")[0];
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 
         // 4. Mark Attendance
         const { error: attError } = await supabase.from("attendance").insert({
