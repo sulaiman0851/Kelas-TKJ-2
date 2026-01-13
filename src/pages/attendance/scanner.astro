@@ -4,259 +4,450 @@ import Layout from "../../layouts/Layout.astro";
 export const prerender = false;
 ---
 
-<Layout title="Scan QR Attendance - Kelas TKJ">
-    <div class="min-h-screen flex flex-col items-center justify-center p-4">
-        <div
-            class="max-w-xl w-full bg-slate-900 border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl relative"
-        >
-            <!-- Header -->
+<Layout title="Premium QR Scanner - Kelas TKJ">
+    <div
+        class="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden"
+    >
+        <!-- Background Decoration -->
+        <div class="fixed inset-0 pointer-events-none">
             <div
-                class="p-8 border-b border-white/5 bg-white/2 text-center relative z-10"
+                class="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse"
             >
-                <h1
-                    class="text-3xl font-black text-white mb-2 uppercase tracking-tighter"
-                >
-                    QR Scanner
-                </h1>
-                <p class="text-slate-500 text-sm font-medium italic">
-                    Arahkan kamera ke kode QR yang ada di depan kelas
+            </div>
+            <div
+                class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px] animate-pulse"
+            >
+            </div>
+        </div>
+
+        <div class="max-w-xl w-full relative z-10 flex flex-col gap-6">
+            <!-- Header Card -->
+            <div
+                class="bg-slate-900/40 backdrop-blur-3xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl"
+            >
+                <div class="flex items-center justify-between mb-2">
+                    <h1
+                        class="text-3xl font-black text-white uppercase tracking-tighter grad-text"
+                    >
+                        QR Scanner
+                    </h1>
+                    <div class="flex gap-2">
+                        <div
+                            class="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                        >
+                        </div>
+                    </div>
+                </div>
+                <p class="text-slate-400 text-sm font-medium italic">
+                    Arahkan kamera ke kode QR absensi atau upload dari galeri.
                 </p>
             </div>
 
-            <!-- Scanner Area -->
+            <!-- Scanner Main Card -->
             <div
-                class="relative aspect-square md:aspect-video bg-black flex items-center justify-center overflow-hidden"
+                class="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl relative"
             >
-                <div id="reader" class="w-full h-full"></div>
-
-                <!-- Overlay Guide -->
+                <!-- Scanner Viewport -->
                 <div
-                    id="scanner-overlay"
-                    class="absolute inset-0 pointer-events-none flex items-center justify-center z-20"
+                    class="relative aspect-square md:aspect-video bg-black/40 flex items-center justify-center overflow-hidden"
                 >
+                    <div id="reader" class="w-full h-full object-cover"></div>
+
+                    <!-- Scanner Overlays -->
                     <div
-                        class="w-64 h-64 border-2 border-blue-500/50 rounded-3xl relative"
+                        id="scanner-ui"
+                        class="absolute inset-0 z-20 transition-all duration-500"
                     >
-                        <!-- Corners -->
+                        <!-- Corner Decorations -->
                         <div
-                            class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-xl"
+                            class="absolute inset-0 flex items-center justify-center"
                         >
-                        </div>
-                        <div
-                            class="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-xl"
-                        >
-                        </div>
-                        <div
-                            class="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-xl"
-                        >
-                        </div>
-                        <div
-                            class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-xl"
-                        >
+                            <div class="w-64 h-64 relative">
+                                <div
+                                    class="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-blue-500 rounded-tl-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                >
+                                </div>
+                                <div
+                                    class="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-blue-500 rounded-tr-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                >
+                                </div>
+                                <div
+                                    class="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-blue-500 rounded-bl-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                >
+                                </div>
+                                <div
+                                    class="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-blue-500 rounded-br-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                >
+                                </div>
+
+                                <div
+                                    class="absolute inset-0 bg-blue-500/5 animate-scan-slow overflow-hidden"
+                                >
+                                    <div
+                                        class="w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+                                    >
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Scanning Line -->
+                        <!-- Scan Status Text -->
                         <div
-                            class="absolute inset-0 bg-blue-500/10 animate-scan"
+                            class="absolute bottom-8 left-0 right-0 text-center"
                         >
+                            <span
+                                id="scan-feedback"
+                                class="px-6 py-2 bg-slate-950/60 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-slate-300 border border-white/5"
+                                >Mencari Kode QR...</span
+                            >
                         </div>
                     </div>
-                </div>
 
-                <!-- Error Messages -->
-                <div
-                    id="camera-error"
-                    class="hidden absolute inset-0 bg-slate-950/90 z-30 flex flex-col items-center justify-center p-8 text-center text-white"
-                >
+                    <!-- Permissions / Error State Overlay -->
                     <div
-                        class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-4 border border-red-500/50"
+                        id="permissions-overlay"
+                        class="hidden absolute inset-0 bg-slate-950/95 z-30 flex flex-col items-center justify-center p-12 text-center select-none"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            class="text-red-400"
-                            ><path d="m2 2 20 20"></path><path
-                                d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"
-                            ></path><path d="M13 13.5a3 3 0 1 0-4.5-4.5"
-                            ></path><path d="M22 17V9a2 2 0 0 0-2-2h-2"
-                            ></path><path d="M12 7l-2-3"></path></svg
-                        >
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Izin Kamera Ditolak</h3>
-                    <p class="text-slate-400 text-sm mb-6">
-                        Pastikan Anda telah memberikan izin kamera pada browser
-                        Anda.
-                    </p>
-                    <button
-                        onclick="window.location.reload()"
-                        class="px-6 py-3 bg-white text-black font-black rounded-2xl text-xs uppercase tracking-widest"
-                        >Coba Lagi</button
-                    >
-                </div>
-            </div>
-
-            <!-- Footer Controls -->
-            <div class="p-8 bg-white/2 flex flex-col gap-4">
-                <div class="flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
                         <div
-                            class="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                            class="w-24 h-24 bg-red-500/10 rounded-[2rem] flex items-center justify-center mb-8 border border-red-500/30"
                         >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="text-red-400"
+                                ><path d="m2 2 20 20"></path><path
+                                    d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"
+                                ></path><path d="M13 13.5a3 3 0 1 0-4.5-4.5"
+                                ></path><path d="M22 17V9a2 2 0 0 0-2-2h-2"
+                                ></path><path d="M12 7l-2-3"></path></svg
+                            >
                         </div>
-                        <span
-                            id="scanner-status"
-                            class="text-[10px] font-black uppercase text-slate-400 tracking-widest"
-                            >Siap memindai</span
+                        <h3
+                            class="text-2xl font-black text-white mb-4 uppercase tracking-tight"
+                        >
+                            Kamera Diblokir
+                        </h3>
+                        <p
+                            class="text-slate-400 text-sm mb-10 font-medium leading-relaxed italic"
+                        >
+                            Sistem membutuhkan akses kamera untuk memindai QR.
+                            Pastikan Anda mengizinkannya di pengaturan browser.
+                        </p>
+                        <button
+                            id="retry-perms"
+                            class="w-full px-8 py-4 bg-white text-black font-black rounded-3xl text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-slate-200 transition-all active:scale-95"
+                            >Minta Izin Lagi</button
                         >
                     </div>
-                    <button
-                        id="switch-camera"
-                        class="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all border border-white/5 cursor-pointer"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            ><path d="M11 19a2 2 0 1 0-2 2h2v-2Z"></path><path
-                                d="M21 15V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10"
-                            ></path><path
-                                d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L12.172 15"
-                            ></path><circle cx="9" cy="11" r="2"></circle></svg
-                        >
-                    </button>
                 </div>
 
-                <div class="flex gap-3">
-                    <a
-                        href="/dashboard"
-                        class="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold text-center transition-all cursor-pointer"
-                        >Kembali</a
-                    >
-                    <button
-                        id="manual-btn"
-                        class="flex-1 px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all cursor-pointer"
-                        >Input Manual</button
-                    >
+                <!-- Controls Area -->
+                <div class="p-8 border-t border-white/5 bg-white/2 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button
+                            id="gallery-btn"
+                            class="flex flex-col items-center gap-3 p-6 bg-white/5 hover:bg-white/10 rounded-[2rem] transition-all border border-white/5 group active:scale-95"
+                        >
+                            <div
+                                class="p-3 bg-blue-500/20 text-blue-400 rounded-2xl group-hover:scale-110 transition-transform"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    ><rect
+                                        width="18"
+                                        height="18"
+                                        x="3"
+                                        y="3"
+                                        rx="2"
+                                        ry="2"></rect><circle
+                                        cx="9"
+                                        cy="9"
+                                        r="2"></circle><path
+                                        d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"
+                                    ></path></svg
+                                >
+                            </div>
+                            <span
+                                class="text-[10px] font-black uppercase text-slate-300 tracking-widest"
+                                >Dari Galeri</span
+                            >
+                        </button>
+
+                        <button
+                            id="manual-btn"
+                            class="flex flex-col items-center gap-3 p-6 bg-white/5 hover:bg-white/10 rounded-[2rem] transition-all border border-white/5 group active:scale-95"
+                        >
+                            <div
+                                class="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl group-hover:scale-110 transition-transform"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    ><path d="m9 18 6-6-6-6"></path><path
+                                        d="M15 12H3"></path></svg
+                                >
+                            </div>
+                            <span
+                                class="text-[10px] font-black uppercase text-slate-300 tracking-widest"
+                                >Input Manual</span
+                            >
+                        </button>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <a
+                            href="/dashboard"
+                            class="flex-1 px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-slate-400 rounded-[2rem] font-bold text-sm text-center transition-all border border-white/5"
+                            >Kembali</a
+                        >
+                        <button
+                            id="switch-camera"
+                            class="px-8 py-4 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white rounded-[2rem] font-black border border-blue-500/20 transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                class="group-hover:rotate-180 transition-transform duration-500"
+                                ><path d="M11 19a2 2 0 1 0-2 2h2v-2Z"
+                                ></path><path
+                                    d="M21 15V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10"
+                                ></path><circle cx="9" cy="11" r="2"
+                                ></circle></svg
+                            >
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Hidden File Input for Gallery -->
+    <input type="file" id="qr-input-file" accept="image/*" class="hidden" />
+
     <!-- Manual Input Modal -->
     <dialog
         id="manual-modal"
-        class="bg-slate-900 text-white border border-white/10 rounded-[2.5rem] p-10 backdrop:bg-slate-950/80 w-full max-w-sm shadow-2xl"
+        class="bg-slate-900 text-white border border-white/10 rounded-[3rem] p-10 backdrop:bg-slate-950/90 w-full max-w-md shadow-2xl relative overflow-hidden"
     >
-        <h3 class="text-2xl font-black mb-6 uppercase tracking-tight">
-            Input Token
-        </h3>
-        <p class="text-slate-500 text-xs mb-6 italic">
-            Masukkan token yang tertera di layar depan jika kamera tidak
-            berfungsi.
-        </p>
-        <div class="space-y-4">
-            <input
-                type="text"
-                id="manual-token"
-                placeholder="Contoh: 8xjs29ks"
-                class="w-full bg-slate-800 border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all uppercase font-mono"
-            />
-            <button
-                id="submit-token"
-                class="w-full px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black transition-all cursor-pointer"
-                >Check-In</button
+        <div
+            class="absolute -right-20 -top-20 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px]"
+        >
+        </div>
+        <div class="relative z-10">
+            <h3
+                class="text-3xl font-black mb-2 uppercase tracking-tighter grad-text"
             >
-            <button
-                onclick="document.getElementById('manual-modal').close()"
-                class="w-full px-6 py-4 bg-white/5 hover:bg-white/10 text-slate-400 rounded-2xl font-medium transition-all cursor-pointer"
-                >Tutup</button
-            >
+                Input Manual
+            </h3>
+            <p class="text-slate-500 text-sm mb-8 font-medium italic">
+                Masukkan token absensi yang muncul di depan.
+            </p>
+
+            <div class="space-y-6">
+                <div class="relative group">
+                    <input
+                        type="text"
+                        id="manual-token"
+                        placeholder="8-Karakter Token..."
+                        class="w-full bg-slate-800/50 border border-white/10 rounded-3xl px-8 py-5 text-white focus:ring-4 focus:ring-blue-500/20 outline-none transition-all uppercase font-mono text-xl tracking-widest placeholder:text-slate-600 group-hover:bg-slate-800"
+                    />
+                    <div
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            ><path d="M21 21l-4.35-4.35"></path><circle
+                                cx="10"
+                                cy="10"
+                                r="7"></circle></svg
+                        >
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button
+                        id="submit-token"
+                        class="w-full px-8 py-5 bg-white text-black font-black rounded-3xl transition-all shadow-xl shadow-white/5 active:scale-95 hover:scale-[1.02]"
+                        >KIRIM CHECK-IN</button
+                    >
+                    <button
+                        onclick="document.getElementById('manual-modal').close()"
+                        class="w-full px-8 py-4 bg-white/5 hover:bg-white/10 text-slate-400 rounded-3xl font-bold transition-all"
+                        >BATAL</button
+                    >
+                </div>
+            </div>
         </div>
     </dialog>
 </Layout>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-    // @ts-ignore
-    const html5QrCode = new Html5Qrcode("reader");
-    let scanning = false;
+    import { Html5Qrcode } from "html5-qrcode";
 
-    async function startScanner() {
-        if (scanning) return;
+    let html5QrCode: Html5Qrcode | null = null;
+    let currentCameraId: string | null = null;
+    let isScanning = false;
+
+    async function initScanner() {
+        const reader = document.getElementById("reader");
+        if (!reader) return;
+
+        html5QrCode = new Html5Qrcode("reader");
 
         try {
-            // @ts-ignore
             const cameras = await Html5Qrcode.getCameras();
             if (cameras && cameras.length > 0) {
-                // Default to back camera
-                let cameraId = cameras[0].id;
-                for (let cam of cameras) {
-                    if (
-                        cam.label.toLowerCase().includes("back") ||
-                        cam.label.toLowerCase().includes("rear")
-                    ) {
-                        cameraId = cam.id;
-                        break;
-                    }
-                }
-
-                await html5QrCode.start(
-                    cameraId,
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
-                    },
-                    (decodedText: string) => {
-                        // Success!
-                        if (decodedText.includes("/attendance/scan?token=")) {
-                            scanning = false;
-                            html5QrCode.stop();
-                            window.location.href = decodedText;
-                        } else {
-                            // Maybe it's just the token
-                            const token = decodedText.trim();
-                            if (
-                                token.length > 5 &&
-                                token.length < 20 &&
-                                !token.includes(" ")
-                            ) {
-                                scanning = false;
-                                html5QrCode.stop();
-                                window.location.href = `/attendance/scan?token=${token}`;
-                            }
-                        }
-                    },
-                    (errorMessage: string) => {
-                        // skip errors
-                    },
+                // Try to find back camera
+                const backCamera = cameras.find(
+                    (c) =>
+                        c.label.toLowerCase().includes("back") ||
+                        c.label.toLowerCase().includes("rear") ||
+                        c.label.toLowerCase().includes("environment"),
                 );
-                scanning = true;
+                currentCameraId = backCamera ? backCamera.id : cameras[0].id;
+                startScanning(currentCameraId);
             } else {
-                showCameraError();
+                showPermissionError();
             }
         } catch (err) {
-            console.error(err);
-            showCameraError();
+            console.error("Camera access error:", err);
+            showPermissionError();
         }
     }
 
-    function showCameraError() {
-        document.getElementById("camera-error")?.classList.remove("hidden");
-        document.getElementById("scanner-overlay")?.classList.add("hidden");
+    async function startScanning(cameraId: string) {
+        if (!html5QrCode) return;
+
+        try {
+            await html5QrCode.start(
+                cameraId,
+                {
+                    fps: 20,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0,
+                },
+                onScanSuccess,
+                onScanFailure,
+            );
+            isScanning = true;
+            document
+                .getElementById("permissions-overlay")
+                ?.classList.add("hidden");
+            document
+                .getElementById("scanner-ui")
+                ?.classList.remove("opacity-0");
+        } catch (err) {
+            console.error("Start scanning error:", err);
+            showPermissionError();
+        }
     }
 
-    // Controls
+    function onScanSuccess(decodedText: string) {
+        updateFeedback("KODE QR TERDETEKSI!", "text-emerald-400");
+
+        // Vibrate if supported
+        if ("vibrate" in navigator) navigator.vibrate(100);
+
+        // Process token
+        let token = "";
+        if (decodedText.includes("/attendance/scan?token=")) {
+            const url = new URL(decodedText);
+            token = url.searchParams.get("token") || "";
+        } else {
+            token = decodedText.trim();
+        }
+
+        if (token && token.length > 5 && token.length < 20) {
+            stopAndRedirect(token);
+        }
+    }
+
+    function onScanFailure(error: string) {
+        // quiet fail for real-time scanning
+    }
+
+    function updateFeedback(
+        text: string,
+        colorClass: string = "text-slate-300",
+    ) {
+        const el = document.getElementById("scan-feedback");
+        if (el) {
+            el.textContent = text;
+            el.className = `px-6 py-2 bg-slate-950/60 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/5 ${colorClass}`;
+        }
+    }
+
+    async function stopAndRedirect(token: string) {
+        if (html5QrCode && isScanning) {
+            await html5QrCode.stop();
+            isScanning = false;
+        }
+        window.location.href = `/attendance/scan?token=${token}`;
+    }
+
+    function showPermissionError() {
+        document
+            .getElementById("permissions-overlay")
+            ?.classList.remove("hidden");
+        document.getElementById("scanner-ui")?.classList.add("opacity-0");
+    }
+
+    // Gallery Input
+    async function handleGallery(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file || !html5QrCode) return;
+
+        updateFeedback("MEMPROSES GAMBAR...", "text-blue-400");
+
+        try {
+            const decodedText = await html5QrCode.scanFile(file, true);
+            onScanSuccess(decodedText);
+        } catch (err) {
+            console.error("Gallery scan error:", err);
+            updateFeedback("KODE QR TIDAK DITEMUKAN!", "text-red-400");
+            setTimeout(() => {
+                if (isScanning) updateFeedback("SIAP MEMINDAI");
+                else updateFeedback("QR SCANNER READY");
+            }, 2000);
+        }
+    }
+
+    // Controls Logic
+    document.getElementById("gallery-btn")?.addEventListener("click", () => {
+        document.getElementById("qr-input-file")?.click();
+    });
+
+    document
+        .getElementById("qr-input-file")
+        ?.addEventListener("change", handleGallery);
+
     document.getElementById("manual-btn")?.addEventListener("click", () => {
         (
             document.getElementById("manual-modal") as HTMLDialogElement
@@ -264,50 +455,85 @@ export const prerender = false;
     });
 
     document.getElementById("submit-token")?.addEventListener("click", () => {
-        const token = (
-            document.getElementById("manual-token") as HTMLInputElement
-        ).value.trim();
+        const input = document.getElementById(
+            "manual-token",
+        ) as HTMLInputElement;
+        const token = input.value.trim();
         if (token) {
-            window.location.href = `/attendance/scan?token=${token}`;
+            stopAndRedirect(token);
         }
+    });
+
+    document.getElementById("retry-perms")?.addEventListener("click", () => {
+        window.location.reload();
     });
 
     document
         .getElementById("switch-camera")
         ?.addEventListener("click", async () => {
-            if (scanning) {
-                await html5QrCode.stop();
-                scanning = false;
-                // Simply restart and it might pick next camera in a more advanced implementation,
-                // but for simplicity we just toggle or restart.
-                startScanner();
+            if (!html5QrCode) return;
+
+            try {
+                const cameras = await Html5Qrcode.getCameras();
+                if (cameras.length < 2) return;
+
+                const nextIndex =
+                    (cameras.findIndex((c) => c.id === currentCameraId) + 1) %
+                    cameras.length;
+                currentCameraId = cameras[nextIndex].id;
+
+                if (isScanning) {
+                    await html5QrCode.stop();
+                    isScanning = false;
+                }
+                startScanning(currentCameraId);
+            } catch (err) {
+                console.error("Switch camera error:", err);
             }
         });
 
-    // Start on load
-    startScanner();
+    // Lifecycle
+    document.addEventListener("astro:page-load", () => {
+        initScanner();
+    });
 
-    // Clean up on page leave
+    // Also run immediately if not using view transitions or already loaded
+    if (document.readyState === "complete") {
+        initScanner();
+    }
+
     window.addEventListener("beforeunload", () => {
-        if (scanning) {
+        if (html5QrCode && isScanning) {
             html5QrCode.stop();
         }
     });
 </script>
 
 <style>
-    @keyframes scan {
-        0%,
-        100% {
+    @reference "../../styles/global.css";
+
+    .grad-text {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-white to-emerald-400;
+    }
+
+    @keyframes scan-line {
+        0% {
             transform: translateY(0);
+            opacity: 0;
         }
-        50% {
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
             transform: translateY(256px);
+            opacity: 0;
         }
     }
-    .animate-scan {
-        animation: scan 2s linear infinite;
-        border-bottom: 2px solid #3b82f6;
-        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
+
+    .animate-scan-slow {
+        animation: scan-line 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 </style>
