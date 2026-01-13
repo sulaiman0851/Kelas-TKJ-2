@@ -1,12 +1,18 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Absensi & Statistik - Kelas TKJ">
     <header class="flex justify-between items-center mb-8">
         <div>
-            <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Absensi & Statistik</h2>
-            <p class="text-slate-400">Manajemen kehadiran dan analisis data siswa</p>
+            <h2
+                class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400"
+            >
+                Absensi & Statistik
+            </h2>
+            <p class="text-slate-400">
+                Manajemen kehadiran dan analisis data siswa
+            </p>
         </div>
         <div id="action-container" class="flex gap-3">
             <!-- Dynamic Action Buttons -->
@@ -14,60 +20,152 @@ import Layout from '../layouts/Layout.astro';
     </header>
 
     <!-- QR Modal (Admin Only) -->
-    <dialog id="qr-modal" class="bg-slate-950 text-white border border-white/10 rounded-[3rem] p-10 backdrop:bg-slate-950/90 w-full max-w-md shadow-2xl relative overflow-hidden">
-        <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"></div>
+    <dialog
+        id="qr-modal"
+        class="bg-slate-950 text-white border border-white/10 rounded-[3rem] p-10 backdrop:bg-slate-950/90 w-full max-w-md shadow-2xl relative overflow-hidden"
+    >
+        <div
+            class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"
+        >
+        </div>
         <div class="relative z-10 text-center">
-            <h3 class="text-3xl font-black mb-2 tracking-tight uppercase">QuickScan QR</h3>
-            <p class="text-slate-500 text-sm mb-8 font-medium italic">Sediakan kode ini di depan kelas</p>
-            
-            <div id="qr-container" class="bg-white p-8 rounded-3xl inline-block shadow-2xl shadow-emerald-500/10 mb-8 border-4 border-emerald-500/20">
-                <img id="qr-image" src="" class="w-48 h-48" alt="QR Code Absensi" />
+            <h3 class="text-3xl font-black mb-2 tracking-tight uppercase">
+                QuickScan QR
+            </h3>
+            <p class="text-slate-500 text-sm mb-8 font-medium italic">
+                Sediakan kode ini di depan kelas
+            </p>
+
+            <div
+                id="qr-container"
+                class="bg-white p-8 rounded-3xl inline-block shadow-2xl shadow-emerald-500/10 mb-8 border-4 border-emerald-500/20"
+            >
+                <img
+                    id="qr-image"
+                    src=""
+                    class="w-48 h-48"
+                    alt="QR Code Absensi"
+                />
             </div>
-            
+
             <div class="space-y-4">
-                <div id="qr-timer" class="text-[10px] font-black uppercase text-emerald-400 tracking-[0.3em]">Masa berlaku: 05:00</div>
-                <button onclick="document.getElementById('qr-modal').close()" class="w-full px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all cursor-pointer">Selesai</button>
+                <div
+                    id="qr-timer"
+                    class="text-[10px] font-black uppercase text-emerald-400 tracking-[0.3em]"
+                >
+                    Masa berlaku: 05:00
+                </div>
+                <button
+                    onclick="document.getElementById('qr-modal').close()"
+                    class="w-full px-8 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all cursor-pointer"
+                    >Selesai</button
+                >
             </div>
         </div>
     </dialog>
 
     <!-- Tab Navigation -->
-    <div class="flex gap-2 mb-8 p-1.5 bg-slate-900/50 border border-white/5 rounded-2xl w-fit">
-        <button id="tab-list" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+    <div
+        class="flex gap-2 mb-8 p-1.5 bg-slate-900/50 border border-white/5 rounded-2xl w-fit"
+    >
+        <button
+            id="tab-list"
+            class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+        >
             Daftar Hadir
         </button>
-        <button id="tab-stats" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5">
+        <button
+            id="tab-stats"
+            class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5"
+        >
             Statistik & Kalender
         </button>
     </div>
 
     <!-- Tab Content: Attendance List -->
     <div id="content-list" class="space-y-6">
-        <div class="bg-slate-900 rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-            <div class="p-6 border-b border-white/5 bg-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div
+            class="bg-slate-900 rounded-3xl border border-white/5 overflow-hidden shadow-2xl"
+        >
+            <div
+                class="p-6 border-b border-white/5 bg-white/5 flex flex-col md:flex-row gap-4 justify-between items-center"
+            >
                 <h3 class="font-bold flex items-center gap-2">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span
+                        class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"
+                    ></span>
                     Daftar Kehadiran Harian
                 </h3>
                 <div class="flex items-center gap-2 w-full md:w-auto">
-                    <button id="export-btn" class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer border border-white/5 group" title="Export Word (.docx)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-hover:scale-110 transition-transform"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    <button
+                        id="export-btn"
+                        class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer border border-white/5 group"
+                        title="Export Word (.docx)"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            class="group-hover:scale-110 transition-transform"
+                            ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                            ></path><polyline points="7 10 12 15 17 10"
+                            ></polyline><line x1="12" x2="12" y1="15" y2="3"
+                            ></line></svg
+                        >
                     </button>
-                    <label class="text-xs text-slate-500 uppercase font-extrabold tracking-tighter">Pilih Tanggal:</label>
-                    <input type="date" class="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-xl flex-1 md:flex-initial focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all" id="date-filter">
+                    <label
+                        class="text-xs text-slate-500 uppercase font-extrabold tracking-tighter"
+                        >Pilih Tanggal:</label
+                    >
+                    <input
+                        type="date"
+                        class="bg-slate-800 border border-slate-700 text-white px-4 py-2 rounded-xl flex-1 md:flex-initial focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
+                        id="date-filter"
+                    />
                 </div>
             </div>
             <!-- Search & Filter Bar -->
-            <div class="px-6 py-4 border-b border-white/5 bg-slate-800/10 flex flex-col md:flex-row gap-4 items-center">
+            <div
+                class="px-6 py-4 border-b border-white/5 bg-slate-800/10 flex flex-col md:flex-row gap-4 items-center"
+            >
                 <div class="relative w-full md:w-80">
-                    <input type="text" id="search-student" placeholder="Cari nama siswa..." class="w-full bg-slate-900 border border-white/10 rounded-2xl px-12 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-600">
-                    <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input
+                        type="text"
+                        id="search-student"
+                        placeholder="Cari nama siswa..."
+                        class="w-full bg-slate-900 border border-white/10 rounded-2xl px-12 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-600"
+                    />
+                    <div
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            ><circle cx="11" cy="11" r="8"></circle><path
+                                d="m21 21-4.3-4.3"></path></svg
+                        >
                     </div>
                 </div>
                 <div class="flex items-center gap-3 w-full md:w-auto">
-                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-widest hidden md:block">Filter:</label>
-                    <select id="filter-status" class="flex-1 md:flex-initial bg-slate-900 border border-white/10 rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-slate-300">
+                    <label
+                        class="text-[10px] font-black uppercase text-slate-500 tracking-widest hidden md:block"
+                        >Filter:</label
+                    >
+                    <select
+                        id="filter-status"
+                        class="flex-1 md:flex-initial bg-slate-900 border border-white/10 rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all text-slate-300"
+                    >
                         <option value="all">Semua Status</option>
                         <option value="none">Belum Absen</option>
                         <!-- Loaded dynamically -->
@@ -76,7 +174,9 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left hidden md:table">
-                    <thead class="bg-white/5 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black">
+                    <thead
+                        class="bg-white/5 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black"
+                    >
                         <tr>
                             <th class="p-6">Siswa</th>
                             <th class="p-6">Waktu</th>
@@ -85,48 +185,92 @@ import Layout from '../layouts/Layout.astro';
                             <th class="p-6 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="attendance-list-desktop" class="divide-y divide-white/5">
+                    <tbody
+                        id="attendance-list-desktop"
+                        class="divide-y divide-white/5"
+                    >
                         <!-- Skeletons -->
-                        {[1, 2, 3, 4, 5].map(() => (
-                            <tr class="animate-pulse">
-                                <td class="p-6"><div class="h-4 bg-white/5 rounded w-32"></div></td>
-                                <td class="p-6"><div class="h-4 bg-white/5 rounded w-20"></div></td>
-                                <td class="p-6"><div class="h-6 bg-white/5 rounded-full w-24"></div></td>
-                                <td class="p-6"><div class="h-4 bg-white/5 rounded w-48"></div></td>
-                                <td class="p-6"><div class="h-4 bg-white/5 rounded w-12 ml-auto"></div></td>
-                            </tr>
-                        ))}
+                        {
+                            [1, 2, 3, 4, 5].map(() => (
+                                <tr class="animate-pulse">
+                                    <td class="p-6">
+                                        <div class="h-4 bg-white/5 rounded w-32" />
+                                    </td>
+                                    <td class="p-6">
+                                        <div class="h-4 bg-white/5 rounded w-20" />
+                                    </td>
+                                    <td class="p-6">
+                                        <div class="h-6 bg-white/5 rounded-full w-24" />
+                                    </td>
+                                    <td class="p-6">
+                                        <div class="h-4 bg-white/5 rounded w-48" />
+                                    </td>
+                                    <td class="p-6">
+                                        <div class="h-4 bg-white/5 rounded w-12 ml-auto" />
+                                    </td>
+                                </tr>
+                            ))
+                        }
                     </tbody>
                 </table>
                 <!-- Mobile Card View -->
-                <div id="attendance-list-mobile" class="md:hidden divide-y divide-white/5">
-                     <!-- Skeletons -->
-                     {[1, 2, 3].map(() => (
-                        <div class="p-6 animate-pulse space-y-3">
-                            <div class="flex justify-between">
-                                <div class="h-4 bg-white/5 rounded w-32"></div>
-                                <div class="h-4 bg-white/5 rounded w-16"></div>
+                <div
+                    id="attendance-list-mobile"
+                    class="md:hidden divide-y divide-white/5"
+                >
+                    <!-- Skeletons -->
+                    {
+                        [1, 2, 3].map(() => (
+                            <div class="p-6 animate-pulse space-y-3">
+                                <div class="flex justify-between">
+                                    <div class="h-4 bg-white/5 rounded w-32" />
+                                    <div class="h-4 bg-white/5 rounded w-16" />
+                                </div>
+                                <div class="h-3 bg-white/5 rounded w-full" />
+                                <div class="h-3 bg-white/5 rounded w-2/3" />
                             </div>
-                            <div class="h-3 bg-white/5 rounded w-full"></div>
-                            <div class="h-3 bg-white/5 rounded w-2/3"></div>
-                        </div>
-                     ))}
+                        ))
+                    }
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Tab Content: Statistics (Hidden by default) -->
-    <div id="content-stats" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div
+        id="content-stats"
+        class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500"
+    >
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Main Stats & Charts -->
             <div class="lg:col-span-2 space-y-8">
                 <!-- Charts Section -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Trend Chart -->
-                    <div class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400"><path d="m19 20-4-4-3 3-4-4-3 3"/><path d="M12 20v-5"/><path d="M19 20V6"/><path d="M5 20v-5"/><path d="M12 7V4"/><path d="M5 10V7"/><path d="m15 13-3-3-4 4-3-3"/></svg>
+                    <div
+                        class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl"
+                    >
+                        <h3
+                            class="text-sm font-black uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-2"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="text-blue-400"
+                                ><path d="m19 20-4-4-3 3-4-4-3 3"></path><path
+                                    d="M12 20v-5"></path><path d="M19 20V6"
+                                ></path><path d="M5 20v-5"></path><path
+                                    d="M12 7V4"></path><path d="M5 10V7"
+                                ></path><path d="m15 13-3-3-4 4-3-3"
+                                ></path></svg
+                            >
                             Tren Kehadiran
                         </h3>
                         <div class="h-[250px] relative">
@@ -135,9 +279,27 @@ import Layout from '../layouts/Layout.astro';
                     </div>
 
                     <!-- Distribution Chart -->
-                    <div class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                    <div
+                        class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl"
+                    >
+                        <h3
+                            class="text-sm font-black uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-2"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="text-emerald-400"
+                                ><path d="M21.21 15.89A10 10 0 1 1 8 2.83"
+                                ></path><path d="M22 12A10 10 0 0 0 12 2v10z"
+                                ></path></svg
+                            >
                             Distribusi Status
                         </h3>
                         <div class="h-[250px] relative">
@@ -147,46 +309,142 @@ import Layout from '../layouts/Layout.astro';
                 </div>
 
                 <!-- Calendar View -->
-                <div class="bg-slate-900 border border-white/5 p-8 rounded-3xl shadow-2xl">
-                    <div class="flex items-center justify-between mb-8 text-center sm:text-left flex-col sm:flex-row gap-4">
+                <div
+                    class="bg-slate-900 border border-white/5 p-8 rounded-3xl shadow-2xl"
+                >
+                    <div
+                        class="flex items-center justify-between mb-8 text-center sm:text-left flex-col sm:flex-row gap-4"
+                    >
                         <h3 class="text-xl font-bold flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-400"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="text-purple-400"
+                                ><rect
+                                    width="18"
+                                    height="18"
+                                    x="3"
+                                    y="4"
+                                    rx="2"
+                                    ry="2"></rect><line
+                                    x1="16"
+                                    y1="2"
+                                    x2="16"
+                                    y2="6"></line><line
+                                    x1="8"
+                                    y1="2"
+                                    x2="8"
+                                    y2="6"></line><line
+                                    x1="3"
+                                    y1="10"
+                                    x2="21"
+                                    y2="10"></line></svg
+                            >
                             Kalender Absensi
                         </h3>
-                        <div class="flex items-center gap-4 bg-white/5 p-1 rounded-2xl border border-white/10">
-                            <button id="prevMonth" class="p-2.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        <div
+                            class="flex items-center gap-4 bg-white/5 p-1 rounded-2xl border border-white/10"
+                        >
+                            <button
+                                id="prevMonth"
+                                class="p-2.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    ><path d="m15 18-6-6 6-6"></path></svg
+                                >
                             </button>
-                            <h4 id="currentMonthLabel" class="text-sm font-black uppercase tracking-widest min-w-[140px] text-center">Januari 2026</h4>
-                            <button id="nextMonth" class="p-2.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            <h4
+                                id="currentMonthLabel"
+                                class="text-sm font-black uppercase tracking-widest min-w-[140px] text-center"
+                            >
+                                Januari 2026
+                            </h4>
+                            <button
+                                id="nextMonth"
+                                class="p-2.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    ><path d="m9 18 6-6-6-6"></path></svg
+                                >
                             </button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-7 gap-px bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-inner">
+                    <div
+                        class="grid grid-cols-7 gap-px bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-inner"
+                    >
                         <!-- Day names -->
-                        {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => (
-                            <div class="bg-slate-950 p-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 border-b border-white/5">
-                                {day}
-                            </div>
-                        ))}
+                        {
+                            [
+                                "Min",
+                                "Sen",
+                                "Sel",
+                                "Rab",
+                                "Kam",
+                                "Jum",
+                                "Sab",
+                            ].map((day) => (
+                                <div class="bg-slate-950 p-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-600 border-b border-white/5">
+                                    {day}
+                                </div>
+                            ))
+                        }
                         <!-- Calendar Days will be injected here -->
                         <div id="calendar-grid" class="contents"></div>
                     </div>
 
                     <div class="mt-8 flex flex-wrap gap-6 justify-center">
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Hadir Penuh</span>
+                            <span
+                                class="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40"
+                            ></span>
+                            <span
+                                class="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+                                >Hadir Penuh</span
+                            >
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/40"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Izin/Sakit</span>
+                            <span
+                                class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/40"
+                            ></span>
+                            <span
+                                class="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+                                >Izin/Sakit</span
+                            >
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/40"></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Mayoritas Alpa</span>
+                            <span
+                                class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/40"
+                            ></span>
+                            <span
+                                class="text-[10px] font-bold uppercase tracking-wider text-slate-500"
+                                >Mayoritas Alpa</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -194,39 +452,101 @@ import Layout from '../layouts/Layout.astro';
 
             <!-- Sidebar Summary -->
             <div class="space-y-6">
-                <div class="bg-gradient-to-br from-blue-600/20 to-transparent border border-blue-500/20 p-8 rounded-3xl shadow-xl relative overflow-hidden group">
-                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-                    <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2">Bulan Ini</p>
+                <div
+                    class="bg-gradient-to-br from-blue-600/20 to-transparent border border-blue-500/20 p-8 rounded-3xl shadow-xl relative overflow-hidden group"
+                >
+                    <div
+                        class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"
+                    >
+                    </div>
+                    <p
+                        class="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2"
+                    >
+                        Bulan Ini
+                    </p>
                     <div class="flex items-end gap-2">
-                        <h3 id="avg-attendance" class="text-6xl font-black text-white tracking-tighter">0%</h3>
-                        <p class="text-emerald-400 text-xs font-bold pb-2 flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                        <h3
+                            id="avg-attendance"
+                            class="text-6xl font-black text-white tracking-tighter"
+                        >
+                            0%
+                        </h3>
+                        <p
+                            class="text-emerald-400 text-xs font-bold pb-2 flex items-center gap-1"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                ><path d="m5 12 7-7 7 7"></path><path
+                                    d="M12 19V5"></path></svg
+                            >
                             2.4%
                         </p>
                     </div>
-                    <p class="text-xs text-slate-500 mt-4 leading-relaxed font-medium">Rata-rata kehadiran seluruh siswa bulan ini.</p>
+                    <p
+                        class="text-xs text-slate-500 mt-4 leading-relaxed font-medium"
+                    >
+                        Rata-rata kehadiran seluruh siswa bulan ini.
+                    </p>
                 </div>
 
-                <div class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">Ringkasan Stat</h3>
+                <div
+                    class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl"
+                >
+                    <h3
+                        class="text-xs font-black uppercase tracking-widest text-slate-500 mb-4"
+                    >
+                        Ringkasan Stat
+                    </h3>
                     <div class="space-y-3">
-                        <div class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5">
-                            <span class="text-slate-400 font-medium">Hari Efektif</span>
-                            <span id="total-days" class="font-black text-white">0 Hari</span>
+                        <div
+                            class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5"
+                        >
+                            <span class="text-slate-400 font-medium"
+                                >Hari Efektif</span
+                            >
+                            <span id="total-days" class="font-black text-white"
+                                >0 Hari</span
+                            >
                         </div>
-                        <div class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5">
-                            <span class="text-slate-400 font-medium">Tertinggi</span>
-                            <span id="max-attendance" class="font-black text-emerald-400">0%</span>
+                        <div
+                            class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5"
+                        >
+                            <span class="text-slate-400 font-medium"
+                                >Tertinggi</span
+                            >
+                            <span
+                                id="max-attendance"
+                                class="font-black text-emerald-400">0%</span
+                            >
                         </div>
-                        <div class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5">
-                            <span class="text-slate-400 font-medium">Terendah</span>
-                            <span id="min-attendance" class="font-black text-red-400">0%</span>
+                        <div
+                            class="flex justify-between items-center text-xs p-3.5 bg-white/3 rounded-2xl border border-white/5"
+                        >
+                            <span class="text-slate-400 font-medium"
+                                >Terendah</span
+                            >
+                            <span
+                                id="min-attendance"
+                                class="font-black text-red-400">0%</span
+                            >
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">Analisis Status</h3>
+                <div
+                    class="bg-slate-900 border border-white/5 p-6 rounded-3xl shadow-xl"
+                >
+                    <h3
+                        class="text-xs font-black uppercase tracking-widest text-slate-500 mb-4"
+                    >
+                        Analisis Status
+                    </h3>
                     <div id="status-summary" class="space-y-5">
                         <!-- Loaded via JS -->
                     </div>
@@ -236,198 +556,324 @@ import Layout from '../layouts/Layout.astro';
     </div>
 
     <!-- Modal and Footer scripts stay similar -->
-    <dialog id="checkin-modal" class="bg-slate-900 text-white border border-white/10 rounded-3xl p-8 backdrop:bg-slate-950/80 w-full max-w-md shadow-2xl">
+    <dialog
+        id="checkin-modal"
+        class="bg-slate-900 text-white border border-white/10 rounded-3xl p-8 backdrop:bg-slate-950/80 w-full max-w-md shadow-2xl"
+    >
         <h3 class="text-2xl font-black mb-6 tracking-tight">Input Kehadiran</h3>
         <form id="checkin-form" class="space-y-6">
             <div id="student-select-container" class="hidden">
-                <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Pilih Siswa</label>
-                <select id="student-select" class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all">
+                <label
+                    class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                    >Pilih Siswa</label
+                >
+                <select
+                    id="student-select"
+                    class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-blue-500/50 outline-none transition-all"
+                >
                     <!-- Loaded dynamically -->
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Pilih Status</label>
-                <select id="status-select" class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all">
+                <label
+                    class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                    >Pilih Status</label
+                >
+                <select
+                    id="status-select"
+                    class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
+                >
                     <!-- Loaded dynamically -->
                 </select>
             </div>
-             <div>
-                <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Catatan Khusus</label>
-                <textarea id="checkin-note" class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all" rows="3" placeholder="Contoh: Terlambat karena ban bocor..."></textarea>
+            <div>
+                <label
+                    class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                    >Catatan Khusus</label
+                >
+                <textarea
+                    id="checkin-note"
+                    class="w-full bg-slate-800 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
+                    rows="3"
+                    placeholder="Contoh: Terlambat karena ban bocor..."
+                ></textarea>
             </div>
             <div class="flex gap-3 mt-8">
-                 <button type="button" onclick="document.getElementById('checkin-modal').close()" class="flex-1 px-6 py-4 rounded-2xl hover:bg-white/5 font-bold text-slate-400 hover:text-white transition-all cursor-pointer">Batal</button>
-                 <button type="submit" class="flex-1 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-black shadow-lg shadow-emerald-600/20 transition-all cursor-pointer">Simpan</button>
+                <button
+                    type="button"
+                    onclick="document.getElementById('checkin-modal').close()"
+                    class="flex-1 px-6 py-4 rounded-2xl hover:bg-white/5 font-bold text-slate-400 hover:text-white transition-all cursor-pointer"
+                    >Batal</button
+                >
+                <button
+                    type="submit"
+                    class="flex-1 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-black shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
+                    >Simpan</button
+                >
             </div>
         </form>
     </dialog>
 </Layout>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+></script>
 
 <script>
-    import { supabase } from '../lib/supabase';
-    import type { User } from '@supabase/supabase-js';
-    import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, TextRun } from "docx";
+    import { supabase } from "../lib/supabase";
+    import type { User } from "@supabase/supabase-js";
+    import {
+        Document,
+        Packer,
+        Paragraph,
+        Table,
+        TableRow,
+        TableCell,
+        WidthType,
+        ShadingType,
+        AlignmentType,
+        TextRun,
+    } from "docx";
     // @ts-ignore
     import { saveAs } from "file-saver";
 
     let currentUser: User | null = null;
     let isAdminOrTeacher = false;
-    let currentDate = new Date().toISOString().split('T')[0]; // For list
+    let currentDate = new Date().toISOString().split("T")[0]; // For list
     let statsMonthDate = new Date(); // For stats calendar
-    let searchQuery = '';
-    let statusFilter = 'all';
-    
+    let searchQuery = "";
+    let statusFilter = "all";
+
     let trendChart: any = null;
     let distChart: any = null;
     let allStudents: any[] = [];
 
     async function init() {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { window.location.href = '/login'; return; }
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = "/login";
+            return;
+        }
         currentUser = session.user;
 
-        const { data: roles } = await supabase.from('user_roles').select('roles(name)').eq('user_id', currentUser.id);
+        const { data: roles } = await supabase
+            .from("user_roles")
+            .select("roles(name)")
+            .eq("user_id", currentUser.id);
         const roleNames = roles?.map((r: any) => r.roles.name) || [];
-        isAdminOrTeacher = roleNames.includes('admin') || roleNames.includes('teacher');
+        isAdminOrTeacher =
+            roleNames.includes("admin") || roleNames.includes("teacher");
 
         setupTabs();
         setupFilters();
-        
+
         // Initial load
         await loadStudents();
         await loadAttendanceStatuses();
         loadAttendanceList();
         renderStatsCalendar();
         loadAnalyticsData();
+
+        // Check for Quick QR action from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("action") === "qr" && isAdminOrTeacher) {
+            generateQR();
+            // Clear the param without refreshing to avoid re-opening on manual refresh
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname,
+            );
+        }
     }
 
     async function loadStudents() {
         const { data } = await supabase
-            .from('student_directory')
-            .select('*, linked_profile:profiles(username, full_name, id)')
-            .order('absent_no', { ascending: true });
+            .from("student_directory")
+            .select("*, linked_profile:profiles(username, full_name, id)")
+            .order("absent_no", { ascending: true });
         allStudents = data || [];
 
         if (isAdminOrTeacher) {
-            const container = document.getElementById('student-select-container');
-            const select = document.getElementById('student-select');
+            const container = document.getElementById(
+                "student-select-container",
+            );
+            const select = document.getElementById("student-select");
             if (container && select) {
-                container.classList.remove('hidden');
-                select.innerHTML = allStudents.map(s => `<option value="${s.id}">${s.absent_no}. ${s.full_name}</option>`).join('');
+                container.classList.remove("hidden");
+                select.innerHTML = allStudents
+                    .map(
+                        (s) =>
+                            `<option value="${s.id}">${s.absent_no}. ${s.full_name}</option>`,
+                    )
+                    .join("");
             }
         }
     }
 
     function setupTabs() {
-        const btnList = document.getElementById('tab-list');
-        const btnStats = document.getElementById('tab-stats');
-        const contentList = document.getElementById('content-list');
-        const contentStats = document.getElementById('content-stats');
+        const btnList = document.getElementById("tab-list");
+        const btnStats = document.getElementById("tab-stats");
+        const contentList = document.getElementById("content-list");
+        const contentStats = document.getElementById("content-stats");
 
         if (!btnList || !btnStats || !contentList || !contentStats) return;
 
-        const setActive = (tab: 'list' | 'stats') => {
-            if (tab === 'list') {
-                btnList.className = "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20";
-                btnStats.className = "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5";
-                contentList.classList.remove('hidden');
-                contentStats.classList.add('hidden');
+        const setActive = (tab: "list" | "stats") => {
+            if (tab === "list") {
+                btnList.className =
+                    "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20";
+                btnStats.className =
+                    "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5";
+                contentList.classList.remove("hidden");
+                contentStats.classList.add("hidden");
                 loadAttendanceList();
             } else {
-                btnStats.className = "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20";
-                btnList.className = "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5";
-                contentList.classList.add('hidden');
-                contentStats.classList.remove('hidden');
+                btnStats.className =
+                    "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer bg-blue-600 text-white shadow-lg shadow-blue-600/20";
+                btnList.className =
+                    "px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-white/5";
+                contentList.classList.add("hidden");
+                contentStats.classList.remove("hidden");
                 renderStatsCalendar();
                 loadAnalyticsData();
             }
         };
 
-        btnList.addEventListener('click', () => setActive('list'));
-        btnStats.addEventListener('click', () => setActive('stats'));
+        btnList.addEventListener("click", () => setActive("list"));
+        btnStats.addEventListener("click", () => setActive("stats"));
     }
 
     function setupFilters() {
         // Daily date filter
-        const filter = document.getElementById('date-filter') as HTMLInputElement;
+        const filter = document.getElementById(
+            "date-filter",
+        ) as HTMLInputElement;
         if (filter) {
             filter.value = currentDate;
-            filter.addEventListener('change', (e: any) => {
+            filter.addEventListener("change", (e: any) => {
                 currentDate = e.target.value;
                 loadAttendanceList();
             });
         }
 
         // Search student
-        const searchInput = document.getElementById('search-student') as HTMLInputElement;
+        const searchInput = document.getElementById(
+            "search-student",
+        ) as HTMLInputElement;
         if (searchInput) {
-            searchInput.addEventListener('input', (e: any) => {
+            searchInput.addEventListener("input", (e: any) => {
                 searchQuery = e.target.value.toLowerCase();
                 loadAttendanceList();
             });
         }
 
         // Status filter
-        const filterStatus = document.getElementById('filter-status') as HTMLSelectElement;
+        const filterStatus = document.getElementById(
+            "filter-status",
+        ) as HTMLSelectElement;
         if (filterStatus) {
-            filterStatus.addEventListener('change', (e: any) => {
+            filterStatus.addEventListener("change", (e: any) => {
                 statusFilter = e.target.value;
                 loadAttendanceList();
             });
         }
 
         // Stats month navigation
-        document.getElementById('prevMonth')?.addEventListener('click', () => {
+        document.getElementById("prevMonth")?.addEventListener("click", () => {
             statsMonthDate.setMonth(statsMonthDate.getMonth() - 1);
             renderStatsCalendar();
             loadAnalyticsData();
         });
 
-        document.getElementById('nextMonth')?.addEventListener('click', () => {
+        document.getElementById("nextMonth")?.addEventListener("click", () => {
             statsMonthDate.setMonth(statsMonthDate.getMonth() + 1);
             renderStatsCalendar();
             loadAnalyticsData();
         });
 
         // Export functionality
-        document.getElementById('export-btn')?.addEventListener('click', exportAttendance);
+        document
+            .getElementById("export-btn")
+            ?.addEventListener("click", exportAttendance);
     }
 
     async function exportAttendance() {
         const { data: attData } = await supabase
-            .from('attendance')
-            .select(`*, status:attendance_status(label, color, code), student:student_directory(full_name, absent_no)`)
-            .eq('date', currentDate)
-            .order('student_id');
+            .from("attendance")
+            .select(
+                `*, status:attendance_status(label, color, code), student:student_directory(full_name, absent_no)`,
+            )
+            .eq("date", currentDate)
+            .order("student_id");
 
         if (!attData || attData.length === 0) {
-            alert('Tidak ada data untuk diekspor pada tanggal ini.');
+            alert("Tidak ada data untuk diekspor pada tanggal ini.");
             return;
         }
 
-        const btn = document.getElementById('export-btn') as HTMLElement;
+        const btn = document.getElementById("export-btn") as HTMLElement;
         const originalContent = btn.innerHTML;
         btn.innerHTML = '<span class="text-[8px] font-black">...</span>';
 
         // 1. Create Header
         const headerRow = new TableRow({
             children: [
-                new TableCell({ children: [new Paragraph({ text: "NO", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
-                new TableCell({ children: [new Paragraph({ text: "NAMA SISWA", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
-                new TableCell({ children: [new Paragraph({ text: "WAKTU", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
-                new TableCell({ children: [new Paragraph({ text: "STATUS", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
-                new TableCell({ children: [new Paragraph({ text: "KETERANGAN", alignment: AlignmentType.CENTER })], shading: { fill: "1E293B" } }),
-            ]
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            text: "NO",
+                            alignment: AlignmentType.CENTER,
+                        }),
+                    ],
+                    shading: { fill: "1E293B" },
+                }),
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            text: "NAMA SISWA",
+                            alignment: AlignmentType.CENTER,
+                        }),
+                    ],
+                    shading: { fill: "1E293B" },
+                }),
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            text: "WAKTU",
+                            alignment: AlignmentType.CENTER,
+                        }),
+                    ],
+                    shading: { fill: "1E293B" },
+                }),
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            text: "STATUS",
+                            alignment: AlignmentType.CENTER,
+                        }),
+                    ],
+                    shading: { fill: "1E293B" },
+                }),
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            text: "KETERANGAN",
+                            alignment: AlignmentType.CENTER,
+                        }),
+                    ],
+                    shading: { fill: "1E293B" },
+                }),
+            ],
         });
 
         // 2. Create Data Rows with Colors
         const dataRows = allStudents.map((student, index) => {
-            const record = attData.find(r => r.student_id === student.id);
+            const record = attData.find((r) => r.student_id === student.id);
             const isAlternate = index % 2 === 0;
             const rowBaseColor = isAlternate ? "F8FAFC" : "FFFFFF";
-            
+
             // Dynamic Color Mapping from Database (Matching Web UI)
             const webColorMap: Record<string, string> = {
                 emerald: "10B981",
@@ -436,103 +882,161 @@ import Layout from '../layouts/Layout.astro';
                 blue: "3B82F6",
                 red: "EF4444",
                 rose: "F43F5E",
-                slate: "64748B"
+                slate: "64748B",
             };
-            
+
             const dbColor = record?.status?.color || "slate";
             const statusColor = webColorMap[dbColor] || "94A3B8";
 
             return new TableRow({
                 children: [
-                    new TableCell({ 
-                        children: [new Paragraph({ text: student.absent_no.toString(), alignment: AlignmentType.CENTER })],
-                        shading: { fill: rowBaseColor }
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                text: student.absent_no.toString(),
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                        shading: { fill: rowBaseColor },
                     }),
-                    new TableCell({ 
+                    new TableCell({
                         children: [new Paragraph({ text: student.full_name })],
-                        shading: { fill: rowBaseColor }
+                        shading: { fill: rowBaseColor },
                     }),
-                    new TableCell({ 
-                        children: [new Paragraph({ text: record ? new Date(record.check_in_time).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : "-", alignment: AlignmentType.CENTER })],
-                        shading: { fill: rowBaseColor }
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                text: record
+                                    ? new Date(
+                                          record.check_in_time,
+                                      ).toLocaleTimeString("id-ID", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                      })
+                                    : "-",
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                        shading: { fill: rowBaseColor },
                     }),
-                    new TableCell({ 
-                        children: [new Paragraph({ 
-                            children: [new TextRun({ 
-                                text: record?.status?.label?.includes('Hadir') ? "✓" : (record?.status?.code || "-"), 
-                                color: "FFFFFF", 
-                                bold: true 
-                            })],
-                            alignment: AlignmentType.CENTER 
-                        })],
-                        shading: { fill: record ? statusColor : "334155" }
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: record?.status?.label?.includes(
+                                            "Hadir",
+                                        )
+                                            ? "✓"
+                                            : record?.status?.code || "-",
+                                        color: "FFFFFF",
+                                        bold: true,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                        shading: { fill: record ? statusColor : "334155" },
                     }),
-                    new TableCell({ 
-                        children: [new Paragraph({ 
-                            children: [new TextRun({ 
-                                text: record ? `${record.status?.label}${record.note ? ` (${record.note})` : ''}` : "-", 
-                                italics: record?.note ? true : false,
-                                size: 18
-                            })]
-                        })],
-                        shading: { fill: rowBaseColor }
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: record
+                                            ? `${record.status?.label}${record.note ? ` (${record.note})` : ""}`
+                                            : "-",
+                                        italics: record?.note ? true : false,
+                                        size: 18,
+                                    }),
+                                ],
+                            }),
+                        ],
+                        shading: { fill: rowBaseColor },
                     }),
-                ]
+                ],
             });
         });
 
         const doc = new Document({
-            sections: [{
-                children: [
-                    new Paragraph({
-                        children: [new TextRun({ text: "LAPORAN KEHADIRAN SISWA TKJ", bold: true, size: 32 })],
-                        alignment: AlignmentType.CENTER,
-                        spacing: { after: 200 }
-                    }),
-                    new Paragraph({
-                        children: [new TextRun({ text: `Tanggal: ${new Date(currentDate).toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}`, size: 20 })],
-                        alignment: AlignmentType.CENTER,
-                        spacing: { after: 400 }
-                    }),
-                    new Table({
-                        width: { size: 100, type: WidthType.PERCENTAGE },
-                        rows: [headerRow, ...dataRows],
-                    })
-                ],
-            }],
+            sections: [
+                {
+                    children: [
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: "LAPORAN KEHADIRAN SISWA TKJ",
+                                    bold: true,
+                                    size: 32,
+                                }),
+                            ],
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 200 },
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `Tanggal: ${new Date(currentDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`,
+                                    size: 20,
+                                }),
+                            ],
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 400 },
+                        }),
+                        new Table({
+                            width: { size: 100, type: WidthType.PERCENTAGE },
+                            rows: [headerRow, ...dataRows],
+                        }),
+                    ],
+                },
+            ],
         });
 
         const blob = await Packer.toBlob(doc);
         saveAs(blob, `Absensi_TKJ_${currentDate}.docx`);
-        
+
         btn.innerHTML = originalContent;
     }
 
     let attendanceStatuses: any[] = [];
 
     async function loadAttendanceStatuses() {
-        const { data } = await supabase.from('attendance_status').select('*').eq('is_active', true);
+        const { data } = await supabase
+            .from("attendance_status")
+            .select("*")
+            .eq("is_active", true);
         attendanceStatuses = data || [];
-        const select = document.getElementById('status-select');
-        const filterSelect = document.getElementById('filter-status');
-        
+        const select = document.getElementById("status-select");
+        const filterSelect = document.getElementById("filter-status");
+
         if (select && data) {
-            select.innerHTML = data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
+            select.innerHTML = data
+                .map((s: any) => `<option value="${s.id}">${s.label}</option>`)
+                .join("");
         }
-        
+
         if (filterSelect && data) {
-             const existing = filterSelect.innerHTML;
-             filterSelect.innerHTML = existing + data.map((s: any) => `<option value="${s.id}">${s.label}</option>`).join('');
+            const existing = filterSelect.innerHTML;
+            filterSelect.innerHTML =
+                existing +
+                data
+                    .map(
+                        (s: any) =>
+                            `<option value="${s.id}">${s.label}</option>`,
+                    )
+                    .join("");
         }
-        
-        const actionContainer = document.getElementById('action-container');
+
+        const actionContainer = document.getElementById("action-container");
         if (actionContainer) {
             actionContainer.innerHTML = `
                 <div class="flex gap-2">
-                    ${isAdminOrTeacher ? `
-                        <button id="qr-mode-btn" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black transition-all flex items-center gap-2 border border-white/10 cursor-pointer active:scale-95" title="Buka Mode QR Absensi">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-emerald-400"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-                            QR Mode
+                    ${
+                        isAdminOrTeacher
+                            ? `
+                        <button id="qr-mode-btn" class="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-2xl font-black transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-lg shadow-emerald-500/5 group" title="Buka Modal Quick QR Absensi">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="group-hover:rotate-12 transition-transform"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                            Quick QR
                         </button>
                         <button id="reset-attendance-btn" class="px-6 py-3 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 rounded-2xl font-black transition-all cursor-pointer flex items-center gap-2 group" title="Hapus Seluruh Absensi Hari Ini">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-500"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
@@ -542,105 +1046,125 @@ import Layout from '../layouts/Layout.astro';
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                             Konfirmasi Sekelas
                         </button>
-                    ` : ''}
+                    `
+                            : ""
+                    }
                     <button onclick="document.getElementById('checkin-modal').showModal()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-all cursor-pointer scale-100 hover:scale-105 active:scale-95 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                        ${isAdminOrTeacher ? 'Input Satuan' : 'Check-In Sekarang'}
+                        ${isAdminOrTeacher ? "Input Satuan" : "Check-In Sekarang"}
                     </button>
                 </div>
             `;
 
-            document.getElementById('bulk-attendance-btn')?.addEventListener('click', bulkAttendance);
-            document.getElementById('reset-attendance-btn')?.addEventListener('click', resetAttendance);
-            document.getElementById('qr-mode-btn')?.addEventListener('click', generateQR);
+            document
+                .getElementById("bulk-attendance-btn")
+                ?.addEventListener("click", bulkAttendance);
+            document
+                .getElementById("reset-attendance-btn")
+                ?.addEventListener("click", resetAttendance);
+            document
+                .getElementById("qr-mode-btn")
+                ?.addEventListener("click", generateQR);
         }
     }
 
     async function generateQR() {
         const token = Math.random().toString(36).substring(2, 15);
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-        
+
         const { error } = await supabase
-            .from('qr_attendance_tokens')
+            .from("qr_attendance_tokens")
             .insert({ token, expires_at: expiresAt });
 
         if (error) {
-            alert('Gagal membuat QR: ' + error.message);
+            alert("Gagal membuat QR: " + error.message);
             return;
         }
 
-        const qrImg = document.getElementById('qr-image') as HTMLImageElement;
+        const qrImg = document.getElementById("qr-image") as HTMLImageElement;
         const scanUrl = `${window.location.origin}/attendance/scan?token=${token}`;
         qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
-        
-        (document.getElementById('qr-modal') as HTMLDialogElement).showModal();
-        
+
+        (document.getElementById("qr-modal") as HTMLDialogElement).showModal();
+
         // Timer logic
         let timeLeft = 300;
-        const timerEl = document.getElementById('qr-timer');
+        const timerEl = document.getElementById("qr-timer");
         const interval = setInterval(() => {
             timeLeft--;
             if (timeLeft <= 0) {
                 clearInterval(interval);
-                (document.getElementById('qr-modal') as HTMLDialogElement).close();
+                (
+                    document.getElementById("qr-modal") as HTMLDialogElement
+                ).close();
             }
             if (timerEl) {
                 const mins = Math.floor(timeLeft / 60);
                 const secs = timeLeft % 60;
-                timerEl.textContent = `Masa berlaku: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                timerEl.textContent = `Masa berlaku: ${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
             }
         }, 1000);
     }
 
     async function resetAttendance() {
-        const firstConfirm = confirm('⚠️ PERINGATAN! Anda akan MENGHAPUS SELURUH data absensi hari ini untuk sekelas. Lanjutkan?');
+        const firstConfirm = confirm(
+            "⚠️ PERINGATAN! Anda akan MENGHAPUS SELURUH data absensi hari ini untuk sekelas. Lanjutkan?",
+        );
         if (!firstConfirm) return;
 
-        const secondConfirm = confirm('TINDAKAN INI FINAL. Seluruh catatan waktu dan status akan hilang secara permanen. Anda yakin ingin mereset absensi kelas hari ini?');
+        const secondConfirm = confirm(
+            "TINDAKAN INI FINAL. Seluruh catatan waktu dan status akan hilang secara permanen. Anda yakin ingin mereset absensi kelas hari ini?",
+        );
         if (!secondConfirm) return;
 
         const { error } = await supabase
-            .from('attendance')
+            .from("attendance")
             .delete()
-            .eq('date', currentDate);
+            .eq("date", currentDate);
 
         if (error) {
-            alert('Gagal mereset absensi: ' + error.message);
+            alert("Gagal mereset absensi: " + error.message);
         } else {
-            alert('Seluruh data absensi hari ini telah berhasil dibersihkan.');
+            alert("Seluruh data absensi hari ini telah berhasil dibersihkan.");
             loadAttendanceList();
             loadAnalyticsData();
         }
     }
 
     async function bulkAttendance() {
-        if (!confirm('Hadirkan semua siswa yang belum absen untuk hari ini?')) return;
-        
-        const hadirStatus = attendanceStatuses.find(s => s.label.includes('Hadir'));
+        if (!confirm("Hadirkan semua siswa yang belum absen untuk hari ini?"))
+            return;
+
+        const hadirStatus = attendanceStatuses.find((s) =>
+            s.label.includes("Hadir"),
+        );
         if (!hadirStatus) {
-            alert('Status Hadir tidak ditemukan!');
+            alert("Status Hadir tidak ditemukan!");
             return;
         }
 
-        const { data: existing } = await supabase.from('attendance').select('student_id').eq('date', currentDate);
-        const existingIds = existing?.map(e => e.student_id) || [];
-        
+        const { data: existing } = await supabase
+            .from("attendance")
+            .select("student_id")
+            .eq("date", currentDate);
+        const existingIds = existing?.map((e) => e.student_id) || [];
+
         const toInsert = allStudents
-            .filter(s => !existingIds.includes(s.id))
-            .map(s => ({
+            .filter((s) => !existingIds.includes(s.id))
+            .map((s) => ({
                 student_id: s.id,
                 user_id: s.linked_user_id || null,
                 status_id: hadirStatus.id,
                 date: currentDate,
-                check_in_time: new Date().toISOString()
+                check_in_time: new Date().toISOString(),
             }));
 
         if (toInsert.length === 0) {
-            alert('Semua siswa sudah diabsen!');
+            alert("Semua siswa sudah diabsen!");
             return;
         }
 
-        const { error } = await supabase.from('attendance').insert(toInsert);
+        const { error } = await supabase.from("attendance").insert(toInsert);
         if (error) alert(error.message);
         else {
             alert(`Berhasil menghadirkan ${toInsert.length} siswa!`);
@@ -650,51 +1174,61 @@ import Layout from '../layouts/Layout.astro';
     }
 
     async function loadAttendanceList() {
-        const tbodyDesktop = document.getElementById('attendance-list-desktop');
-        const listMobile = document.getElementById('attendance-list-mobile');
-        if(!tbodyDesktop || !listMobile) return;
+        const tbodyDesktop = document.getElementById("attendance-list-desktop");
+        const listMobile = document.getElementById("attendance-list-mobile");
+        if (!tbodyDesktop || !listMobile) return;
 
         // Reset view with skeletons if needed, but here we just load
         const { data: attData } = await supabase
-            .from('attendance')
+            .from("attendance")
             .select(`*, status:attendance_status(*)`)
-            .eq('date', currentDate);
-            
-        const attendanceMap = Object.fromEntries(attData?.map(a => [a.student_id, a]) || []);
+            .eq("date", currentDate);
+
+        const attendanceMap = Object.fromEntries(
+            attData?.map((a) => [a.student_id, a]) || [],
+        );
 
         // Filter students based on search and status
         const filteredStudents = allStudents.filter((student: any) => {
-            const matchesSearch = student.full_name.toLowerCase().includes(searchQuery);
+            const matchesSearch = student.full_name
+                .toLowerCase()
+                .includes(searchQuery);
             const record = attendanceMap[student.id];
-            
+
             let matchesStatus = true;
-            if (statusFilter === 'none') {
+            if (statusFilter === "none") {
                 matchesStatus = !record;
-            } else if (statusFilter !== 'all') {
+            } else if (statusFilter !== "all") {
                 matchesStatus = record?.status_id?.toString() === statusFilter;
             }
-            
+
             return matchesSearch && matchesStatus;
         });
 
         // We assume allStudents is already loaded from init()
         const rows = filteredStudents.map((student: any) => {
             const record = attendanceMap[student.id];
-            const profile = student.linked_profile || { username: '-' };
-            const time = record ? new Date(record.check_in_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-            
-            const statusCode = record?.status?.code || '-';
-            const statusFullLabel = record?.status?.label?.split(' ')[0] || '-';
-            const statusColor = record?.status?.color || 'slate';
-            const note = record?.note || '';
-            const displayNote = note.trim() !== '' ? note : (record ? statusFullLabel : '-');
+            const profile = student.linked_profile || { username: "-" };
+            const time = record
+                ? new Date(record.check_in_time).toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                  })
+                : "-";
+
+            const statusCode = record?.status?.code || "-";
+            const statusFullLabel = record?.status?.label?.split(" ")[0] || "-";
+            const statusColor = record?.status?.color || "slate";
+            const note = record?.note || "";
+            const displayNote =
+                note.trim() !== "" ? note : record ? statusFullLabel : "-";
 
             // Desktop Row
             const desktopRow = `
-                <tr class="hover:bg-white/5 transition-all group ${record ? 'bg-white/2' : 'opacity-80'}">
+                <tr class="hover:bg-white/5 transition-all group ${record ? "bg-white/2" : "opacity-80"}">
                     <td class="p-6">
                         <div class="flex items-center gap-4">
-                            <div class="w-8 h-8 rounded-lg bg-slate-800 border border-white/5 flex items-center justify-center text-[10px] font-black ${record ? 'text-blue-400 border-blue-500/20' : 'text-slate-600'}">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 border border-white/5 flex items-center justify-center text-[10px] font-black ${record ? "text-blue-400 border-blue-500/20" : "text-slate-600"}">
                                 ${student.absent_no}
                             </div>
                             <div>
@@ -703,41 +1237,57 @@ import Layout from '../layouts/Layout.astro';
                             </div>
                         </div>
                     </td>
-                    <td class="p-6 text-slate-400 font-mono text-[10px]">${time !== '-' ? `${time} WIB` : '-'}</td>
+                    <td class="p-6 text-slate-400 font-mono text-[10px]">${time !== "-" ? `${time} WIB` : "-"}</td>
                     <td class="p-6">
                         <div class="flex flex-col gap-2">
-                             ${record ? `
+                             ${
+                                 record
+                                     ? `
                                 <div class="flex items-center gap-2">
                                     <span class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black uppercase bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20 shadow-sm">
                                         ${statusCode}
                                     </span>
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter sm:hidden lg:inline">${record.status?.label || '-'}</span>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter sm:hidden lg:inline">${record.status?.label || "-"}</span>
                                 </div>
-                            ` : `
+                            `
+                                     : `
                                 <span class="text-[9px] font-black uppercase text-slate-700 tracking-widest italic">Belum Absen</span>
-                            `}
-                            ${isAdminOrTeacher ? `
+                            `
+                             }
+                            ${
+                                isAdminOrTeacher
+                                    ? `
                                 <div class="flex gap-1 mt-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    ${attendanceStatuses.map(s => `
+                                    ${attendanceStatuses
+                                        .map(
+                                            (s) => `
                                         <button 
                                             data-action="quick-attendance"
                                             data-student-id="${student.id}"
                                             data-status-id="${s.id}"
                                             title="${s.label}"
                                             class="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-black border transition-all cursor-pointer
-                                            ${record?.status_id === s.id 
-                                                ? `bg-${s.color}-500 border-${s.color}-400 text-white` 
-                                                : `bg-slate-800/80 border-white/5 text-slate-500 hover:text-${s.color}-400`}"
+                                            ${
+                                                record?.status_id === s.id
+                                                    ? `bg-${s.color}-500 border-${s.color}-400 text-white`
+                                                    : `bg-slate-800/80 border-white/5 text-slate-500 hover:text-${s.color}-400`
+                                            }"
                                         >
                                             ${s.code}
                                         </button>
-                                    `).join('')}
+                                    `,
+                                        )
+                                        .join("")}
                                 </div>
-                            ` : ''}
+                            `
+                                    : ""
+                            }
                         </div>
                     </td>
                     <td class="p-6">
-                        ${isAdminOrTeacher ? `
+                        ${
+                            isAdminOrTeacher
+                                ? `
                             <button 
                                 data-action="edit-note"
                                 data-student-id="${student.id}"
@@ -748,12 +1298,16 @@ import Layout from '../layouts/Layout.astro';
                                     ${displayNote}
                                 </div>
                             </button>
-                        ` : `
+                        `
+                                : `
                             <div class="text-slate-500 text-xs italic truncate max-w-[150px]">${displayNote}</div>
-                        `}
+                        `
+                        }
                     </td>
                     <td class="p-6 text-right">
-                         ${isAdminOrTeacher && record ? `
+                         ${
+                             isAdminOrTeacher && record
+                                 ? `
                             <div class="flex justify-end gap-1">
                                 <button data-action="edit-time" data-record-id="${record.id}" data-current-time="${record.check_in_time}" class="p-2 text-slate-500 hover:text-blue-400 transition-colors cursor-pointer" title="Edit Waktu">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -762,17 +1316,19 @@ import Layout from '../layouts/Layout.astro';
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                 </button>
                             </div>
-                         ` : ''}
+                         `
+                                 : ""
+                         }
                     </td>
                 </tr>
             `;
 
             // Mobile Card
             const mobileCard = `
-                <div class="p-6 space-y-4 hover:bg-white/5 transition-all ${record ? 'bg-emerald-500/5' : ''}">
+                <div class="p-6 space-y-4 hover:bg-white/5 transition-all ${record ? "bg-emerald-500/5" : ""}">
                     <div class="flex justify-between items-start gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-2xl bg-slate-800 border ${record ? 'border-blue-500/20 text-blue-400' : 'border-white/10 text-slate-600'} flex items-center justify-center font-black shadow-xl">
+                            <div class="w-10 h-10 rounded-2xl bg-slate-800 border ${record ? "border-blue-500/20 text-blue-400" : "border-white/10 text-slate-600"} flex items-center justify-center font-black shadow-xl">
                                 ${student.absent_no}
                             </div>
                             <div class="min-w-0">
@@ -781,10 +1337,10 @@ import Layout from '../layouts/Layout.astro';
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-2">
-                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${record ? `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20` : 'bg-slate-800/50 text-slate-600 border border-white/5'}">
-                                ${record ? statusFullLabel : 'BELUM'}
+                            <span class="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${record ? `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20` : "bg-slate-800/50 text-slate-600 border border-white/5"}">
+                                ${record ? statusFullLabel : "BELUM"}
                             </span>
-                            <span class="text-[8px] font-mono text-slate-600">${time === '-' ? '' : time} WIB</span>
+                            <span class="text-[8px] font-mono text-slate-600">${time === "-" ? "" : time} WIB</span>
                         </div>
                     </div>
                     
@@ -800,24 +1356,34 @@ import Layout from '../layouts/Layout.astro';
                          </button>
                     </div>
 
-                    ${isAdminOrTeacher ? `
+                    ${
+                        isAdminOrTeacher
+                            ? `
                         <div class="flex justify-between items-center gap-2 pt-2 border-t border-white/5 overflow-x-auto no-scrollbar pb-1">
                             <div class="flex gap-1.5 items-center">
-                                ${attendanceStatuses.map(s => `
+                                ${attendanceStatuses
+                                    .map(
+                                        (s) => `
                                     <button 
                                         data-action="quick-attendance"
                                         data-student-id="${student.id}"
                                         data-status-id="${s.id}"
                                         class="px-3 py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer whitespace-nowrap
-                                        ${record?.status_id === s.id 
-                                            ? `bg-${s.color}-500 border-${s.color}-400 text-white` 
-                                            : `bg-slate-800/50 border-white/5 text-slate-500`}"
+                                        ${
+                                            record?.status_id === s.id
+                                                ? `bg-${s.color}-500 border-${s.color}-400 text-white`
+                                                : `bg-slate-800/50 border-white/5 text-slate-500`
+                                        }"
                                     >
                                         ${s.label}
                                     </button>
-                                `).join('')}
+                                `,
+                                    )
+                                    .join("")}
                             </div>
-                            ${record ? `
+                            ${
+                                record
+                                    ? `
                                 <div class="flex gap-1">
                                     <button data-action="edit-time" data-record-id="${record.id}" data-current-time="${record.check_in_time}" class="p-2 text-slate-500 hover:text-blue-400 transition-colors cursor-pointer">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -826,33 +1392,40 @@ import Layout from '../layouts/Layout.astro';
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                     </button>
                                 </div>
-                            ` : ''}
+                            `
+                                    : ""
+                            }
                         </div>
-                    ` : ''}
+                    `
+                            : ""
+                    }
                 </div>
             `;
 
             return { desktop: desktopRow, mobile: mobileCard };
         });
 
-        tbodyDesktop.innerHTML = rows.map(r => r.desktop).join('');
-        listMobile.innerHTML = rows.map(r => r.mobile).join('');
+        tbodyDesktop.innerHTML = rows.map((r) => r.desktop).join("");
+        listMobile.innerHTML = rows.map((r) => r.mobile).join("");
 
         // Re-attach listeners via delegation
         setupDelegation();
     }
 
     function setupDelegation() {
-        const containers = ['attendance-list-desktop', 'attendance-list-mobile'];
-        containers.forEach(id => {
+        const containers = [
+            "attendance-list-desktop",
+            "attendance-list-mobile",
+        ];
+        containers.forEach((id) => {
             const el = document.getElementById(id);
             if (!el) return;
             // Clean old listener
             const newEl = el.cloneNode(true);
             el.parentNode?.replaceChild(newEl, el);
 
-            newEl.addEventListener('click', async (e: any) => {
-                const target = e.target.closest('button');
+            newEl.addEventListener("click", async (e: any) => {
+                const target = e.target.closest("button");
                 if (!target) return;
 
                 const action = target.dataset.action;
@@ -861,13 +1434,16 @@ import Layout from '../layouts/Layout.astro';
                 const recordId = target.dataset.recordId;
                 const currentNote = target.dataset.note;
 
-                if (action === 'quick-attendance') {
-                    if (studentId && statusId) await quickAttendance(studentId, statusId);
-                } else if (action === 'edit-note') {
-                    if (studentId) await updateNote(studentId, currentNote || '');
-                } else if (action === 'edit-time') {
-                    if (recordId) await editTime(recordId, target.dataset.currentTime);
-                } else if (action === 'delete') {
+                if (action === "quick-attendance") {
+                    if (studentId && statusId)
+                        await quickAttendance(studentId, statusId);
+                } else if (action === "edit-note") {
+                    if (studentId)
+                        await updateNote(studentId, currentNote || "");
+                } else if (action === "edit-time") {
+                    if (recordId)
+                        await editTime(recordId, target.dataset.currentTime);
+                } else if (action === "delete") {
                     if (recordId) await deleteAttendance(recordId);
                 }
             });
@@ -875,81 +1451,105 @@ import Layout from '../layouts/Layout.astro';
     }
 
     async function updateNote(studentId: string | number, currentNote: string) {
-        const newNote = prompt('Masukkan keterangan (misal: Sakit Demam, Ijin Lomba, dll):', currentNote);
+        const newNote = prompt(
+            "Masukkan keterangan (misal: Sakit Demam, Ijin Lomba, dll):",
+            currentNote,
+        );
         if (newNote === null) return;
 
         const { data: existing } = await supabase
-            .from('attendance')
-            .select('id')
-            .eq('student_id', studentId)
-            .eq('date', currentDate)
+            .from("attendance")
+            .select("id")
+            .eq("student_id", studentId)
+            .eq("date", currentDate)
             .maybeSingle();
 
         if (existing) {
-            await supabase.from('attendance').update({ note: newNote }).eq('id', existing.id);
+            await supabase
+                .from("attendance")
+                .update({ note: newNote })
+                .eq("id", existing.id);
         } else {
-            alert('Silahkan pilih status terlebih dahulu sebelum mengisi catatan.');
+            alert(
+                "Silahkan pilih status terlebih dahulu sebelum mengisi catatan.",
+            );
         }
         loadAttendanceList();
     }
 
-    async function quickAttendance(studentId: string | number, statusId: string | number) {
+    async function quickAttendance(
+        studentId: string | number,
+        statusId: string | number,
+    ) {
         // Find student in local array (handle both string and number)
-        const student = allStudents.find(s => s.id == studentId);
-        
+        const student = allStudents.find((s) => s.id == studentId);
+
         // Manual check-and-upsert to be safer
         const { data: existing } = await supabase
-            .from('attendance')
-            .select('id')
-            .eq('student_id', studentId)
-            .eq('date', currentDate)
+            .from("attendance")
+            .select("id")
+            .eq("student_id", studentId)
+            .eq("date", currentDate)
             .maybeSingle();
 
         let error;
         if (existing) {
             const res = await supabase
-                .from('attendance')
-                .update({ status_id: statusId, check_in_time: new Date().toISOString() })
-                .eq('id', existing.id);
+                .from("attendance")
+                .update({
+                    status_id: statusId,
+                    check_in_time: new Date().toISOString(),
+                })
+                .eq("id", existing.id);
             error = res.error;
         } else {
-            const res = await supabase
-                .from('attendance')
-                .insert({
-                    student_id: studentId,
-                    user_id: student?.linked_user_id || null,
-                    status_id: statusId,
-                    date: currentDate,
-                    check_in_time: new Date().toISOString()
-                });
+            const res = await supabase.from("attendance").insert({
+                student_id: studentId,
+                user_id: student?.linked_user_id || null,
+                status_id: statusId,
+                date: currentDate,
+                check_in_time: new Date().toISOString(),
+            });
             error = res.error;
         }
 
         if (error) {
-            console.error('Supabase Error:', error);
-            alert('Error: ' + error.message);
+            console.error("Supabase Error:", error);
+            alert("Error: " + error.message);
         }
         loadAttendanceList();
         loadAnalyticsData();
     }
 
     async function deleteAttendance(id: string | number) {
-        if (!confirm('Hapus data absensi ini?')) return;
-        const { error } = await supabase.from('attendance').delete().eq('id', id);
+        if (!confirm("Hapus data absensi ini?")) return;
+        const { error } = await supabase
+            .from("attendance")
+            .delete()
+            .eq("id", id);
         if (error) alert(error.message);
         loadAttendanceList();
         loadAnalyticsData();
     }
 
     async function editTime(recordId: string | number, currentTime: string) {
-        const currentLocal = new Date(currentTime).toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' }).replace('.', ':');
-        const newTimeStr = prompt('Edit waktu check-in (Format HH:mm):', currentLocal);
+        const currentLocal = new Date(currentTime)
+            .toLocaleTimeString("id-ID", {
+                hour12: false,
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+            .replace(".", ":");
+        const newTimeStr = prompt(
+            "Edit waktu check-in (Format HH:mm):",
+            currentLocal,
+        );
         if (!newTimeStr) return;
 
         // Combine date from record with new time
-        const [hours, minutes] = newTimeStr.split(':').map(Number);
+        const [hours, minutes] = newTimeStr.split(":").map(Number);
         if (isNaN(hours) || isNaN(minutes) || hours > 23 || minutes > 59) {
-            alert('Format waktu tidak valid!');
+            alert("Format waktu tidak valid!");
             return;
         }
 
@@ -957,34 +1557,47 @@ import Layout from '../layouts/Layout.astro';
         dateObj.setHours(hours, minutes, 0, 0);
 
         const { error } = await supabase
-            .from('attendance')
+            .from("attendance")
             .update({ check_in_time: dateObj.toISOString() })
-            .eq('id', recordId);
+            .eq("id", recordId);
 
         if (error) alert(error.message);
         else loadAttendanceList();
     }
 
     function renderStatsCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const monthLabel = document.getElementById('currentMonthLabel');
+        const grid = document.getElementById("calendar-grid");
+        const monthLabel = document.getElementById("currentMonthLabel");
         if (!grid || !monthLabel) return;
 
         const year = statsMonthDate.getFullYear();
         const month = statsMonthDate.getMonth();
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        
+        const monthNames = [
+            "Januari",
+            "Februari",
+            "Maret",
+            "April",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
+            "September",
+            "Oktober",
+            "November",
+            "Desember",
+        ];
+
         monthLabel.innerText = `${monthNames[month]} ${year}`;
-        grid.innerHTML = '';
+        grid.innerHTML = "";
 
         for (let i = 0; i < firstDay; i++) {
             grid.innerHTML += `<div class="bg-slate-900/40 h-24 sm:h-32 border-b border-r border-white/5 opacity-10"></div>`;
         }
 
         for (let d = 1; d <= daysInMonth; d++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
             grid.innerHTML += `
                 <div id="day-${dateStr}" class="bg-slate-900 overflow-hidden relative group p-4 h-24 sm:h-32 border-b border-r border-white/5 hover:bg-slate-800 transition-all duration-300 cursor-default">
                     <span class="text-xs font-black text-slate-600 group-hover:text-white transition-colors">${d}</span>
@@ -1000,35 +1613,43 @@ import Layout from '../layouts/Layout.astro';
         const year = statsMonthDate.getFullYear();
         const month = statsMonthDate.getMonth();
         const lastDay = new Date(year, month + 1, 0).getDate();
-        const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-        const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+        const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
         const totalStudents = 36; // Fixed per directory
-        const { data: attendanceData } = await supabase.from('attendance').select('*, status:attendance_status(label, color)').gte('date', startDate).lte('date', endDate);
-        const { data: statuses } = await supabase.from('attendance_status').select('*');
+        const { data: attendanceData } = await supabase
+            .from("attendance")
+            .select("*, status:attendance_status(label, color)")
+            .gte("date", startDate)
+            .lte("date", endDate);
+        const { data: statuses } = await supabase
+            .from("attendance_status")
+            .select("*");
 
         if (!attendanceData || !statuses) return;
 
         const dateGroups: any = {};
         const statusSummary: any = {};
-        statuses.forEach(s => statusSummary[s.label] = 0);
+        statuses.forEach((s) => (statusSummary[s.label] = 0));
 
-        attendanceData.forEach(e => {
-            if(!dateGroups[e.date]) dateGroups[e.date] = [];
+        attendanceData.forEach((e) => {
+            if (!dateGroups[e.date]) dateGroups[e.date] = [];
             dateGroups[e.date].push(e);
-            if(e.status?.label) statusSummary[e.status.label]++;
+            if (e.status?.label) statusSummary[e.status.label]++;
         });
 
         // Fill Calendar cells
         for (let d = 1; d <= lastDay; d++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
             const container = document.getElementById(`data-${dateStr}`);
             const cell = document.getElementById(`day-${dateStr}`);
-            
+
             if (container && cell) {
                 const dayData = dateGroups[dateStr] || [];
                 if (dayData.length > 0) {
-                    const present = dayData.filter((x:any) => x.status?.label === 'Hadir').length;
+                    const present = dayData.filter(
+                        (x: any) => x.status?.label === "Hadir",
+                    ).length;
                     const p = (present / totalStudents) * 100;
                     container.innerHTML = `
                         <div class="text-[9px] font-black text-white/70">${present}/${totalStudents} Hadir</div>
@@ -1036,9 +1657,13 @@ import Layout from '../layouts/Layout.astro';
                             <div class="h-full bg-emerald-500" style="width: ${p}%"></div>
                         </div>
                     `;
-                    if(p === 100) cell.classList.add('bg-emerald-500/5', 'shadow-inner-emerald');
-                    else if(p > 60) cell.classList.add('bg-yellow-500/5');
-                    else cell.classList.add('bg-red-500/5');
+                    if (p === 100)
+                        cell.classList.add(
+                            "bg-emerald-500/5",
+                            "shadow-inner-emerald",
+                        );
+                    else if (p > 60) cell.classList.add("bg-yellow-500/5");
+                    else cell.classList.add("bg-red-500/5");
                 } else {
                     container.innerHTML = `<span class="text-[8px] text-slate-700 font-black italic tracking-tighter opacity-40 uppercase">No Data</span>`;
                 }
@@ -1048,146 +1673,224 @@ import Layout from '../layouts/Layout.astro';
         // Stats Calculations
         const activeDays = Object.keys(dateGroups).length;
         let totalP = 0;
-        let hi = 0, lo = activeDays > 0 ? 100 : 0;
-        Object.values(dateGroups).forEach((day:any) => {
-            const p = (day.filter((x:any) => x.status?.label === 'Hadir').length / totalStudents) * 100;
+        let hi = 0,
+            lo = activeDays > 0 ? 100 : 0;
+        Object.values(dateGroups).forEach((day: any) => {
+            const p =
+                (day.filter((x: any) => x.status?.label === "Hadir").length /
+                    totalStudents) *
+                100;
             totalP += p;
-            if(p > hi) hi = p;
-            if(p < lo) lo = p;
+            if (p > hi) hi = p;
+            if (p < lo) lo = p;
         });
 
-        const avg = activeDays > 0 ? Math.round(totalP/activeDays) : 0;
-        document.getElementById('avg-attendance')!.innerText = `${avg}%`;
-        document.getElementById('total-days')!.innerText = `${activeDays} Hari`;
-        document.getElementById('max-attendance')!.innerText = `${Math.round(hi)}%`;
-        document.getElementById('min-attendance')!.innerText = `${Math.round(lo)}%`;
+        const avg = activeDays > 0 ? Math.round(totalP / activeDays) : 0;
+        document.getElementById("avg-attendance")!.innerText = `${avg}%`;
+        document.getElementById("total-days")!.innerText = `${activeDays} Hari`;
+        document.getElementById("max-attendance")!.innerText =
+            `${Math.round(hi)}%`;
+        document.getElementById("min-attendance")!.innerText =
+            `${Math.round(lo)}%`;
 
-        const summaryEl = document.getElementById('status-summary');
+        const summaryEl = document.getElementById("status-summary");
         if (summaryEl) {
-            summaryEl.innerHTML = statuses.map(s => {
-                const count = statusSummary[s.label] || 0;
-                const perc = Math.min((count / (totalStudents * activeDays)) * 100 || 0, 100);
-                return `
+            summaryEl.innerHTML = statuses
+                .map((s) => {
+                    const count = statusSummary[s.label] || 0;
+                    const perc = Math.min(
+                        (count / (totalStudents * activeDays)) * 100 || 0,
+                        100,
+                    );
+                    return `
                     <div>
                         <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-widest mb-1.5">
                             <span class="text-slate-500">${s.label}</span>
                             <span class="text-white">${count}</span>
                         </div>
                         <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full transition-all duration-1000 bg-${s.color || 'blue'}-500 shadow-lg shadow-${s.color || 'blue'}-500/50" style="width: ${perc}%"></div>
+                            <div class="h-full transition-all duration-1000 bg-${s.color || "blue"}-500 shadow-lg shadow-${s.color || "blue"}-500/50" style="width: ${perc}%"></div>
                         </div>
                     </div>
                 `;
-            }).join('');
+                })
+                .join("");
         }
 
         updateCharts(dateGroups, statusSummary, totalStudents);
     }
 
-    function updateCharts(dateGroups: any, statusSummary: any, totalStudents: number) {
+    function updateCharts(
+        dateGroups: any,
+        statusSummary: any,
+        totalStudents: number,
+    ) {
         const dates = Object.keys(dateGroups).sort();
-        const trendData = dates.map(d => (dateGroups[d].filter((e: any) => e.status?.label === 'Hadir').length / totalStudents) * 100);
+        const trendData = dates.map(
+            (d) =>
+                (dateGroups[d].filter((e: any) => e.status?.label === "Hadir")
+                    .length /
+                    totalStudents) *
+                100,
+        );
 
         if (trendChart) trendChart.destroy();
-        const trendCtx = document.getElementById('trendChart') as HTMLCanvasElement;
+        const trendCtx = document.getElementById(
+            "trendChart",
+        ) as HTMLCanvasElement;
         // @ts-ignore
         trendChart = new Chart(trendCtx, {
-            type: 'line',
+            type: "line",
             data: {
-                labels: dates.map(d => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })),
-                datasets: [{
-                    label: 'Hadir (%)',
-                    data: trendData,
-                    borderColor: '#60a5fa',
-                    backgroundColor: 'rgba(96, 165, 250, 0.05)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#60a5fa',
-                    pointBorderColor: '#0f172a',
-                    pointBorderWidth: 2
-                }]
+                labels: dates.map((d) =>
+                    new Date(d).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                    }),
+                ),
+                datasets: [
+                    {
+                        label: "Hadir (%)",
+                        data: trendData,
+                        borderColor: "#60a5fa",
+                        backgroundColor: "rgba(96, 165, 250, 0.05)",
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: "#60a5fa",
+                        pointBorderColor: "#0f172a",
+                        pointBorderWidth: 2,
+                    },
+                ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } }
-                }
-            }
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: { color: "rgba(255,255,255,0.05)" },
+                        border: { display: false },
+                        ticks: { font: { size: 10 } },
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { font: { size: 10 } },
+                    },
+                },
+            },
         });
 
         if (distChart) distChart.destroy();
-        const distCtx = document.getElementById('distChart') as HTMLCanvasElement;
+        const distCtx = document.getElementById(
+            "distChart",
+        ) as HTMLCanvasElement;
         // @ts-ignore
         distChart = new Chart(distCtx, {
-            type: 'doughnut',
+            type: "doughnut",
             data: {
                 labels: Object.keys(statusSummary),
-                datasets: [{
-                    data: Object.values(statusSummary),
-                    backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#a855f7', '#f97316', '#ef4444'],
-                    borderWidth: 0,
-                    spacing: 5
-                }]
+                datasets: [
+                    {
+                        data: Object.values(statusSummary),
+                        backgroundColor: [
+                            "#10b981",
+                            "#f59e0b",
+                            "#3b82f6",
+                            "#a855f7",
+                            "#f97316",
+                            "#ef4444",
+                        ],
+                        borderWidth: 0,
+                        spacing: 5,
+                    },
+                ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '75%',
+                cutout: "75%",
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: { color: '#64748b', boxWidth: 6, font: { size: 9, weight: 'bold' }, usePointStyle: true, padding: 15 }
-                    }
-                }
-            }
+                        position: "bottom",
+                        labels: {
+                            color: "#64748b",
+                            boxWidth: 6,
+                            font: { size: 9, weight: "bold" },
+                            usePointStyle: true,
+                            padding: 15,
+                        },
+                    },
+                },
+            },
         });
     }
 
     // Modal submission
-    document.getElementById('checkin-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentUser) return;
-        
-        let studentId: any = null;
-        let userId: any = null;
+    document
+        .getElementById("checkin-form")
+        ?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
 
-        if (isAdminOrTeacher) {
-            studentId = (document.getElementById('student-select') as HTMLSelectElement).value;
-            const student = allStudents.find(s => s.id == studentId);
-            userId = student?.linked_user_id || null;
-        } else {
-            const student = allStudents.find(s => s.linked_user_id === currentUser?.id);
-            if (!student) { alert('Akun Anda belum tertaut dengan daftar siswa. Silahkan hubungi admin.'); return; }
-            studentId = student.id;
-            userId = currentUser.id;
-        }
+            let studentId: any = null;
+            let userId: any = null;
 
-        const statusId = (document.getElementById('status-select') as HTMLSelectElement).value;
-        const note = (document.getElementById('checkin-note') as HTMLTextAreaElement).value;
-        
-        const { error } = await supabase.from('attendance').insert({
-            student_id: studentId,
-            user_id: userId,
-            status_id: statusId,
-            note: note,
-            date: currentDate
+            if (isAdminOrTeacher) {
+                studentId = (
+                    document.getElementById(
+                        "student-select",
+                    ) as HTMLSelectElement
+                ).value;
+                const student = allStudents.find((s) => s.id == studentId);
+                userId = student?.linked_user_id || null;
+            } else {
+                const student = allStudents.find(
+                    (s) => s.linked_user_id === currentUser?.id,
+                );
+                if (!student) {
+                    alert(
+                        "Akun Anda belum tertaut dengan daftar siswa. Silahkan hubungi admin.",
+                    );
+                    return;
+                }
+                studentId = student.id;
+                userId = currentUser.id;
+            }
+
+            const statusId = (
+                document.getElementById("status-select") as HTMLSelectElement
+            ).value;
+            const note = (
+                document.getElementById("checkin-note") as HTMLTextAreaElement
+            ).value;
+
+            const { error } = await supabase.from("attendance").insert({
+                student_id: studentId,
+                user_id: userId,
+                status_id: statusId,
+                note: note,
+                date: currentDate,
+            });
+
+            if (error) alert(error.message);
+            else {
+                (
+                    document.getElementById(
+                        "checkin-modal",
+                    ) as HTMLDialogElement
+                ).close();
+                loadAttendanceList();
+                loadAnalyticsData();
+            }
         });
 
-        if (error) alert(error.message);
-        else {
-            (document.getElementById('checkin-modal') as HTMLDialogElement).close();
-            loadAttendanceList();
-            loadAnalyticsData();
-        }
-    });
-
     init();
-    document.addEventListener('astro:after-swap', init);
+    document.addEventListener("astro:after-swap", init);
 </script>
 
 <style is:global>

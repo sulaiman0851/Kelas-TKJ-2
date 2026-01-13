@@ -1,33 +1,120 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Dashboard - Kelas TKJ">
     <header class="flex justify-between items-center mb-8">
-        <div>
-            <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Dashboard</h2>
-            <p class="text-slate-400">Selamat datang kembali, <span id="user-name" class="text-white">User</span></p>
+        <div class="flex items-center gap-4">
+            <div id="admin-header-actions" class="hidden">
+                <a
+                    href="/attendance?action=qr"
+                    class="px-5 py-2.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-xl font-black transition-all flex items-center gap-2 scale-95 hover:scale-100 active:scale-90 shadow-lg shadow-emerald-500/5"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        ><rect width="5" height="5" x="3" y="3" rx="1"
+                        ></rect><rect width="5" height="5" x="16" y="3" rx="1"
+                        ></rect><rect width="5" height="5" x="3" y="16" rx="1"
+                        ></rect><path d="M21 16h-3a2 2 0 0 0-2 2v3"></path><path
+                            d="M12 7v3a2 2 0 0 1-2 2H7"></path></svg
+                    >
+                    Quick QR
+                </a>
+            </div>
+            <a
+                href="/attendance/scanner"
+                class="px-5 py-2.5 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl font-black transition-all flex items-center gap-2 scale-95 hover:scale-100 active:scale-90 shadow-lg shadow-blue-500/5"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    ><rect width="18" height="18" x="3" y="3" rx="2" ry="2"
+                    ></rect><path d="M7 7h.01"></path><path d="M17 7h.01"
+                    ></path><path d="M7 17h.01"></path><path d="M17 17h.01"
+                    ></path><path d="M12 7v10"></path><path d="M7 12h10"
+                    ></path></svg
+                >
+                Scan QR
+            </a>
+            <div>
+                <h2
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 text-right"
+                >
+                    Dashboard
+                </h2>
+                <p class="text-slate-400 text-right">
+                    Selamat datang kembali, <span
+                        id="user-name"
+                        class="text-white">User</span
+                    >
+                </p>
+            </div>
         </div>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <!-- Stats Cards -->
-        <div class="bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-500/20 p-6 rounded-2xl">
+        <div
+            class="bg-gradient-to-br from-blue-600/20 to-blue-900/10 border border-blue-500/20 p-6 rounded-2xl"
+        >
             <div class="flex items-center gap-4 mb-4">
                 <div class="p-3 bg-blue-500/20 text-blue-400 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-users"
+                        ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                        ></path><circle cx="9" cy="7" r="4"></circle><path
+                            d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path
+                            d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg
+                    >
                 </div>
                 <div>
                     <p class="text-sm text-slate-400">Total Siswa</p>
-                    <h3 class="text-2xl font-bold" id="stat-total-students">...</h3>
+                    <h3 class="text-2xl font-bold" id="stat-total-students">
+                        ...
+                    </h3>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-emerald-600/20 to-emerald-900/10 border border-emerald-500/20 p-6 rounded-2xl">
+        <div
+            class="bg-gradient-to-br from-emerald-600/20 to-emerald-900/10 border border-emerald-500/20 p-6 rounded-2xl"
+        >
             <div class="flex items-center gap-4 mb-4">
                 <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-check-circle-2"
+                        ><circle cx="12" cy="12" r="10"></circle><path
+                            d="m9 12 2 2 4-4"></path></svg
+                    >
                 </div>
                 <div>
                     <p class="text-sm text-slate-400">Hadir Hari Ini</p>
@@ -36,14 +123,42 @@ import Layout from '../layouts/Layout.astro';
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-purple-600/20 to-purple-900/10 border border-purple-500/20 p-6 rounded-2xl">
-             <div class="flex items-center gap-4 mb-4">
+        <div
+            class="bg-gradient-to-br from-purple-600/20 to-purple-900/10 border border-purple-500/20 p-6 rounded-2xl"
+        >
+            <div class="flex items-center gap-4 mb-4">
                 <div class="p-3 bg-purple-500/20 text-purple-400 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-swords"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="10"/><line x1="9" x2="11" y1="11" y2="13"/><line x1="12.5" x2="10" y1="15" y2="17.5"/></svg>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-swords"
+                        ><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+                        ></polyline><line x1="13" x2="19" y1="19" y2="13"
+                        ></line><line x1="16" x2="20" y1="16" y2="20"
+                        ></line><line x1="19" x2="21" y1="21" y2="19"
+                        ></line><polyline
+                            points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+                        ></polyline><line x1="5" x2="9" y1="14" y2="10"
+                        ></line><line x1="9" x2="11" y1="11" y2="13"
+                        ></line><line x1="12.5" x2="10" y1="15" y2="17.5"
+                        ></line></svg
+                    >
                 </div>
                 <div>
                     <p class="text-sm text-slate-400">Game Status</p>
-                    <h3 class="text-2xl font-bold text-purple-400" id="stat-game-players">...</h3>
+                    <h3
+                        class="text-2xl font-bold text-purple-400"
+                        id="stat-game-players"
+                    >
+                        ...
+                    </h3>
                 </div>
             </div>
         </div>
@@ -58,9 +173,16 @@ import Layout from '../layouts/Layout.astro';
                     <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
                     <h3 class="text-xl font-bold">Jadwal Hari Ini</h3>
                 </div>
-                <a href="/schedule" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest">Lihat Semua</a>
+                <a
+                    href="/schedule"
+                    class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest"
+                    >Lihat Semua</a
+                >
             </div>
-            <div id="today-schedule" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+                id="today-schedule"
+                class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            >
                 <!-- Skeletons -->
                 <div class="h-32 animate-skeleton rounded-3xl"></div>
                 <div class="h-32 animate-skeleton rounded-3xl"></div>
@@ -70,13 +192,16 @@ import Layout from '../layouts/Layout.astro';
         <!-- Activity Logs Sidebar -->
         <div>
             <div class="flex items-center gap-3 mb-6">
-                 <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-                 <h3 class="text-xl font-bold">Aktivitas Sistem</h3>
+                <span class="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
+                <h3 class="text-xl font-bold">Aktivitas Sistem</h3>
             </div>
-            <div id="activity-list" class="bg-slate-900/50 rounded-3xl border border-white/5 p-6 h-[276px] overflow-y-auto no-scrollbar relative">
+            <div
+                id="activity-list"
+                class="bg-slate-900/50 rounded-3xl border border-white/5 p-6 h-[276px] overflow-y-auto no-scrollbar relative"
+            >
                 <!-- Loaded via JS -->
-                 <div class="h-4 animate-skeleton w-full mb-4"></div>
-                 <div class="h-4 animate-skeleton w-2/3 mb-4"></div>
+                <div class="h-4 animate-skeleton w-full mb-4"></div>
+                <div class="h-4 animate-skeleton w-2/3 mb-4"></div>
             </div>
         </div>
     </div>
@@ -84,12 +209,17 @@ import Layout from '../layouts/Layout.astro';
     <!-- Mading Kelas (Combined Announcements & Tasks) -->
     <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
-            <h3 class="text-2xl font-black tracking-tight flex items-center gap-3">
+            <h3
+                class="text-2xl font-black tracking-tight flex items-center gap-3"
+            >
                 <span class="w-2 h-8 bg-blue-500 rounded-full"></span>
                 Mading Kelas & Tugas
             </h3>
             <div class="flex gap-2">
-                <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400">Terbaru</span>
+                <span
+                    class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest text-slate-400"
+                    >Terbaru</span
+                >
             </div>
         </div>
         <div id="mading-feed" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -98,38 +228,53 @@ import Layout from '../layouts/Layout.astro';
             <div class="h-48 animate-skeleton rounded-3xl"></div>
         </div>
     </div>
-
 </Layout>
 
 <script>
-    import { supabase } from '../lib/supabase';
+    import { supabase } from "../lib/supabase";
 
     async function init() {
         // Auth Check
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
-           window.location.href = '/login';
-           return;
+            window.location.href = "/login";
+            return;
         }
 
         // Fetch Profile
-        const { data: profile } = await supabase.from('profiles').select('full_name, username').eq('id', session.user.id).single();
-        const userNameEl = document.getElementById('user-name');
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name, username")
+            .eq("id", session.user.id)
+            .single();
+        const userNameEl = document.getElementById("user-name");
         if (userNameEl && profile) {
-            userNameEl.innerText = profile.username || profile.full_name || 'User';
+            userNameEl.innerText =
+                profile.username || profile.full_name || "User";
         }
 
         // Check if admin and show admin section
         const { data: userRoles } = await supabase
-            .from('user_roles')
-            .select('*, roles(*)')
-            .eq('user_id', session.user.id);
-        
-        const isAdmin = userRoles?.some((ur: any) => ur.roles?.name === 'admin');
-        if (isAdmin) {
-            const adminSection = document.getElementById('admin-section');
+            .from("user_roles")
+            .select("*, roles(*)")
+            .eq("user_id", session.user.id);
+
+        const isAdminOrTeacher = userRoles?.some(
+            (ur: any) =>
+                ur.roles?.name === "admin" || ur.roles?.name === "teacher",
+        );
+        if (isAdminOrTeacher) {
+            const adminSection = document.getElementById("admin-section");
             if (adminSection) {
-                adminSection.classList.remove('hidden');
+                adminSection.classList.remove("hidden");
+            }
+            const adminHeaderActions = document.getElementById(
+                "admin-header-actions",
+            );
+            if (adminHeaderActions) {
+                adminHeaderActions.classList.remove("hidden");
             }
         }
 
@@ -138,16 +283,20 @@ import Layout from '../layouts/Layout.astro';
 
         // Realtime for Game Players
         supabase
-            .channel('dashboard_game_presence')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_players' }, async () => {
-                const { count } = await supabase
-                    .from('fakeit_players')
-                    .select('*', { count: 'exact', head: true })
-                    .in('status', ['online', 'afk']);
-                
-                const el = document.getElementById('stat-game-players');
-                if (el) el.innerText = `${count || 0} Pemain`;
-            })
+            .channel("dashboard_game_presence")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "fakeit_players" },
+                async () => {
+                    const { count } = await supabase
+                        .from("fakeit_players")
+                        .select("*", { count: "exact", head: true })
+                        .in("status", ["online", "afk"]);
+
+                    const el = document.getElementById("stat-game-players");
+                    if (el) el.innerText = `${count || 0} Pemain`;
+                },
+            )
             .subscribe();
     }
 
@@ -155,45 +304,49 @@ import Layout from '../layouts/Layout.astro';
         const now = new Date();
         const day = now.getDay() - 1; // 0 = Mon
         if (day < 0 || day > 5) {
-            const container = document.getElementById('today-schedule');
-            if (container) container.innerHTML = '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic">Weekend! Tidak ada jadwal hari ini. 💤</div>';
+            const container = document.getElementById("today-schedule");
+            if (container)
+                container.innerHTML =
+                    '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic">Weekend! Tidak ada jadwal hari ini. 💤</div>';
             return;
         }
 
         const { data: schedule } = await supabase
-            .from('schedule')
-            .select('*, subject:subjects(*)')
-            .eq('day_of_week', day)
-            .order('start_time');
-        
-        const container = document.getElementById('today-schedule');
+            .from("schedule")
+            .select("*, subject:subjects(*)")
+            .eq("day_of_week", day)
+            .order("start_time");
+
+        const container = document.getElementById("today-schedule");
         if (!container) return;
 
         if (!schedule || schedule.length === 0) {
-            container.innerHTML = '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic text-sm">Jadwal belum diatur untuk hari ini.</div>';
+            container.innerHTML =
+                '<div class="col-span-full p-8 bg-white/3 rounded-3xl border border-white/5 text-center text-slate-500 italic text-sm">Jadwal belum diatur untuk hari ini.</div>';
             return;
         }
 
         const currentTime = now.getHours() * 3600 + now.getMinutes() * 60;
 
-        container.innerHTML = schedule.map(item => {
-            const [sh, sm] = item.start_time.split(':').map(Number);
-            const [eh, em] = item.end_time.split(':').map(Number);
-            const start = sh * 3600 + sm * 60;
-            const end = eh * 3600 + em * 60;
-            const isActive = currentTime >= start && currentTime <= end;
+        container.innerHTML = schedule
+            .map((item) => {
+                const [sh, sm] = item.start_time.split(":").map(Number);
+                const [eh, em] = item.end_time.split(":").map(Number);
+                const start = sh * 3600 + sm * 60;
+                const end = eh * 3600 + em * 60;
+                const isActive = currentTime >= start && currentTime <= end;
 
-            return `
-                <div class="p-5 rounded-[2rem] bg-slate-900 border border-white/5 relative overflow-hidden group hover:bg-white/5 transition-all duration-500 ${isActive ? 'ring-2 ring-orange-500/50 shadow-2xl shadow-orange-500/10' : ''}">
-                    ${isActive ? '<div class="absolute right-4 top-4 flex items-center gap-1.5"><span class="w-2 h-2 bg-orange-500 rounded-full animate-ping"></span><span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Active</span></div>' : ''}
+                return `
+                <div class="p-5 rounded-[2rem] bg-slate-900 border border-white/5 relative overflow-hidden group hover:bg-white/5 transition-all duration-500 ${isActive ? "ring-2 ring-orange-500/50 shadow-2xl shadow-orange-500/10" : ""}">
+                    ${isActive ? '<div class="absolute right-4 top-4 flex items-center gap-1.5"><span class="w-2 h-2 bg-orange-500 rounded-full animate-ping"></span><span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Active</span></div>' : ""}
                     <div class="flex flex-col h-full justify-between gap-4">
                         <div class="space-y-1">
-                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${item.start_time.substring(0,5)} - ${item.end_time.substring(0,5)}</span>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${item.start_time.substring(0, 5)} - ${item.end_time.substring(0, 5)}</span>
                             <h4 class="text-lg font-black text-white group-hover:text-orange-400 transition-colors uppercase leading-tight line-clamp-1">${item.subject.name}</h4>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">${item.room || 'R. KELAS'}</span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">${item.room || "R. KELAS"}</span>
                             </div>
                             <div class="w-8 h-8 rounded-xl bg-orange-600/10 flex items-center justify-center text-orange-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
@@ -202,17 +355,26 @@ import Layout from '../layouts/Layout.astro';
                     </div>
                 </div>
             `;
-        }).join('');
+            })
+            .join("");
     }
 
     async function loadData() {
-        const madingFeed = document.getElementById('mading-feed');
+        const madingFeed = document.getElementById("mading-feed");
         if (!madingFeed) return;
 
         // Fetch Both concurrently
         const [annsRes, asgsRes] = await Promise.all([
-            supabase.from('announcements').select('*').order('created_at', { ascending: false }).limit(5),
-            supabase.from('assignments').select('*').order('created_at', { ascending: false }).limit(5)
+            supabase
+                .from("announcements")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(5),
+            supabase
+                .from("assignments")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(5),
         ]);
 
         const announcements = annsRes.data || [];
@@ -220,9 +382,13 @@ import Layout from '../layouts/Layout.astro';
 
         // Combine and Sort
         const combined = [
-            ...announcements.map(a => ({ ...a, itemType: 'announcement' })),
-            ...assignments.map(a => ({ ...a, itemType: 'assignment' }))
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            ...announcements.map((a) => ({ ...a, itemType: "announcement" })),
+            ...assignments.map((a) => ({ ...a, itemType: "assignment" })),
+        ].sort(
+            (a, b) =>
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime(),
+        );
 
         if (combined.length === 0) {
             madingFeed.innerHTML = `
@@ -233,22 +399,31 @@ import Layout from '../layouts/Layout.astro';
             return;
         }
 
-        madingFeed.innerHTML = combined.map(item => {
-            if (item.itemType === 'announcement') {
-                const colors = {
-                    info: 'from-blue-500/10 to-blue-600/5 border-blue-500/20 text-blue-400',
-                    warning: 'from-yellow-500/10 to-yellow-600/5 border-yellow-500/20 text-yellow-400',
-                    success: 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 text-emerald-400'
-                };
-                const colorClass = (colors as any)[item.type] || colors.info;
-                const icon = item.type === 'warning' ? 'alert-triangle' : (item.type === 'success' ? 'check-circle' : 'info');
-                
-                return `
+        madingFeed.innerHTML = combined
+            .map((item) => {
+                if (item.itemType === "announcement") {
+                    const colors = {
+                        info: "from-blue-500/10 to-blue-600/5 border-blue-500/20 text-blue-400",
+                        warning:
+                            "from-yellow-500/10 to-yellow-600/5 border-yellow-500/20 text-yellow-400",
+                        success:
+                            "from-emerald-500/10 to-emerald-600/5 border-emerald-500/20 text-emerald-400",
+                    };
+                    const colorClass =
+                        (colors as any)[item.type] || colors.info;
+                    const icon =
+                        item.type === "warning"
+                            ? "alert-triangle"
+                            : item.type === "success"
+                              ? "check-circle"
+                              : "info";
+
+                    return `
                     <div class="bg-gradient-to-br ${colorClass} border rounded-3xl p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
                         <div class="relative z-10">
                             <div class="flex justify-between items-start mb-4">
                                 <span class="px-3 py-1 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest">${item.type}</span>
-                                <span class="text-[10px] font-mono opacity-50 uppercase">${new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                                <span class="text-[10px] font-mono opacity-50 uppercase">${new Date(item.created_at).toLocaleDateString("id-ID")}</span>
                             </div>
                             <h4 class="text-xl font-bold text-white mb-2">${item.title}</h4>
                             <p class="text-sm text-slate-300 leading-relaxed">${item.content}</p>
@@ -258,19 +433,19 @@ import Layout from '../layouts/Layout.astro';
                         </div>
                     </div>
                 `;
-            } else {
-                return `
+                } else {
+                    return `
                     <div class="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-3xl p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300">
                         <div class="relative z-10">
                             <div class="flex justify-between items-start mb-4">
                                 <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-[10px] font-black uppercase tracking-widest">Tugas Sekolah</span>
-                                <span class="text-[10px] font-mono text-slate-500 uppercase">${new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                                <span class="text-[10px] font-mono text-slate-500 uppercase">${new Date(item.created_at).toLocaleDateString("id-ID")}</span>
                             </div>
                             <div class="mb-4">
                                 <span class="text-[10px] font-bold text-purple-500/80 uppercase tracking-widest">${item.subject}</span>
                                 <h4 class="text-xl font-bold text-white mt-1 group-hover:text-purple-400 transition-colors">${item.title}</h4>
                             </div>
-                            <p class="text-sm text-slate-400 mb-6 line-clamp-2">${item.description || 'Selesaikan tepat waktu ya!'}</p>
+                            <p class="text-sm text-slate-400 mb-6 line-clamp-2">${item.description || "Selesaikan tepat waktu ya!"}</p>
                             <div class="flex items-center justify-between pt-4 border-t border-white/5">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
@@ -278,7 +453,7 @@ import Layout from '../layouts/Layout.astro';
                                     </div>
                                     <div class="text-[10px]">
                                         <p class="text-slate-500 uppercase font-bold">Deadline</p>
-                                        <p class="text-slate-200 font-mono">${new Date(item.due_date).toLocaleDateString('id-ID')} ${new Date(item.due_date).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</p>
+                                        <p class="text-slate-200 font-mono">${new Date(item.due_date).toLocaleDateString("id-ID")} ${new Date(item.due_date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</p>
                                     </div>
                                 </div>
                                 <button class="p-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all">
@@ -291,68 +466,87 @@ import Layout from '../layouts/Layout.astro';
                         </div>
                     </div>
                 `;
-            }
-        }).join('');
+                }
+            })
+            .join("");
 
         // Load Stats
-        const { count: studentCount } = await supabase.from('student_directory').select('*', { count: 'exact', head: true });
-        document.getElementById('stat-total-students')!.innerText = studentCount?.toString() || '36';
-        
-        const { count: attCount } = await supabase.from('attendance').select('*', { count: 'exact', head: true }).eq('date', new Date().toISOString().split('T')[0]);
-        document.getElementById('stat-attendance')!.innerText = attCount?.toString() || '0';
+        const { count: studentCount } = await supabase
+            .from("student_directory")
+            .select("*", { count: "exact", head: true });
+        document.getElementById("stat-total-students")!.innerText =
+            studentCount?.toString() || "36";
+
+        const { count: attCount } = await supabase
+            .from("attendance")
+            .select("*", { count: "exact", head: true })
+            .eq("date", new Date().toISOString().split("T")[0]);
+        document.getElementById("stat-attendance")!.innerText =
+            attCount?.toString() || "0";
 
         // Load Game Players count
         const { count: gamePlayers } = await supabase
-            .from('fakeit_players')
-            .select('*', { count: 'exact', head: true })
-            .in('status', ['online', 'afk']);
-        
-        const gameStatEl = document.getElementById('stat-game-players');
+            .from("fakeit_players")
+            .select("*", { count: "exact", head: true })
+            .in("status", ["online", "afk"]);
+
+        const gameStatEl = document.getElementById("stat-game-players");
         if (gameStatEl) {
-            gameStatEl.innerText = gamePlayers !== null ? `${gamePlayers} Pemain` : '0 Pemain';
+            gameStatEl.innerText =
+                gamePlayers !== null ? `${gamePlayers} Pemain` : "0 Pemain";
         }
 
         // Load Activity Logs
         const { data: logs } = await supabase
-            .from('activity_logs')
-            .select('*, profiles(username, full_name)')
-            .order('created_at', { ascending: false })
+            .from("activity_logs")
+            .select("*, profiles(username, full_name)")
+            .order("created_at", { ascending: false })
             .limit(10);
-        
-        const activityList = document.getElementById('activity-list');
+
+        const activityList = document.getElementById("activity-list");
         if (activityList) {
             if (!logs || logs.length === 0) {
-                activityList.innerHTML = '<p class="text-slate-600 text-center py-8 italic text-sm">Belum ada aktifitas terbaru.</p>';
+                activityList.innerHTML =
+                    '<p class="text-slate-600 text-center py-8 italic text-sm">Belum ada aktifitas terbaru.</p>';
             } else {
                 activityList.innerHTML = `
                     <div class="flow-root">
                         <ul role="list" class="-mb-8">
-                            ${logs.map((log, idx) => {
-                                const isLast = idx === logs.length - 1;
-                                const time = new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                                const name = log.profiles?.username || 'System';
-                                
-                                const icons: Record<string, string> = {
-                                    attendance: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>',
-                                    content: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>',
-                                    game: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15 10a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>',
-                                    admin: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>'
-                                };
+                            ${logs
+                                .map((log, idx) => {
+                                    const isLast = idx === logs.length - 1;
+                                    const time = new Date(
+                                        log.created_at,
+                                    ).toLocaleTimeString("id-ID", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    });
+                                    const name =
+                                        log.profiles?.username || "System";
 
-                                const bgColors: Record<string, string> = {
-                                    attendance: 'bg-emerald-500',
-                                    content: 'bg-blue-500',
-                                    game: 'bg-purple-500',
-                                    admin: 'bg-slate-500'
-                                };
+                                    const icons: Record<string, string> = {
+                                        attendance:
+                                            '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>',
+                                        content:
+                                            '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>',
+                                        game: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.536 14.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15 10a5 5 0 11-10 0 5 5 0 0110 0z" /></svg>',
+                                        admin: '<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>',
+                                    };
 
-                                return `
+                                    const bgColors: Record<string, string> = {
+                                        attendance: "bg-emerald-500",
+                                        content: "bg-blue-500",
+                                        game: "bg-purple-500",
+                                        admin: "bg-slate-500",
+                                    };
+
+                                    return `
                                     <li>
                                         <div class="relative pb-8">
-                                            ${!isLast ? '<span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-white/5" aria-hidden="true"></span>' : ''}
+                                            ${!isLast ? '<span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-white/5" aria-hidden="true"></span>' : ""}
                                             <div class="relative flex space-x-3">
                                                 <div>
-                                                    <span class="h-8 w-8 rounded-full ${bgColors[log.category] || 'bg-slate-500'} flex items-center justify-center ring-8 ring-slate-950">
+                                                    <span class="h-8 w-8 rounded-full ${bgColors[log.category] || "bg-slate-500"} flex items-center justify-center ring-8 ring-slate-950">
                                                         ${icons[log.category] || icons.admin}
                                                     </span>
                                                 </div>
@@ -370,7 +564,8 @@ import Layout from '../layouts/Layout.astro';
                                         </div>
                                     </li>
                                 `;
-                            }).join('')}
+                                })
+                                .join("")}
                         </ul>
                     </div>
                 `;
@@ -379,10 +574,12 @@ import Layout from '../layouts/Layout.astro';
     }
 
     // Logout
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/login';
-    });
+    document
+        .getElementById("logout-btn")
+        ?.addEventListener("click", async () => {
+            await supabase.auth.signOut();
+            window.location.href = "/login";
+        });
 
     init();
 </script>

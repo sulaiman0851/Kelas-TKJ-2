@@ -1,74 +1,168 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { supabase } from '../../lib/supabase';
+import Layout from "../../layouts/Layout.astro";
+import { supabase } from "../../lib/supabase";
 
 export const prerender = false;
 
-const token = Astro.url.searchParams.get('token');
+const token = Astro.url.searchParams.get("token");
 ---
 
 <Layout title="QR Check-In - Kelas TKJ">
     <div class="min-h-screen flex items-center justify-center p-6 bg-slate-950">
-        <div class="max-w-md w-full bg-slate-900 border border-white/5 p-10 rounded-[3rem] text-center relative overflow-hidden shadow-2xl">
-            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]"></div>
-            
-            <div id="scan-status" class="relative z-10">
-                <div class="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-blue-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-blue-400 animate-pulse"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-                </div>
-                
-                <h1 class="text-3xl font-black text-white mb-4 uppercase tracking-tighter">QR Check-In</h1>
-                <p id="status-text" class="text-slate-500 mb-10 font-medium italic">Menghubungkan ke sistem absensi...</p>
-                
-                <div id="loading-bar" class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-10">
-                    <div id="progress" class="w-0 h-full bg-blue-600 transition-all duration-1000"></div>
-                </div>
+        <div
+            class="max-w-md w-full bg-slate-900 border border-white/5 p-10 rounded-[3rem] text-center relative overflow-hidden shadow-2xl"
+        >
+            <div
+                class="absolute -right-20 -bottom-20 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]"
+            >
+            </div>
 
-                <div id="success-icon" class="hidden bounce-in">
-                    <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg>
+            <div id="scan-container" data-token={token}>
+                <div id="scan-status" class="relative z-10">
+                    <div
+                        class="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-blue-500/30"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="40"
+                            height="40"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            class="text-blue-400 animate-pulse"
+                            ><rect
+                                width="18"
+                                height="18"
+                                x="3"
+                                y="3"
+                                rx="2"
+                                ry="2"></rect><line x1="3" y1="7" x2="21" y2="7"
+                            ></line><line x1="3" y1="12" x2="21" y2="12"
+                            ></line><line x1="7" y1="3" x2="7" y2="21"
+                            ></line><line x1="12" y1="3" x2="12" y2="21"
+                            ></line></svg
+                        >
                     </div>
-                    <h2 class="text-2xl font-black text-emerald-400 mb-2 uppercase tracking-tight">Berhasil Hadir!</h2>
-                    <p class="text-slate-500 text-sm mb-8 italic">Kehadiranmu telah tercatat otomatis di sistem.</p>
-                </div>
 
-                <div id="error-icon" class="hidden shake">
-                    <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-red-400"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <h1
+                        class="text-3xl font-black text-white mb-4 uppercase tracking-tighter"
+                    >
+                        QR Check-In
+                    </h1>
+                    <p
+                        id="status-text"
+                        class="text-slate-500 mb-10 font-medium italic"
+                    >
+                        Menghubungkan ke sistem absensi...
+                    </p>
+
+                    <div
+                        id="loading-bar"
+                        class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden mb-10"
+                    >
+                        <div
+                            id="progress"
+                            class="w-0 h-full bg-blue-600 transition-all duration-1000"
+                        >
+                        </div>
                     </div>
-                    <h2 class="text-2xl font-black text-red-400 mb-2 uppercase tracking-tight">QR Kadaluarsa</h2>
-                    <p id="error-text" class="text-slate-500 text-sm mb-8 italic">Kode QR ini sudah tidak berlaku atau salah.</p>
-                </div>
 
-                <a href="/dashboard" class="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-200 text-black font-black rounded-2xl transition-all uppercase text-[10px] tracking-widest shadow-xl active:scale-95">
-                    Kembali ke Dashboard
-                </a>
+                    <div id="success-icon" class="hidden bounce-in">
+                        <div
+                            class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/50"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="40"
+                                height="40"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                class="text-emerald-400"
+                                ><polyline points="20 6 9 17 4 12"
+                                ></polyline></svg
+                            >
+                        </div>
+                        <h2
+                            class="text-2xl font-black text-emerald-400 mb-2 uppercase tracking-tight"
+                        >
+                            Berhasil Hadir!
+                        </h2>
+                        <p
+                            id="success-text"
+                            class="text-slate-500 text-sm mb-8 italic"
+                        >
+                            Kehadiranmu telah tercatat otomatis di sistem.
+                        </p>
+                    </div>
+
+                    <div id="error-icon" class="hidden shake">
+                        <div
+                            class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/50"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="40"
+                                height="40"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                class="text-red-400"
+                                ><line x1="18" y1="6" x2="6" y2="18"
+                                ></line><line x1="6" y1="6" x2="18" y2="18"
+                                ></line></svg
+                            >
+                        </div>
+                        <h2
+                            class="text-2xl font-black text-red-400 mb-2 uppercase tracking-tight"
+                        >
+                            Gagal Check-In
+                        </h2>
+                        <p
+                            id="error-text"
+                            class="text-slate-500 text-sm mb-8 italic"
+                        >
+                            Kode QR ini sudah tidak berlaku atau salah.
+                        </p>
+                    </div>
+
+                    <a
+                        href="/dashboard"
+                        class="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-200 text-black font-black rounded-2xl transition-all uppercase text-[10px] tracking-widest shadow-xl active:scale-95"
+                    >
+                        Kembali ke Dashboard
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </Layout>
 
-<script define:vars={{ token }}>
-    import { supabase } from '../../lib/supabase';
+<script>
+    import { supabase } from "../../lib/supabase";
 
     async function handleScan() {
-        const progress = document.getElementById('progress');
-        const statusText = document.getElementById('status-text');
-        
+        const container = document.getElementById("scan-container");
+        const token = container?.dataset.token;
+        const progress = document.getElementById("progress");
+        const statusText = document.getElementById("status-text");
+
         if (!token) {
             showError("Token QR tidak ditemukan.");
             return;
         }
 
-        // Simulate scanning delay
-        setTimeout(() => progress.style.width = '100%', 100);
+        if (progress) progress.style.width = "100%";
 
         try {
             // 1. Verify Token
             const { data: tokenData, error: tokenError } = await supabase
-                .from('qr_attendance_tokens')
-                .select('*')
-                .eq('token', token)
+                .from("qr_attendance_tokens")
+                .select("*")
+                .eq("token", token)
                 .single();
 
             if (tokenError || !tokenData) {
@@ -82,74 +176,103 @@ const token = Astro.url.searchParams.get('token');
             }
 
             // 2. Get Current Auth User
-            const { data: { session } } = await supabase.auth.getSession();
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
             if (!session) {
-                showError("Kamu harus login untuk absen!");
+                showError(
+                    "Kamu harus login untuk absen! Silahkan login lalu scan kembali.",
+                );
+                // Store token in session storage or similar if needed
                 return;
             }
 
-            // 3. Find profile/student
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
+            // 3. Find student record linked to this user
+            const { data: student, error: studentError } = await supabase
+                .from("student_directory")
+                .select("id, full_name")
+                .eq("linked_user_id", session.user.id)
                 .single();
-            
-            if (!profile) {
-                showError("Data siswa tidak ditemukan.");
+
+            if (studentError || !student) {
+                showError(
+                    "Akun kamu belum tertaut dengan data siswa. Hubungi admin.",
+                );
                 return;
             }
 
             // Get 'Hadir' status id
-            const { data: status } = await supabase
-                .from('attendance_status')
-                .select('id')
-                .eq('label', 'Hadir')
-                .single();
+            const { data: statuses } = await supabase
+                .from("attendance_status")
+                .select("id, label")
+                .eq("is_active", true);
 
-            const today = new Date().toISOString().split('T')[0];
+            const hadirStatus = statuses?.find((s) =>
+                s.label.toLowerCase().includes("hadir"),
+            );
+
+            if (!hadirStatus) {
+                showError(
+                    "Sistem absensi sedang tidak tersedia (status 'Hadir' tidak ditemukan).",
+                );
+                return;
+            }
+
+            const today = new Date().toISOString().split("T")[0];
 
             // 4. Mark Attendance
             const { error: attError } = await supabase
-                .from('attendance')
+                .from("attendance")
                 .insert({
-                    student_id: profile.id, // Assuming profile ID matches student_id or needs lookup
+                    student_id: student.id,
                     user_id: session.user.id,
-                    status_id: status.id,
+                    status_id: hadirStatus.id,
                     date: today,
                     check_in_time: new Date().toISOString(),
-                    note: 'Via QR Scan'
+                    note: "Via QR Scan",
                 });
 
             if (attError) {
-                if (attError.code === '23505') { // Unique constraint
-                   showSuccess("Kamu sudah absen hari ini!");
+                if (attError.code === "23505") {
+                    // Unique constraint (already checked in today)
+                    showSuccess(
+                        `Halo ${student.full_name}, kamu sudah absen hari ini!`,
+                    );
                 } else {
-                   showError("Gagal mencatat absensi: " + attError.message);
+                    showError("Gagal mencatat absensi: " + attError.message);
                 }
             } else {
-                showSuccess();
+                showSuccess(
+                    `Halo ${student.full_name}, kehadiranmu telah tercatat!`,
+                );
             }
-
         } catch (e) {
+            console.error(e);
             showError("Terjadi kesalahan sistem.");
         }
     }
 
-    function showSuccess(msg) {
-        document.getElementById('loading-bar').classList.add('hidden');
-        document.getElementById('status-text').classList.add('hidden');
-        document.getElementById('success-icon').classList.remove('hidden');
-        if (msg) document.querySelector('#success-icon p').textContent = msg;
+    function showSuccess(msg: string | null = null) {
+        document.getElementById("loading-bar")?.classList.add("hidden");
+        document.getElementById("status-text")?.classList.add("hidden");
+        document.getElementById("success-icon")?.classList.remove("hidden");
+        if (msg) {
+            const el = document.getElementById("success-text");
+            if (el) el.textContent = msg;
+        }
     }
 
-    function showError(msg) {
-        document.getElementById('loading-bar').classList.add('hidden');
-        document.getElementById('status-text').classList.add('hidden');
-        document.getElementById('error-icon').classList.remove('hidden');
-        if (msg) document.getElementById('error-text').textContent = msg;
+    function showError(msg: string | null = null) {
+        document.getElementById("loading-bar")?.classList.add("hidden");
+        document.getElementById("status-text")?.classList.add("hidden");
+        document.getElementById("error-icon")?.classList.remove("hidden");
+        if (msg) {
+            const el = document.getElementById("error-text");
+            if (el) el.textContent = msg;
+        }
     }
 
+    // Auto run on load
     handleScan();
 </script>
 
@@ -158,16 +281,35 @@ const token = Astro.url.searchParams.get('token');
         animation: bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .shake {
-        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
     }
     @keyframes bounce {
-        0% { transform: scale(0.3); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
+        0% {
+            transform: scale(0.3);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
     @keyframes shake {
-        10%, 90% { transform: translate3d(-1px, 0, 0); }
-        20%, 80% { transform: translate3d(2px, 0, 0); }
-        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-        40%, 60% { transform: translate3d(4px, 0, 0); }
+        10%,
+        90% {
+            transform: translate3d(-1px, 0, 0);
+        }
+        20%,
+        80% {
+            transform: translate3d(2px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+            transform: translate3d(-4px, 0, 0);
+        }
+        40%,
+        60% {
+            transform: translate3d(4px, 0, 0);
+        }
     }
 </style>
