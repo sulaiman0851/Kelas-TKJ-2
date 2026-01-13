@@ -638,7 +638,16 @@ import Layout from "../layouts/Layout.astro";
 
     let currentUser: User | null = null;
     let isAdminOrTeacher = false;
-    let currentDate = new Date().toISOString().split("T")[0]; // For list
+    const getJakartaDate = () => {
+        const now = new Date();
+        const jakartaOffset = 7 * 60; // WIB is UTC+7
+        const localNow = new Date(
+            now.getTime() + (now.getTimezoneOffset() + jakartaOffset) * 60000,
+        );
+        return localNow.toISOString().split("T")[0];
+    };
+
+    let currentDate = getJakartaDate(); // For list
     let statsMonthDate = new Date(); // For stats calendar
     let searchQuery = "";
     let statusFilter = "all";
@@ -674,6 +683,20 @@ import Layout from "../layouts/Layout.astro";
         loadAttendanceList();
         renderStatsCalendar();
         loadAnalyticsData();
+
+        // Realtime refresh
+        supabase
+            .channel("attendance_live_refresh")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "attendance" },
+                (payload) => {
+                    console.log("Attendance change detected:", payload);
+                    loadAttendanceList();
+                    loadAnalyticsData();
+                },
+            )
+            .subscribe();
 
         // Check for Quick QR action from URL
         const urlParams = new URLSearchParams(window.location.search);

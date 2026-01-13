@@ -218,7 +218,13 @@ const token = Astro.url.searchParams.get("token");
                 return;
             }
 
-            const today = new Date().toISOString().split("T")[0];
+            const now = new Date();
+            const jakartaOffset = 7 * 60;
+            const localNow = new Date(
+                now.getTime() +
+                    (now.getTimezoneOffset() + jakartaOffset) * 60000,
+            );
+            const today = localNow.toISOString().split("T")[0];
 
             // 4. Mark Attendance
             const { error: attError } = await supabase

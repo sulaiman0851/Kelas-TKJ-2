@@ -477,12 +477,19 @@ import Layout from "../layouts/Layout.astro";
         document.getElementById("stat-total-students")!.innerText =
             studentCount?.toString() || "36";
 
-        const { count: attCount } = await supabase
+        const now = new Date();
+        const jakartaOffset = 7 * 60;
+        const localNow = new Date(
+            now.getTime() + (now.getTimezoneOffset() + jakartaOffset) * 60000,
+        );
+        const today = localNow.toISOString().split("T")[0];
+
+        const { data: attData } = await supabase
             .from("attendance")
-            .select("*", { count: "exact", head: true })
-            .eq("date", new Date().toISOString().split("T")[0]);
+            .select("id")
+            .eq("date", today);
         document.getElementById("stat-attendance")!.innerText =
-            attCount?.toString() || "0";
+            attData?.length.toString() || "0";
 
         // Load Game Players count
         const { count: gamePlayers } = await supabase
