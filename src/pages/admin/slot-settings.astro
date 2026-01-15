@@ -262,11 +262,29 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     async function loadTopups() {
-        const { data: topups } = await supabase
+        console.log("Loading topups...");
+        const { data: topups, error } = await supabase
             .from("topup_history")
-            .select("*, profiles:user_id(username, full_name)")
+            .select(
+                `
+                *,
+                profiles!user_id (
+                    username
+                )
+            `,
+            )
             .eq("status", "pending")
             .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Supabase Error:", error);
+            const container = document.getElementById("topup-list");
+            if (container)
+                container.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Error: ${error.message}</td></tr>`;
+            return;
+        }
+
+        console.log("Topups fetched successfully:", topups);
 
         const container = document.getElementById("topup-list");
         const countEl = document.getElementById("topup-count");
@@ -282,7 +300,7 @@ import Layout from "../../layouts/Layout.astro";
 
         container.innerHTML = topups
             .map(
-                (t) => `
+                (t: any) => `
       <tr class="border-b border-white/3 group hover:bg-white/1 cursor-default transition-colors">
         <td class="py-4">
           <div class="flex flex-col">

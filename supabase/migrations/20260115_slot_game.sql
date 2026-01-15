@@ -25,7 +25,7 @@ on conflict (id) do nothing;
 -- 3. Top-Up Requests
 create table if not exists public.topup_history (
   id uuid primary key default uuid_generate_v4(),
-  user_id uuid references auth.users(id) on delete cascade,
+  user_id uuid references public.profiles(id) on delete cascade,
   amount decimal(12,2) not null,
   status text check (status in ('pending', 'approved', 'rejected')) default 'pending',
   created_at timestamptz default now()
