@@ -1,0 +1,744 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Slot Gacor 99 - Kelas TKJ">
+    <div
+        class="min-h-[80vh] flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden"
+    >
+        <!-- Background Decoration -->
+        <div class="absolute top-0 left-0 w-full h-full -z-10">
+            <div
+                class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full animate-pulse"
+            >
+            </div>
+            <div
+                class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full animate-pulse"
+                style="animation-delay: 2s;"
+            >
+            </div>
+        </div>
+
+        <!-- Header Stats -->
+        <div
+            class="w-full max-w-4xl flex flex-wrap justify-between items-center gap-4 mb-8"
+        >
+            <div class="flex items-center gap-4">
+                <a
+                    href="/dashboard"
+                    class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        class="group-hover:-translate-x-1 transition-transform"
+                        ><path d="m15 18-6-6 6-6"></path></svg
+                    >
+                </a>
+                <h1
+                    class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 tracking-tighter italic"
+                >
+                    SLOT GACOR 99
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Balance -->
+                <div
+                    class="px-5 py-3 bg-slate-900/80 backdrop-blur-xl border border-yellow-500/30 rounded-2xl shadow-lg shadow-yellow-500/5"
+                >
+                    <p
+                        class="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-0.5"
+                    >
+                        Saldo
+                    </p>
+                    <p
+                        class="text-xl font-mono font-bold text-white flex items-center gap-2"
+                    >
+                        <span class="text-yellow-500">Rp</span>
+                        <span id="display-balance">0.00</span>
+                    </p>
+                </div>
+                <!-- Points -->
+                <div
+                    class="px-5 py-3 bg-slate-900/80 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-lg shadow-emerald-500/5"
+                >
+                    <p
+                        class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5"
+                    >
+                        Point
+                    </p>
+                    <p
+                        class="text-xl font-mono font-bold text-white flex items-center gap-2"
+                    >
+                        <span class="text-emerald-500">★</span>
+                        <span id="display-points">0</span>
+                    </p>
+                </div>
+                <!-- TopUp Button -->
+                <button
+                    id="btn-topup-trigger"
+                    class="p-4 bg-orange-600 hover:bg-orange-500 text-white rounded-2xl shadow-xl shadow-orange-600/20 transition-all hover:scale-105 active:scale-95"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        ><path d="M5 12h14"></path><path d="M12 5v14"
+                        ></path></svg
+                    >
+                </button>
+            </div>
+        </div>
+
+        <!-- Slot Machine Container -->
+        <div
+            class="relative w-full max-w-4xl bg-gradient-to-b from-slate-800 to-slate-950 p-6 rounded-[3rem] border-4 border-slate-700 shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+        >
+            <!-- Glow Borders -->
+            <div
+                class="absolute inset-0 rounded-[3rem] border border-white/10 pointer-events-none"
+            >
+            </div>
+
+            <!-- Reels -->
+            <div
+                class="grid grid-cols-3 gap-4 bg-black/40 p-4 rounded-[2rem] border-2 border-slate-900/50 inner-shadow overflow-hidden h-64 md:h-96 relative"
+                id="slot-machine-reels"
+            >
+                <!-- Winning Line indicator -->
+                <div
+                    class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent z-10 blur-sm pointer-events-none"
+                >
+                </div>
+
+                <div class="reel-container" id="reel-1">
+                    <div class="reel-strip" id="strip-1"></div>
+                </div>
+                <div class="reel-container" id="reel-2">
+                    <div class="reel-strip" id="strip-2"></div>
+                </div>
+                <div class="reel-container" id="reel-3">
+                    <div class="reel-strip" id="strip-3"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="mt-8 flex flex-col items-center gap-6">
+                <div class="flex items-center gap-4 w-full">
+                    <div
+                        class="flex-1 bg-black/40 rounded-2xl p-4 border border-white/5"
+                    >
+                        <p
+                            class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center"
+                        >
+                            Taruhan
+                        </p>
+                        <div class="flex items-center justify-between gap-4">
+                            <button
+                                class="bet-adjust p-2 hover:bg-white/5 rounded-lg text-slate-400"
+                                data-amount="-500">-</button
+                            >
+                            <span
+                                class="text-xl font-mono font-bold text-white"
+                                id="current-bet">500</span
+                            >
+                            <button
+                                class="bet-adjust p-2 hover:bg-white/5 rounded-lg text-slate-400"
+                                data-amount="500">+</button
+                            >
+                        </div>
+                    </div>
+
+                    <button
+                        id="btn-spin"
+                        class="flex-[1.5] py-4 bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white font-black text-2xl tracking-widest rounded-3xl shadow-[0_10px_0_rgb(153,27,27)] hover:shadow-[0_5px_0_rgb(153,27,27)] hover:translate-y-[5px] active:shadow-none active:translate-y-[10px] transition-all transform uppercase italic"
+                    >
+                        SPIN
+                    </button>
+                </div>
+
+                <div class="flex gap-4 w-full">
+                    <button
+                        id="btn-tukar-poin"
+                        class="flex-1 py-3 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                    >
+                        Tukar Poin ke Saldo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paytable / Info -->
+        <div
+            class="mt-12 w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-4"
+        >
+            <div
+                class="p-4 bg-white/5 border border-white/10 rounded-2xl text-center"
+            >
+                <p class="text-2xl mb-1">👑</p>
+                <p class="text-xs font-bold text-slate-400">JACKPOT</p>
+                <p class="text-sm font-black text-yellow-500">100x</p>
+            </div>
+            <div
+                class="p-4 bg-white/5 border border-white/10 rounded-2xl text-center"
+            >
+                <p class="text-2xl mb-1">💎</p>
+                <p class="text-xs font-bold text-slate-400">DIAMOND</p>
+                <p class="text-sm font-black text-blue-400">20x</p>
+            </div>
+            <div
+                class="p-4 bg-white/5 border border-white/10 rounded-2xl text-center"
+            >
+                <p class="text-2xl mb-1">🍊</p>
+                <p class="text-xs font-bold text-slate-400">FRUIT</p>
+                <p class="text-sm font-black text-orange-400">5x</p>
+            </div>
+            <div
+                class="p-4 bg-white/5 border border-white/10 rounded-2xl text-center"
+            >
+                <p class="text-2xl mb-1">🍒</p>
+                <p class="text-xs font-bold text-slate-400">CHERRY</p>
+                <p class="text-sm font-black text-red-400">2x</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal (Hidden) -->
+    <div
+        id="win-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-500"
+    >
+        <div
+            class="bg-slate-900 border-2 border-yellow-500/50 p-8 rounded-[3rem] text-center max-w-sm w-full relative overflow-hidden shadow-[0_0_50px_rgba(234,179,8,0.3)]"
+        >
+            <div id="modal-confetti" class="absolute inset-0 -z-10"></div>
+            <h2
+                id="win-status"
+                class="text-4xl font-black text-yellow-500 italic mb-2"
+            >
+                WINNER!
+            </h2>
+            <p
+                id="win-amount"
+                class="text-5xl font-mono font-black text-white mb-6 tracking-tighter"
+            >
+                Rp 0
+            </p>
+            <p class="text-emerald-400 font-bold mb-8">
+                + <span id="win-points">0</span> Points Earned!
+            </p>
+            <button
+                id="close-modal"
+                class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl text-lg uppercase tracking-widest hover:bg-yellow-400 transition-colors"
+                >Klaim</button
+            >
+        </div>
+    </div>
+
+    <!-- Topup Modal -->
+    <div
+        id="topup-modal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden"
+    >
+        <div
+            class="bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] max-w-md w-full"
+        >
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black italic">TOP UP SALDO</h3>
+                <button id="close-topup" class="text-slate-500 hover:text-white"
+                    >✕</button
+                >
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button
+                    class="preset-topup p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-orange-500 transition-all font-mono font-bold"
+                    data-amount="50000">Rp 50rb</button
+                >
+                <button
+                    class="preset-topup p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-orange-500 transition-all font-mono font-bold"
+                    data-amount="100000">Rp 100rb</button
+                >
+                <button
+                    class="preset-topup p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-orange-500 transition-all font-mono font-bold"
+                    data-amount="250000">Rp 250rb</button
+                >
+                <button
+                    class="preset-topup p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-orange-500 transition-all font-mono font-bold"
+                    data-amount="500000">Rp 500rb</button
+                >
+            </div>
+            <button
+                id="btn-submit-topup"
+                class="w-full py-4 bg-orange-600 text-white font-black rounded-2xl text-lg uppercase tracking-widest hover:bg-orange-500 disabled:opacity-50"
+                >Kirim Permintaan</button
+            >
+            <p class="text-[10px] text-slate-500 text-center mt-4">
+                Permintaan top up akan segera disetujui admin.
+            </p>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    .inner-shadow {
+        box-shadow: inset 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .reel-container {
+        height: 100%;
+        position: relative;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        container-type: size; /* Enable Container Queries */
+    }
+    .reel-container:last-child {
+        border-right: none;
+    }
+
+    .reel-strip {
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        transition: transform 3s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    }
+
+    .symbol {
+        height: 100cqh; /* Full height of container */
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 75cqh; /* Dynamic font size based on container height */
+        line-height: 1;
+        filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
+        user-select: none;
+        transform: scale(1.1); /* Slight boost to make it pop */
+    }
+
+    /* Responsive height variable for JS and CSS sync */
+    @media (min-width: 768px) {
+        :root {
+            --reel-height: 384px; /* Matches h-96 */
+        }
+    }
+    @media (max-width: 767px) {
+        :root {
+            --reel-height: 256px; /* Matches h-64 */
+        }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+
+<script>
+    import { supabase } from "../../lib/supabase";
+
+    const SYMBOLS = ["👑", "💎", "🍊", "🍒", "🍋", "🔔", "7️⃣"];
+    const SYMBOL_WEIGHTS: Record<string, number> = {
+        "👑": 3,
+        "💎": 5,
+        "🍊": 10,
+        "🍒": 15,
+        "🍋": 20,
+        "🔔": 22,
+        "7️⃣": 25,
+    };
+
+    let REEL_HEIGHT = 256;
+
+    function updateReelHeight() {
+        const container = document.getElementById("slot-machine-reels");
+        if (container) {
+            REEL_HEIGHT = container.clientHeight;
+            document.documentElement.style.setProperty(
+                "--reel-height",
+                `${REEL_HEIGHT}px`,
+            );
+        }
+    }
+
+    const SYMBOL_HEIGHT = 200; // Visual height for the reels animation
+
+    let wallet: any = { balance: 0, points: 0 };
+    let slotSettings: any = {
+        hoki_percentage: 30,
+        point_per_game: 10,
+        point_exchange_rate: 100,
+    };
+    let currentBet = 500;
+    let isSpinning = false;
+
+    async function init() {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = "/login";
+            return;
+        }
+
+        // Load Wallet
+        const { data: w } = await supabase
+            .from("user_wallets")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .single();
+        if (w) {
+            wallet = w;
+            updateDisplays();
+        }
+
+        // Load Settings
+        const { data: s } = await supabase
+            .from("slot_settings")
+            .select("*")
+            .eq("id", 1)
+            .single();
+        if (s) slotSettings = s;
+
+        updateReelHeight(); // Harus dipanggil sebelum setupReels agar REEL_HEIGHT akurat
+        setupReels();
+        setupEventListeners();
+        window.addEventListener("resize", updateReelHeight);
+    }
+
+    function setupReels() {
+        for (let i = 1; i <= 3; i++) {
+            const strip = document.getElementById(`strip-${i}`);
+            if (!strip) continue;
+
+            // Fill strip with initial random symbols
+            strip.innerHTML = "";
+            for (let j = 0; j < 20; j++) {
+                const symbol =
+                    SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                const div = document.createElement("div");
+                div.className = "symbol";
+                div.style.height = `${REEL_HEIGHT}px`;
+                div.textContent = symbol;
+                strip.appendChild(div);
+            }
+        }
+    }
+
+    function updateDisplays() {
+        const balanceEl = document.getElementById("display-balance");
+        const pointsEl = document.getElementById("display-points");
+        if (balanceEl)
+            balanceEl.innerText = Number(wallet.balance).toLocaleString(
+                "id-ID",
+                { minimumFractionDigits: 2 },
+            );
+        if (pointsEl)
+            pointsEl.innerText = Number(wallet.points).toLocaleString("id-ID");
+
+        const betEl = document.getElementById("current-bet");
+        if (betEl) betEl.innerText = currentBet.toString();
+    }
+
+    function setupEventListeners() {
+        document.getElementById("btn-spin")?.addEventListener("click", spin);
+
+        document.querySelectorAll(".bet-adjust").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const amount = parseInt(
+                    (e.currentTarget as HTMLElement).dataset.amount || "0",
+                );
+                currentBet = Math.max(500, currentBet + amount);
+                updateDisplays();
+            });
+        });
+
+        // Topup Modal
+        const topupTrigger = document.getElementById("btn-topup-trigger");
+        const topupModal = document.getElementById("topup-modal");
+        const closeTopup = document.getElementById("close-topup");
+
+        topupTrigger?.addEventListener("click", () =>
+            topupModal?.classList.remove("hidden"),
+        );
+        closeTopup?.addEventListener("click", () =>
+            topupModal?.classList.add("hidden"),
+        );
+
+        let selectedTopup: number | null = null;
+        document.querySelectorAll(".preset-topup").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                document
+                    .querySelectorAll(".preset-topup")
+                    .forEach((b) =>
+                        b.classList.remove(
+                            "border-orange-500",
+                            "bg-orange-500/10",
+                        ),
+                    );
+                (e.currentTarget as HTMLElement).classList.add(
+                    "border-orange-500",
+                    "bg-orange-500/10",
+                );
+                selectedTopup = parseInt(
+                    (e.currentTarget as HTMLElement).dataset.amount || "0",
+                );
+            });
+        });
+
+        document
+            .getElementById("btn-submit-topup")
+            ?.addEventListener("click", async () => {
+                if (!selectedTopup) {
+                    alert("Pilih nominal top up!");
+                    return;
+                }
+
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const { error } = await supabase.from("topup_history").insert({
+                    user_id: session.user.id,
+                    amount: selectedTopup,
+                    status: "pending",
+                });
+
+                if (error) {
+                    alert("Gagal mengirim permintaan top up");
+                } else {
+                    alert(
+                        "Permintaan top up berhasil dikirim! Silahkan hubungi admin untuk aktivasi.",
+                    );
+                    topupModal?.classList.add("hidden");
+                }
+            });
+
+        // Modal close
+        document
+            .getElementById("close-modal")
+            ?.addEventListener("click", () => {
+                const modal = document.getElementById("win-modal");
+                modal?.classList.add("hidden");
+                modal?.classList.remove("opacity-100");
+            });
+
+        // Tukar Poin
+        document
+            .getElementById("btn-tukar-poin")
+            ?.addEventListener("click", async () => {
+                if (wallet.points < slotSettings.point_exchange_rate) {
+                    alert(
+                        `Minimal penukaran ${slotSettings.point_exchange_rate} poin!`,
+                    );
+                    return;
+                }
+
+                const amountToExchange = Math.floor(
+                    wallet.points / slotSettings.point_exchange_rate,
+                );
+                const pointsToDeduct =
+                    amountToExchange * slotSettings.point_exchange_rate;
+                const balanceToAdd = amountToExchange; // 100 points = Rp 1 (Or whatever logic)
+
+                const {
+                    data: { session },
+                } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const { error } = await supabase
+                    .from("user_wallets")
+                    .update({
+                        points: wallet.points - pointsToDeduct,
+                        balance: Number(wallet.balance) + balanceToAdd,
+                    })
+                    .eq("user_id", session.user.id);
+
+                if (!error) {
+                    wallet.points -= pointsToDeduct;
+                    wallet.balance = Number(wallet.balance) + balanceToAdd;
+                    updateDisplays();
+
+                    await supabase.from("point_history").insert({
+                        user_id: session.user.id,
+                        amount: -pointsToDeduct,
+                        type: "exchange",
+                        description: `Tukar poin ke saldo Rp ${balanceToAdd}`,
+                    });
+
+                    alert("Berhasil menukar poin!");
+                }
+            });
+    }
+
+    async function spin() {
+        if (isSpinning) return;
+        if (wallet.balance < currentBet) {
+            alert("Saldo tidak cukup!");
+            return;
+        }
+
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) return;
+
+        isSpinning = true;
+        const spinBtn = document.getElementById("btn-spin");
+        if (spinBtn) spinBtn.setAttribute("disabled", "true");
+
+        // Deduct Balance
+        const { error: deductErr } = await supabase
+            .from("user_wallets")
+            .update({
+                balance: Number(wallet.balance) - currentBet,
+            })
+            .eq("user_id", session.user.id);
+
+        if (deductErr) {
+            alert("Gagal memulai permainan");
+            isSpinning = false;
+            if (spinBtn) spinBtn.removeAttribute("disabled");
+            return;
+        }
+
+        wallet.balance = Number(wallet.balance) - currentBet;
+        updateDisplays();
+
+        // Determine Result (Client-side simulation of Hoki Percentage)
+        const luck = Math.random() * 100;
+        const isWin = luck <= slotSettings.hoki_percentage;
+
+        let resultSymbols = [];
+        if (isWin) {
+            // Pick a winning symbol
+            const winner = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+            resultSymbols = [winner, winner, winner];
+        } else {
+            // Random non-winning symbols
+            while (true) {
+                resultSymbols = [
+                    SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+                    SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+                    SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+                ];
+                if (
+                    resultSymbols[0] !== resultSymbols[1] ||
+                    resultSymbols[1] !== resultSymbols[2]
+                )
+                    break;
+            }
+        }
+
+        // Animation
+        for (let i = 1; i <= 3; i++) {
+            const strip = document.getElementById(`strip-${i}`);
+            if (!strip) continue;
+
+            // Add target symbols at bottom
+            const targetDiv = document.createElement("div");
+            targetDiv.className = "symbol";
+            targetDiv.style.height = `${REEL_HEIGHT}px`;
+            targetDiv.textContent = resultSymbols[i - 1];
+
+            // Prepend current symbols and target
+            strip.appendChild(targetDiv);
+
+            const totalChildren = strip.children.length;
+            const translateY = -(totalChildren - 1) * REEL_HEIGHT;
+
+            strip.style.transition = `transform ${2 + i * 0.5}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
+            strip.style.transform = `translateY(${translateY}px)`;
+        }
+
+        // Wait for animation
+        setTimeout(async () => {
+            isSpinning = false;
+            if (spinBtn) spinBtn.removeAttribute("disabled");
+
+            const winMultiplier: Record<string, number> = {
+                "👑": 100,
+                "💎": 20,
+                "🍊": 5,
+                "🍒": 2,
+                "🍋": 1.5,
+                "🔔": 1.2,
+                "7️⃣": 1.1,
+            };
+
+            if (isWin) {
+                const symbol = resultSymbols[0];
+                const winAmount = currentBet * (winMultiplier[symbol] || 1);
+                const winPoints = slotSettings.point_per_game;
+
+                const { error: winErr } = await supabase
+                    .from("user_wallets")
+                    .update({
+                        balance: Number(wallet.balance) + winAmount,
+                        points: Number(wallet.points) + winPoints,
+                    })
+                    .eq("user_id", session.user.id);
+
+                if (!winErr) {
+                    wallet.balance = Number(wallet.balance) + winAmount;
+                    wallet.points = Number(wallet.points) + winPoints;
+
+                    await supabase.from("point_history").insert({
+                        user_id: session.user.id,
+                        amount: winPoints,
+                        type: "earn",
+                        description: `Menang slot dengan ${symbol}`,
+                    });
+
+                    showWinModal(winAmount, winPoints);
+                    updateDisplays();
+                }
+            } else {
+                // Even if lose, maybe get small points?
+                const losePoints = Math.ceil(slotSettings.point_per_game * 0.1);
+                const { error: pointErr } = await supabase
+                    .from("user_wallets")
+                    .update({
+                        points: Number(wallet.points) + losePoints,
+                    })
+                    .eq("user_id", session.user.id);
+
+                if (!pointErr) {
+                    wallet.points = Number(wallet.points) + losePoints;
+                    updateDisplays();
+                }
+            }
+
+            // Reset strips (Move to the current result basically)
+            // For simplicity in this demo, we just keep the transform
+            // In a real app we might want to cleanup the DOM and reset translateY
+        }, 4000);
+    }
+
+    function showWinModal(amount: number, points: number) {
+        const modal = document.getElementById("win-modal");
+        const amountEl = document.getElementById("win-amount");
+        const pointsEl = document.getElementById("win-points");
+
+        if (amountEl)
+            amountEl.innerText = `Rp ${amount.toLocaleString("id-ID")}`;
+        if (pointsEl) pointsEl.innerText = points.toString();
+
+        modal?.classList.remove("hidden");
+        setTimeout(() => modal?.classList.add("opacity-100"), 10);
+    }
+
+    init();
+</script>

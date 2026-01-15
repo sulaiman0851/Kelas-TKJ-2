@@ -1,116 +1,199 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout title="Game Room - Kelas TKJ">
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[100px]"></div>
+        <div
+            class="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[100px]"
+        >
+        </div>
     </div>
 
     <header class="flex justify-between items-center mb-8 relative z-10">
         <div>
             <h2 class="text-3xl font-bold">🎮 Game Zone</h2>
-            <p class="text-slate-400">Pilih game seru untuk dimainkan bersama</p>
+            <p class="text-slate-400">
+                Pilih game seru untuk dimainkan bersama
+            </p>
         </div>
     </header>
 
-            <!-- Game Selection Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 relative z-10">
-                <!-- Fakeit Card -->
-                <div class="group relative bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-2xl p-6 hover:border-red-500/60 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-500/20 cursor-pointer"
-                    onclick="window.location.href='/game/fakeit'">
-                    <div class="absolute top-4 right-4">
-                        <span class="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">🔥 HOT</span>
-                    </div>
-                    <div class="text-6xl mb-4">🎭</div>
-                    <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">Fakeit</h3>
-                    <p class="text-slate-400 text-sm mb-4">Cari siapa yang FAKER! Game deduksi sosial yang viral di TikTok.</p>
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center gap-2 text-xs text-slate-500">
-                            <span>👥 2-10 pemain</span>
-                            <span>•</span>
-                            <span>⏱️ 5-10 menit</span>
-                        </div>
-                        <div id="fakeit-live-count" class="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-500/10 px-2 py-1 rounded-lg">
-                            Loading...
-                        </div>
-                    </div>
+    <!-- Game Selection Cards -->
+    <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 relative z-10"
+    >
+        <!-- Fakeit Card -->
+        <div
+            class="group relative bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-2xl p-6 hover:border-red-500/60 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-500/20 cursor-pointer"
+            onclick="window.location.href='/game/fakeit'"
+        >
+            <div class="absolute top-4 right-4">
+                <span
+                    class="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse"
+                    >🔥 HOT</span
+                >
+            </div>
+            <div class="text-6xl mb-4">🎭</div>
+            <h3
+                class="text-2xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors"
+            >
+                Fakeit
+            </h3>
+            <p class="text-slate-400 text-sm mb-4">
+                Cari siapa yang FAKER! Game deduksi sosial yang viral di TikTok.
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span>👥 2-10 pemain</span>
+                    <span>•</span>
+                    <span>⏱️ 5-10 menit</span>
                 </div>
-
-                <!-- Impostor Card -->
-                <div class="group relative bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-2xl p-6 hover:border-purple-500/60 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 cursor-pointer"
-                    onclick="window.location.href='/game/impostor'">
-                    <div class="text-6xl mb-4">🕵️</div>
-                    <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Impostor</h3>
-                    <p class="text-slate-400 text-sm mb-4">Tebak keyword rahasia dan temukan impostor di antara kalian!</p>
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center gap-2 text-xs text-slate-500">
-                            <span>👥 3-15 pemain</span>
-                            <span>•</span>
-                            <span>⏱️ 10-15 menit</span>
-                        </div>
-                         <div class="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded-lg">
-                            Ready
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Coming Soon Card -->
-                <div class="group relative bg-gradient-to-br from-slate-800/20 to-slate-900/20 border border-slate-700/30 rounded-2xl p-6 opacity-60">
-                    <div class="absolute top-4 right-4">
-                        <span class="px-3 py-1 bg-slate-700 text-slate-400 text-xs font-bold rounded-full">SOON</span>
-                    </div>
-                    <div class="text-6xl mb-4">🎨</div>
-                    <h3 class="text-2xl font-bold text-white mb-2">More Games</h3>
-                    <p class="text-slate-400 text-sm mb-4">Trivia, Drawing, dan game seru lainnya segera hadir!</p>
-                    <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span>Coming soon...</span>
-                    </div>
+                <div
+                    id="fakeit-live-count"
+                    class="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-500/10 px-2 py-1 rounded-lg"
+                >
+                    Loading...
                 </div>
             </div>
+        </div>
+
+        <!-- Impostor Card -->
+        <div
+            class="group relative bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-2xl p-6 hover:border-purple-500/60 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 cursor-pointer"
+            onclick="window.location.href='/game/impostor'"
+        >
+            <div class="text-6xl mb-4">🕵️</div>
+            <h3
+                class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors"
+            >
+                Impostor
+            </h3>
+            <p class="text-slate-400 text-sm mb-4">
+                Tebak keyword rahasia dan temukan impostor di antara kalian!
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span>👥 3-15 pemain</span>
+                    <span>•</span>
+                    <span>⏱️ 10-15 menit</span>
+                </div>
+                <div
+                    class="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded-lg"
+                >
+                    Ready
+                </div>
+            </div>
+        </div>
+
+        <!-- Slot Gacor 99 Card -->
+        <div
+            class="group relative bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-500/60 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-yellow-500/20 cursor-pointer"
+            onclick="window.location.href='/game/slot'"
+        >
+            <div class="absolute top-4 right-4 animate-bounce">
+                <span
+                    class="px-3 py-1 bg-yellow-500 text-black text-[10px] font-black rounded-full shadow-lg shadow-yellow-500/50"
+                    >NEW</span
+                >
+            </div>
+            <div class="text-6xl mb-4">🎰</div>
+            <h3
+                class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors italic uppercase tracking-tighter"
+            >
+                Slot Gacor 99
+            </h3>
+            <p class="text-slate-400 text-sm mb-4">
+                Nikmati keajaiban menang besar! Spin, dapatkan poin, dan tukar
+                jadi saldo nyata.
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+                <div
+                    class="flex items-center gap-2 text-xs text-slate-500 font-mono"
+                >
+                    <span>💰 Min Bet 500</span>
+                    <span>•</span>
+                    <span>🍀 High Hoki</span>
+                </div>
+                <div
+                    class="text-[10px] font-black text-yellow-500 uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded-lg"
+                >
+                    GPR 99%
+                </div>
+            </div>
+        </div>
+
+        <!-- Coming Soon Card -->
+        <div
+            class="group relative bg-gradient-to-br from-slate-800/20 to-slate-900/20 border border-slate-700/30 rounded-2xl p-6 opacity-60"
+        >
+            <div class="absolute top-4 right-4">
+                <span
+                    class="px-3 py-1 bg-slate-700 text-slate-400 text-xs font-bold rounded-full"
+                    >SOON</span
+                >
+            </div>
+            <div class="text-6xl mb-4">🎨</div>
+            <h3 class="text-2xl font-bold text-white mb-2">More Games</h3>
+            <p class="text-slate-400 text-sm mb-4">
+                Trivia, Drawing, dan game seru lainnya segera hadir!
+            </p>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span>Coming soon...</span>
+            </div>
+        </div>
+    </div>
 </Layout>
 
 <script>
-    import { supabase } from '../../lib/supabase';
+    import { supabase } from "../../lib/supabase";
 
     // Auth check and admin menu visibility
     async function init() {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
-            window.location.href = '/login';
+            window.location.href = "/login";
             return;
         }
 
         // Check if admin and show admin section
         const { data: userRoles } = await supabase
-            .from('user_roles')
-            .select('*, roles(*)')
-            .eq('user_id', session.user.id);
-        
-        const isAdmin = userRoles?.some((ur: any) => ur.roles?.name === 'admin');
+            .from("user_roles")
+            .select("*, roles(*)")
+            .eq("user_id", session.user.id);
+
+        const isAdmin = userRoles?.some(
+            (ur: any) => ur.roles?.name === "admin",
+        );
         if (isAdmin) {
-            const adminSection = document.getElementById('admin-section');
+            const adminSection = document.getElementById("admin-section");
             if (adminSection) {
-                adminSection.classList.remove('hidden');
+                adminSection.classList.remove("hidden");
             }
         }
 
         updateLiveCounts();
-        
+
         // Subscribe to player changes
         supabase
-            .channel('global_game_presence')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'fakeit_players' }, updateLiveCounts)
+            .channel("global_game_presence")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "fakeit_players" },
+                updateLiveCounts,
+            )
             .subscribe();
     }
 
     async function updateLiveCounts() {
         const { count } = await supabase
-            .from('fakeit_players')
-            .select('*', { count: 'exact', head: true })
-            .in('status', ['online', 'afk']);
-        
-        const el = document.getElementById('fakeit-live-count');
+            .from("fakeit_players")
+            .select("*", { count: "exact", head: true })
+            .in("status", ["online", "afk"]);
+
+        const el = document.getElementById("fakeit-live-count");
         if (el) {
             el.innerText = `${count || 0} Online`;
         }

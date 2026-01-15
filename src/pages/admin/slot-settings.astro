@@ -1,0 +1,477 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Admin Slot Settings - Kelas TKJ">
+    <div class="max-w-6xl mx-auto py-12 px-4">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1
+                    class="text-4xl font-black italic bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-600"
+                >
+                    GAME ADMIN DASHBOARD
+                </h1>
+                <p class="text-slate-400">
+                    Kelola Slot Gacor 99 & Keberuntungan Pemain
+                </p>
+            </div>
+            <a
+                href="/admin"
+                class="px-6 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all font-bold"
+                >Kembali ke Admin</a
+            >
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Settings -->
+            <div class="lg:col-span-1 space-y-6">
+                <div
+                    class="bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-xl"
+                >
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            class="text-yellow-500"
+                            ><path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                            ></path><circle cx="12" cy="12" r="3"></circle></svg
+                        >
+                        Pengaturan Game
+                    </h3>
+
+                    <form id="form-settings" class="space-y-6">
+                        <div>
+                            <label
+                                class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
+                                >Persentase Hoki (1-100%)</label
+                            >
+                            <div class="flex items-center gap-4">
+                                <input
+                                    type="range"
+                                    id="hoki-range"
+                                    min="1"
+                                    max="100"
+                                    class="flex-1 accent-yellow-500"
+                                />
+                                <span
+                                    id="hoki-value"
+                                    class="w-12 text-right font-mono font-bold text-white text-xl"
+                                    >30%</span
+                                >
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-2 italic">
+                                * Semakin tinggi semakin sering pemain menang.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
+                                >Poin per Menang</label
+                            >
+                            <input
+                                type="number"
+                                id="point-per-game"
+                                class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-mono focus:border-yellow-500 transition-all outline-none"
+                                value="10"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
+                                >Rate Tukar Poin (1 Saldo = X Poin)</label
+                            >
+                            <input
+                                type="number"
+                                id="exchange-rate"
+                                class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-mono focus:border-yellow-500 transition-all outline-none"
+                                value="100"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="w-full py-4 bg-yellow-500 text-black font-black rounded-2xl text-lg uppercase tracking-widest hover:bg-yellow-400 transition-all shadow-xl shadow-yellow-500/20 active:scale-95"
+                            >Simpan Perubahan</button
+                        >
+                    </form>
+                </div>
+            </div>
+
+            <!-- User Topups & Balance -->
+            <div class="lg:col-span-2 space-y-6">
+                <div
+                    class="bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-xl"
+                >
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-bold flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                class="text-emerald-500"
+                                ><path d="M12 2v20"></path><path
+                                    d="m17 5-5-3-5 3"></path><path
+                                    d="m17 19-5 3-5-3"></path><path d="M2 12h20"
+                                ></path><path d="m5 7-3 5 3 5"></path><path
+                                    d="m19 7 3 5-3 5"></path></svg
+                            >
+                            Permintaan Top Up
+                        </h3>
+                        <span
+                            class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-slate-400"
+                            id="topup-count">0 Pending</span
+                        >
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr
+                                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5"
+                                >
+                                    <th class="pb-4">User</th>
+                                    <th class="pb-4">Nominal</th>
+                                    <th class="pb-4">Tanggal</th>
+                                    <th class="pb-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topup-list">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-slate-900 border border-white/10 p-8 rounded-[2.5rem] shadow-xl"
+                >
+                    <h3 class="text-xl font-bold mb-8 flex items-center gap-2">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            class="text-blue-500"
+                            ><circle cx="12" cy="12" r="10"></circle><path
+                                d="M16 12l-4-4-4 4"></path></svg
+                        >
+                        Management Saldo Cepat
+                    </h3>
+                    <div class="flex flex-wrap gap-4 items-end">
+                        <div class="flex-1">
+                            <label
+                                class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
+                                >Username / User ID</label
+                            >
+                            <input
+                                type="text"
+                                id="quick-user"
+                                class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-mono focus:border-blue-500 transition-all outline-none"
+                                placeholder="Masukkan Target"
+                            />
+                        </div>
+                        <div class="w-40">
+                            <label
+                                class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2"
+                                >Amount</label
+                            >
+                            <input
+                                type="number"
+                                id="quick-amount"
+                                class="w-full bg-black/40 border border-white/5 rounded-2xl p-4 text-white font-mono focus:border-blue-500 transition-all outline-none"
+                                placeholder="0"
+                            />
+                        </div>
+                        <button
+                            id="btn-quick-add"
+                            class="px-8 py-4 bg-blue-600 text-white font-black rounded-2xl uppercase tracking-widest hover:bg-blue-500 transition-all"
+                            >Add Saldo</button
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { supabase } from "../../lib/supabase";
+
+    async function init() {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = "/login";
+            return;
+        }
+
+        // Check Admin
+        const { data: userRoles } = await supabase
+            .from("user_roles")
+            .select("*, roles(*)")
+            .eq("user_id", session.user.id);
+        const isAdmin = userRoles?.some(
+            (ur: any) => ur.roles?.name === "admin",
+        );
+        if (!isAdmin) {
+            alert("Akses Ditolak! Hanya untuk Admin.");
+            window.location.href = "/dashboard";
+            return;
+        }
+
+        loadSettings();
+        loadTopups();
+        setupEventListeners();
+    }
+
+    async function loadSettings() {
+        const { data: s } = await supabase
+            .from("slot_settings")
+            .select("*")
+            .eq("id", 1)
+            .single();
+        if (s) {
+            (document.getElementById("hoki-range") as HTMLInputElement).value =
+                s.hoki_percentage.toString();
+            (
+                document.getElementById("hoki-value") as HTMLSpanElement
+            ).innerText = `${s.hoki_percentage}%`;
+            (
+                document.getElementById("point-per-game") as HTMLInputElement
+            ).value = s.point_per_game.toString();
+            (
+                document.getElementById("exchange-rate") as HTMLInputElement
+            ).value = s.point_exchange_rate.toString();
+        }
+    }
+
+    async function loadTopups() {
+        const { data: topups } = await supabase
+            .from("topup_history")
+            .select("*, profiles:user_id(username, full_name)")
+            .eq("status", "pending")
+            .order("created_at", { ascending: false });
+
+        const container = document.getElementById("topup-list");
+        const countEl = document.getElementById("topup-count");
+        if (!container || !countEl) return;
+
+        countEl.innerText = `${topups?.length || 0} Pending`;
+
+        if (!topups || topups.length === 0) {
+            container.innerHTML =
+                '<tr><td colspan="4" class="text-center py-8 text-slate-500 italic">Tidak ada permintaan pending.</td></tr>';
+            return;
+        }
+
+        container.innerHTML = topups
+            .map(
+                (t) => `
+      <tr class="border-b border-white/3 group hover:bg-white/1 cursor-default transition-colors">
+        <td class="py-4">
+          <div class="flex flex-col">
+            <span class="font-bold text-white">${t.profiles?.username || "Unknown"}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${t.user_id.substring(0, 8)}...</span>
+          </div>
+        </td>
+        <td class="py-4">
+          <span class="font-mono font-bold text-orange-400">Rp ${Number(t.amount).toLocaleString("id-ID")}</span>
+        </td>
+        <td class="py-4 text-[10px] text-slate-500 font-mono">
+          ${new Date(t.created_at).toLocaleDateString()}
+        </td>
+        <td class="py-4 text-right">
+          <div class="flex gap-2 justify-end">
+             <button class="approve-btn p-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg transition-all" data-id="${t.id}" data-user="${t.user_id}" data-amount="${t.amount}">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+             </button>
+             <button class="reject-btn p-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all" data-id="${t.id}">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+             </button>
+          </div>
+        </td>
+      </tr>
+    `,
+            )
+            .join("");
+
+        // Table buttons
+        container.querySelectorAll(".approve-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const id = target.dataset.id;
+                const userId = target.dataset.user;
+                const amount = parseFloat(target.dataset.amount || "0");
+
+                if (
+                    confirm(
+                        `Setujui Top Up Rp ${amount.toLocaleString("id-ID")}?`,
+                    )
+                ) {
+                    // Update Status
+                    await supabase
+                        .from("topup_history")
+                        .update({ status: "approved" })
+                        .eq("id", id);
+
+                    // Increment Balance
+                    const { data: wallet } = await supabase
+                        .from("user_wallets")
+                        .select("balance")
+                        .eq("user_id", userId)
+                        .single();
+                    const currentBalance = Number(wallet?.balance || 0);
+
+                    await supabase
+                        .from("user_wallets")
+                        .update({ balance: currentBalance + amount })
+                        .eq("user_id", userId);
+
+                    loadTopups();
+                }
+            });
+        });
+
+        container.querySelectorAll(".reject-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const id = (e.currentTarget as HTMLElement).dataset.id;
+                if (confirm("Tolak permintaan top up ini?")) {
+                    await supabase
+                        .from("topup_history")
+                        .update({ status: "rejected" })
+                        .eq("id", id);
+                    loadTopups();
+                }
+            });
+        });
+    }
+
+    function setupEventListeners() {
+        const range = document.getElementById("hoki-range") as HTMLInputElement;
+        const value = document.getElementById("hoki-value") as HTMLSpanElement;
+
+        range?.addEventListener("input", (e) => {
+            value.innerText = `${(e.target as HTMLInputElement).value}%`;
+        });
+
+        document
+            .getElementById("form-settings")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const hoki = parseInt(range.value);
+                const points = parseInt(
+                    (
+                        document.getElementById(
+                            "point-per-game",
+                        ) as HTMLInputElement
+                    ).value,
+                );
+                const rate = parseInt(
+                    (
+                        document.getElementById(
+                            "exchange-rate",
+                        ) as HTMLInputElement
+                    ).value,
+                );
+
+                const { error } = await supabase
+                    .from("slot_settings")
+                    .update({
+                        hoki_percentage: hoki,
+                        point_per_game: points,
+                        point_exchange_rate: rate,
+                    })
+                    .eq("id", 1);
+
+                if (error) {
+                    alert("Gagal menyimpan pengaturan");
+                } else {
+                    alert("Pengaturan berhasil disimpan!");
+                }
+            });
+
+        document
+            .getElementById("btn-quick-add")
+            ?.addEventListener("click", async () => {
+                const target = (
+                    document.getElementById("quick-user") as HTMLInputElement
+                ).value;
+                const amount = parseFloat(
+                    (
+                        document.getElementById(
+                            "quick-amount",
+                        ) as HTMLInputElement
+                    ).value,
+                );
+
+                if (!target || isNaN(amount)) {
+                    alert("Input tidak valid!");
+                    return;
+                }
+
+                // Try to find user by username or ID
+                let userId = target;
+                if (!target.includes("-")) {
+                    // Assuming UUIDs have hyphens
+                    const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("id")
+                        .eq("username", target)
+                        .single();
+                    if (profile) userId = profile.id;
+                    else {
+                        alert("User tidak ditemukan!");
+                        return;
+                    }
+                }
+
+                const { data: wallet } = await supabase
+                    .from("user_wallets")
+                    .select("balance")
+                    .eq("user_id", userId)
+                    .single();
+                if (!wallet) {
+                    alert("Wallet tidak ditemukan!");
+                    return;
+                }
+
+                const { error } = await supabase
+                    .from("user_wallets")
+                    .update({
+                        balance: Number(wallet.balance) + amount,
+                    })
+                    .eq("user_id", userId);
+
+                if (error) {
+                    alert("Gagal menambah saldo");
+                } else {
+                    alert(
+                        `Berhasil menambah Rp ${amount.toLocaleString("id-ID")} ke akun ${target}!`,
+                    );
+                    (
+                        document.getElementById(
+                            "quick-amount",
+                        ) as HTMLInputElement
+                    ).value = "";
+                }
+            });
+    }
+
+    init();
+</script>
