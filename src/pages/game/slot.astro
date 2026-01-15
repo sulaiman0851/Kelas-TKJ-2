@@ -505,24 +505,64 @@ import Layout from "../../layouts/Layout.astro";
                     return;
                 }
 
-                const {
-                    data: { session },
-                } = await supabase.auth.getSession();
-                if (!session) return;
+                const submitBtn = document.getElementById(
+                    "btn-submit-topup",
+                ) as HTMLButtonElement;
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "Mengirim...";
+                }
 
-                const { error } = await supabase.from("topup_history").insert({
-                    user_id: session.user.id,
-                    amount: selectedTopup,
-                    status: "pending",
-                });
+                try {
+                    const {
+                        data: { session },
+                    } = await supabase.auth.getSession();
 
-                if (error) {
-                    alert("Gagal mengirim permintaan top up");
-                } else {
-                    alert(
-                        "Permintaan top up berhasil dikirim! Silahkan hubungi admin untuk aktivasi.",
-                    );
-                    topupModal?.classList.add("hidden");
+                    if (!session) {
+                        alert("Anda harus login terlebih dahulu!");
+                        return;
+                    }
+
+                    const { error } = await supabase
+                        .from("topup_history")
+                        .insert({
+                            user_id: session.user.id,
+                            amount: selectedTopup,
+                            status: "pending",
+                        });
+
+                    if (error) {
+                        console.error("Topup error:", error);
+                        alert(
+                            "Gagal mengirim permintaan top up: " +
+                                error.message,
+                        );
+                    } else {
+                        alert(
+                            "Permintaan top up berhasil dikirim! Silahkan hubungi admin untuk aktivasi.",
+                        );
+                        // Reset selection
+                        document
+                            .querySelectorAll(".preset-topup")
+                            .forEach((b) =>
+                                b.classList.remove(
+                                    "border-orange-500",
+                                    "bg-orange-500/10",
+                                ),
+                            );
+                        selectedTopup = null;
+                        document
+                            .getElementById("topup-modal")
+                            ?.classList.add("hidden");
+                    }
+                } catch (err) {
+                    console.error("Topup exception:", err);
+                    alert("Terjadi kesalahan saat mengirim permintaan");
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = "Kirim Permintaan";
+                    }
                 }
             });
 

@@ -53,6 +53,10 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+    create policy "Users can update own wallet" on public.user_wallets for update using (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
     create policy "Admin can manage all wallets" on public.user_wallets for all using (public.has_role('admin'));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -78,6 +82,10 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
     create policy "Users can view own point history" on public.point_history for select using (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+    create policy "Users can insert own point history" on public.point_history for insert with check (auth.uid() = user_id);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
