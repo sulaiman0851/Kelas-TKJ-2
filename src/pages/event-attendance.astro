@@ -1,0 +1,1673 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+export const prerender = false;
+---
+
+<Layout title="Absensi Acara - Kelas TKJ">
+    <header
+        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8"
+    >
+        <div>
+            <h2
+                class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 uppercase tracking-tight"
+            >
+                Absensi Acara
+            </h2>
+            <p class="text-slate-400 text-sm italic">
+                Kelola kehadiran untuk acara khusus dengan peserta custom
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button
+                id="create-event-btn"
+                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl font-black transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-lg shadow-purple-600/20"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    ><path d="M12 5v14"></path><path d="M5 12h14"></path></svg
+                >
+                Buat Acara Baru
+            </button>
+        </div>
+    </header>
+
+    <!-- Events Grid -->
+    <div
+        id="events-container"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+    >
+        <!-- Events loaded dynamically -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-20">
+        <div
+            class="w-24 h-24 bg-purple-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-purple-500/20"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-purple-400"
+            >
+                <path d="M8 2v4"></path><path d="M16 2v4"></path><rect
+                    width="18"
+                    height="18"
+                    x="3"
+                    y="4"
+                    rx="2"></rect><path d="M3 10h18"></path>
+            </svg>
+        </div>
+        <h3 class="text-xl font-black text-white mb-2 uppercase">
+            Belum Ada Acara
+        </h3>
+        <p class="text-slate-500 text-sm italic mb-6">
+            Klik tombol "Buat Acara Baru" untuk memulai
+        </p>
+    </div>
+
+    <!-- Create Event Modal (Step 1: Event Details) -->
+    <dialog
+        id="create-event-modal"
+        class="bg-slate-900 text-white border border-white/10 rounded-[2.5rem] p-10 backdrop:bg-slate-950/90 w-full max-w-lg shadow-2xl relative overflow-hidden"
+    >
+        <div
+            class="absolute -right-20 -top-20 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px]"
+        >
+        </div>
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div
+                    class="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 font-black"
+                >
+                    1
+                </div>
+                <div>
+                    <h3
+                        class="text-xl font-black uppercase tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
+                    >
+                        Detail Acara
+                    </h3>
+                    <p class="text-slate-500 text-xs">Langkah 1 dari 2</p>
+                </div>
+            </div>
+
+            <form id="create-event-form" class="space-y-4">
+                <div>
+                    <label
+                        class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                        >Nama Acara *</label
+                    >
+                    <input
+                        type="text"
+                        id="event-name"
+                        required
+                        placeholder="Contoh: Rapat Kelas, Study Tour..."
+                        class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all placeholder:text-slate-600"
+                    />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                            >Tanggal *</label
+                        >
+                        <input
+                            type="date"
+                            id="event-date"
+                            required
+                            class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                            >Lokasi</label
+                        >
+                        <input
+                            type="text"
+                            id="event-location"
+                            placeholder="Aula, Kelas, dll"
+                            class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all placeholder:text-slate-600"
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                        >Penyelenggara</label
+                    >
+                    <input
+                        type="text"
+                        id="event-organizer"
+                        placeholder="OSIS, Ketua Kelas, dll"
+                        class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all placeholder:text-slate-600"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500"
+                        >Deskripsi</label
+                    >
+                    <textarea
+                        id="event-description"
+                        rows="2"
+                        placeholder="Keterangan tambahan..."
+                        class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all resize-none placeholder:text-slate-600"
+                    ></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button
+                        type="button"
+                        onclick="document.getElementById('create-event-modal').close()"
+                        class="flex-1 px-6 py-4 rounded-2xl hover:bg-white/5 font-bold text-slate-400 hover:text-white transition-all cursor-pointer"
+                        >Batal</button
+                    >
+                    <button
+                        type="submit"
+                        class="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl font-black shadow-lg shadow-purple-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                        Lanjut
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="3"
+                            ><path d="m9 18 6-6-6-6"></path></svg
+                        >
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Select Participants Modal (Step 2) -->
+    <dialog
+        id="select-participants-modal"
+        class="bg-slate-900 text-white border border-white/10 rounded-[2.5rem] p-0 backdrop:bg-slate-950/90 w-full max-w-2xl shadow-2xl relative overflow-hidden max-h-[90vh]"
+    >
+        <div
+            class="absolute -right-20 -top-20 w-64 h-64 bg-pink-500/10 rounded-full blur-[80px]"
+        >
+        </div>
+
+        <!-- Header -->
+        <div
+            class="sticky top-0 bg-slate-900/95 backdrop-blur-md border-b border-white/5 p-8 z-10"
+        >
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-10 h-10 bg-pink-500/20 rounded-xl flex items-center justify-center text-pink-400 font-black"
+                >
+                    2
+                </div>
+                <div>
+                    <h3
+                        class="text-xl font-black uppercase tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-orange-400"
+                    >
+                        Pilih Peserta
+                    </h3>
+                    <p class="text-slate-500 text-xs">
+                        Langkah 2 dari 2 - Centang siswa yang ikut acara ini
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex gap-2 flex-wrap mb-4">
+                <button
+                    id="select-all-participants"
+                    class="px-4 py-2 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Pilih Semua</button
+                >
+                <button
+                    id="deselect-all-participants"
+                    class="px-4 py-2 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Hapus Semua</button
+                >
+                <div class="flex-1"></div>
+                <div
+                    class="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs font-black text-purple-400"
+                >
+                    Terpilih: <span id="selected-count">0</span> siswa
+                </div>
+            </div>
+
+            <!-- Search Input -->
+            <div class="relative">
+                <input
+                    type="text"
+                    id="search-participant"
+                    placeholder="Cari nama siswa..."
+                    class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-12 py-3 text-sm text-white focus:ring-2 focus:ring-pink-500/50 outline-none transition-all placeholder:text-slate-600"
+                />
+                <div
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        ><circle cx="11" cy="11" r="8"></circle><path
+                            d="m21 21-4.3-4.3"></path></svg
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="p-8 pt-4 overflow-y-auto max-h-[50vh]">
+            <div
+                id="participant-list"
+                class="grid grid-cols-1 md:grid-cols-2 gap-2"
+            >
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+            class="sticky bottom-0 bg-slate-900/95 backdrop-blur-md border-t border-white/5 p-6"
+        >
+            <div class="flex gap-3">
+                <button
+                    id="back-to-details"
+                    class="px-6 py-4 rounded-2xl hover:bg-white/5 font-bold text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"><path d="m15 18-6-6 6-6"></path></svg
+                    >
+                    Kembali
+                </button>
+                <button
+                    id="save-event-btn"
+                    class="flex-1 px-6 py-4 bg-gradient-to-r from-pink-600 to-orange-600 hover:from-pink-500 hover:to-orange-500 rounded-2xl font-black shadow-lg shadow-pink-600/20 transition-all cursor-pointer"
+                    >Simpan Acara</button
+                >
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Event Detail Modal (Attendance) -->
+    <dialog
+        id="event-detail-modal"
+        class="bg-slate-900 text-white border border-white/10 rounded-[2.5rem] p-0 backdrop:bg-slate-950/90 w-full max-w-4xl shadow-2xl relative overflow-hidden max-h-[90vh]"
+    >
+        <div
+            class="absolute -right-40 -top-40 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"
+        >
+        </div>
+
+        <!-- Header -->
+        <div
+            class="sticky top-0 bg-slate-900/95 backdrop-blur-md border-b border-white/5 p-8 z-10"
+        >
+            <div class="flex justify-between items-start gap-4">
+                <div>
+                    <h3
+                        id="detail-event-name"
+                        class="text-2xl font-black uppercase tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
+                    >
+                        Event Name
+                    </h3>
+                    <div
+                        class="flex flex-wrap gap-4 mt-2 text-sm text-slate-400"
+                    >
+                        <span
+                            id="detail-event-date"
+                            class="flex items-center gap-1"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                ><path d="M8 2v4"></path><path d="M16 2v4"
+                                ></path><rect
+                                    width="18"
+                                    height="18"
+                                    x="3"
+                                    y="4"
+                                    rx="2"></rect><path d="M3 10h18"
+                                ></path></svg
+                            >
+                            <span></span>
+                        </span>
+                        <span
+                            id="detail-event-location"
+                            class="flex items-center gap-1"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                ><path
+                                    d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"
+                                ></path><circle cx="12" cy="10" r="3"
+                                ></circle></svg
+                            >
+                            <span></span>
+                        </span>
+                        <span
+                            id="detail-participant-count"
+                            class="flex items-center gap-1 text-purple-400"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                ><path
+                                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                                ></path><circle cx="9" cy="7" r="4"
+                                ></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"
+                                ></path><path d="M16 3.13a4 4 0 0 1 0 7.75"
+                                ></path></svg
+                            >
+                            <span>0 Peserta</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        id="edit-participants-btn"
+                        class="px-5 py-2.5 bg-purple-600/10 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-500/20 rounded-xl font-black transition-all flex items-center gap-2 cursor-pointer text-sm"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                            ></path><circle cx="9" cy="7" r="4"></circle><path
+                                d="M19 8v6"></path><path d="M22 11h-6"
+                            ></path></svg
+                        >
+                        Edit Peserta
+                    </button>
+                    <button
+                        id="export-text-btn"
+                        class="px-5 py-2.5 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl font-black transition-all flex items-center gap-2 cursor-pointer text-sm"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            ><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"
+                            ></path><polyline points="16 6 12 2 8 6"
+                            ></polyline><line x1="12" y1="2" x2="12" y2="15"
+                            ></line></svg
+                        >
+                        Export Teks
+                    </button>
+                    <button
+                        id="print-attendance-btn"
+                        class="px-5 py-2.5 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-xl font-black transition-all flex items-center gap-2 cursor-pointer text-sm"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            ><polyline points="6 9 6 2 18 2 18 9"
+                            ></polyline><path
+                                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                            ></path><rect width="12" height="8" x="6" y="14"
+                            ></rect></svg
+                        >
+                        Print PDF
+                    </button>
+                    <button
+                        onclick="document.getElementById('event-detail-modal').close()"
+                        class="p-2.5 hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            ><path d="M18 6 6 18"></path><path d="m6 6 12 12"
+                            ></path></svg
+                        >
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-4 mt-6">
+                <div
+                    class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-center"
+                >
+                    <div
+                        id="stat-hadir"
+                        class="text-2xl font-black text-emerald-400"
+                    >
+                        0
+                    </div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-widest text-emerald-400/60"
+                    >
+                        Hadir
+                    </div>
+                </div>
+                <div
+                    class="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-center"
+                >
+                    <div
+                        id="stat-tidak-hadir"
+                        class="text-2xl font-black text-red-400"
+                    >
+                        0
+                    </div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-widest text-red-400/60"
+                    >
+                        Tidak Hadir
+                    </div>
+                </div>
+                <div
+                    class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-center"
+                >
+                    <div
+                        id="stat-izin"
+                        class="text-2xl font-black text-amber-400"
+                    >
+                        0
+                    </div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-widest text-amber-400/60"
+                    >
+                        Izin
+                    </div>
+                </div>
+                <div
+                    class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 text-center"
+                >
+                    <div
+                        id="stat-sakit"
+                        class="text-2xl font-black text-blue-400"
+                    >
+                        0
+                    </div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-widest text-blue-400/60"
+                    >
+                        Sakit
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 pt-0 overflow-y-auto max-h-[50vh]">
+            <!-- Quick Actions -->
+            <div class="flex gap-2 mb-6 pt-6 border-t border-white/5 mt-0">
+                <button
+                    id="mark-all-hadir"
+                    class="px-4 py-2 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Semua Hadir</button
+                >
+                <button
+                    id="mark-all-tidak"
+                    class="px-4 py-2 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Semua Tidak Hadir</button
+                >
+            </div>
+
+            <!-- Student List -->
+            <div id="attendance-list" class="space-y-2">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Edit Participants Modal -->
+    <dialog
+        id="edit-participants-modal"
+        class="bg-slate-900 text-white border border-white/10 rounded-[2.5rem] p-0 backdrop:bg-slate-950/90 w-full max-w-2xl shadow-2xl relative overflow-hidden max-h-[90vh]"
+    >
+        <div
+            class="absolute -right-20 -top-20 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px]"
+        >
+        </div>
+
+        <div
+            class="sticky top-0 bg-slate-900/95 backdrop-blur-md border-b border-white/5 p-8 z-10"
+        >
+            <h3
+                class="text-xl font-black uppercase tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400 mb-4"
+            >
+                Edit Peserta Acara
+            </h3>
+            <div class="flex gap-2 flex-wrap mb-4">
+                <button
+                    id="edit-select-all"
+                    class="px-4 py-2 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Pilih Semua</button
+                >
+                <button
+                    id="edit-deselect-all"
+                    class="px-4 py-2 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                    >Hapus Semua</button
+                >
+                <div class="flex-1"></div>
+                <div
+                    class="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs font-black text-purple-400"
+                >
+                    Terpilih: <span id="edit-selected-count">0</span> siswa
+                </div>
+            </div>
+
+            <!-- Search Input -->
+            <div class="relative">
+                <input
+                    type="text"
+                    id="edit-search-participant"
+                    placeholder="Cari nama siswa..."
+                    class="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-12 py-3 text-sm text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all placeholder:text-slate-600"
+                />
+                <div
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        ><circle cx="11" cy="11" r="8"></circle><path
+                            d="m21 21-4.3-4.3"></path></svg
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8 pt-4 overflow-y-auto max-h-[50vh]">
+            <div
+                id="edit-participant-list"
+                class="grid grid-cols-1 md:grid-cols-2 gap-2"
+            >
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+
+        <div
+            class="sticky bottom-0 bg-slate-900/95 backdrop-blur-md border-t border-white/5 p-6"
+        >
+            <div class="flex gap-3">
+                <button
+                    onclick="document.getElementById('edit-participants-modal').close()"
+                    class="px-6 py-4 rounded-2xl hover:bg-white/5 font-bold text-slate-400 hover:text-white transition-all cursor-pointer"
+                    >Batal</button
+                >
+                <button
+                    id="save-participants-btn"
+                    class="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl font-black shadow-lg shadow-purple-600/20 transition-all cursor-pointer"
+                    >Simpan Perubahan</button
+                >
+            </div>
+        </div>
+    </dialog>
+</Layout>
+
+<script>
+    import { supabase } from "../lib/supabase";
+
+    let allStudents: any[] = [];
+    let currentEventId: string | null = null;
+    let currentEventData: any = null;
+    let attendanceData: any[] = [];
+    let participantsData: any[] = [];
+    let selectedParticipants: Set<number> = new Set();
+    let pendingEventData: any = null;
+
+    async function init() {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = "/login";
+            return;
+        }
+
+        const { data: students } = await supabase
+            .from("student_directory")
+            .select("*")
+            .order("absent_no", { ascending: true });
+        allStudents = students || [];
+
+        await loadEvents();
+        setupEventListeners();
+    }
+
+    async function loadEvents() {
+        const { data: events } = await supabase
+            .from("events")
+            .select("*")
+            .eq("is_active", true)
+            .order("event_date", { ascending: false });
+
+        const container = document.getElementById("events-container");
+        const emptyState = document.getElementById("empty-state");
+
+        if (!events || events.length === 0) {
+            container!.innerHTML = "";
+            emptyState?.classList.remove("hidden");
+            return;
+        }
+
+        emptyState?.classList.add("hidden");
+
+        // Fetch participant counts
+        const eventIds = events.map((e) => e.id);
+        const { data: participantCounts } = await supabase
+            .from("event_participants")
+            .select("event_id")
+            .in("event_id", eventIds);
+
+        const countMap: Record<string, number> = {};
+        participantCounts?.forEach((p) => {
+            countMap[p.event_id] = (countMap[p.event_id] || 0) + 1;
+        });
+
+        container!.innerHTML = events
+            .map((event) => {
+                const eventDate = new Date(event.event_date);
+                const formattedDate = eventDate.toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                });
+                const participantCount = countMap[event.id] || 0;
+
+                return `
+                <div class="group bg-slate-900/50 border border-white/5 rounded-[2rem] p-6 hover:border-purple-500/30 transition-all cursor-pointer" data-event-id="${event.id}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center border border-purple-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-400">
+                                <path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>
+                            </svg>
+                        </div>
+                        <button class="delete-event-btn opacity-0 group-hover:opacity-100 p-2 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all" data-event-id="${event.id}" title="Hapus Acara">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                    <h4 class="font-black text-white text-lg uppercase tracking-tight mb-1 group-hover:text-purple-400 transition-colors">${event.name}</h4>
+                    <p class="text-slate-500 text-xs mb-3">${formattedDate}</p>
+                    <div class="flex gap-3 text-[10px]">
+                        ${event.location ? `<span class="text-slate-600 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${event.location}</span>` : ""}
+                        <span class="text-purple-400 flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${participantCount} Peserta</span>
+                    </div>
+                    ${event.description ? `<p class="text-slate-600 text-xs italic line-clamp-2 mt-3">${event.description}</p>` : ""}
+                </div>
+            `;
+            })
+            .join("");
+
+        // Add click listeners
+        document.querySelectorAll("[data-event-id]").forEach((el) => {
+            if (!el.classList.contains("delete-event-btn")) {
+                el.addEventListener("click", (e) => {
+                    if (
+                        !(e.target as HTMLElement).closest(".delete-event-btn")
+                    ) {
+                        openEventDetail(el.getAttribute("data-event-id")!);
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll(".delete-event-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const eventId = (btn as HTMLElement).getAttribute(
+                    "data-event-id",
+                );
+                if (
+                    confirm("Hapus acara ini beserta semua data kehadirannya?")
+                ) {
+                    await supabase.from("events").delete().eq("id", eventId);
+                    loadEvents();
+                }
+            });
+        });
+    }
+
+    async function openEventDetail(eventId: string) {
+        currentEventId = eventId;
+
+        const { data: event } = await supabase
+            .from("events")
+            .select("*")
+            .eq("id", eventId)
+            .single();
+
+        if (!event) return;
+        currentEventData = event;
+
+        document.getElementById("detail-event-name")!.textContent = event.name;
+        const dateEl = document
+            .getElementById("detail-event-date")!
+            .querySelector("span");
+        const locEl = document
+            .getElementById("detail-event-location")!
+            .querySelector("span");
+
+        const eventDate = new Date(event.event_date);
+        dateEl!.textContent = eventDate.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+
+        if (event.location) {
+            locEl!.textContent = event.location;
+            document
+                .getElementById("detail-event-location")!
+                .classList.remove("hidden");
+        } else {
+            document
+                .getElementById("detail-event-location")!
+                .classList.add("hidden");
+        }
+
+        // Fetch participants
+        const { data: participants } = await supabase
+            .from("event_participants")
+            .select("student_id")
+            .eq("event_id", eventId);
+
+        participantsData = participants || [];
+        const participantIds = new Set(
+            participantsData.map((p) => p.student_id),
+        );
+
+        // Update participant count display
+        document
+            .getElementById("detail-participant-count")!
+            .querySelector("span")!.textContent =
+            `${participantsData.length} Peserta`;
+
+        // Fetch attendance
+        const { data: attendance } = await supabase
+            .from("event_attendance")
+            .select("*")
+            .eq("event_id", eventId);
+
+        attendanceData = attendance || [];
+
+        renderAttendanceList(participantIds);
+        updateStats(participantIds);
+
+        (
+            document.getElementById("event-detail-modal") as HTMLDialogElement
+        ).showModal();
+    }
+
+    function renderAttendanceList(participantIds: Set<number>) {
+        const list = document.getElementById("attendance-list");
+        const attendanceMap = Object.fromEntries(
+            attendanceData.map((a) => [a.student_id, a]),
+        );
+
+        // Only show students who are participants
+        const eventStudents = allStudents.filter((s) =>
+            participantIds.has(s.id),
+        );
+
+        if (eventStudents.length === 0) {
+            list!.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="text-slate-500 text-sm italic mb-4">Belum ada peserta yang dipilih untuk acara ini.</div>
+                    <button id="add-participants-from-empty" class="px-6 py-3 bg-purple-600/10 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-500/20 rounded-xl font-bold transition-all cursor-pointer">
+                        + Tambah Peserta
+                    </button>
+                </div>
+            `;
+            document
+                .getElementById("add-participants-from-empty")
+                ?.addEventListener("click", openEditParticipants);
+            return;
+        }
+
+        list!.innerHTML = eventStudents
+            .map((student, i) => {
+                const record = attendanceMap[student.id];
+                const status = record?.status || "Tidak Hadir";
+
+                const statusColors: Record<string, string> = {
+                    Hadir: "emerald",
+                    "Tidak Hadir": "red",
+                    Izin: "amber",
+                    Sakit: "blue",
+                };
+                const color = statusColors[status] || "slate";
+
+                return `
+                <div class="p-4 bg-slate-800/30 rounded-2xl border border-white/5 hover:border-${color}-500/20 transition-all group">
+                    <div class="flex items-center justify-between mb-3 gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-sm font-black text-slate-400">${i + 1}</div>
+                            <div>
+                                <div class="font-bold text-white text-sm uppercase tracking-tight">${student.full_name} (${student.absent_no})</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            ${["Hadir", "Izin", "Sakit", "Tidak Hadir"]
+                                .map((s) => {
+                                    const c = statusColors[s];
+                                    const isActive = status === s;
+                                    return `
+                                    <button 
+                                        class="status-btn px-3 py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer
+                                        ${isActive ? `bg-${c}-500 border-${c}-400 text-white` : `bg-slate-800/50 border-white/5 text-slate-500 hover:text-${c}-400 hover:border-${c}-500/30`}"
+                                        data-student-id="${student.id}"
+                                        data-status="${s}"
+                                    >
+                                        ${s === "Tidak Hadir" ? "Alpa" : s}
+                                    </button>
+                                `;
+                                })
+                                .join("")}
+                        </div>
+                    </div>
+                    <div>
+                        <input 
+                            type="text" 
+                            class="note-input w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-2 text-xs text-slate-300 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/30 outline-none transition-all placeholder:text-slate-600"
+                            placeholder="Tambah keterangan (contoh: Menang Lomba, Izin Sakit...)"
+                            value="${record?.note || ""}"
+                            data-student-id="${student.id}"
+                        />
+                    </div>
+                </div>
+            `;
+            })
+            .join("");
+
+        // Add listeners
+        document.querySelectorAll(".status-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const studentId = parseInt(
+                    (btn as HTMLElement).getAttribute("data-student-id")!,
+                );
+                const status = (btn as HTMLElement).getAttribute(
+                    "data-status",
+                )!;
+                await updateAttendance(studentId, status);
+            });
+        });
+
+        // Add note listeners
+        let timeout: any;
+        document.querySelectorAll(".note-input").forEach((input) => {
+            input.addEventListener("input", (e) => {
+                const studentId = parseInt(
+                    (input as HTMLElement).getAttribute("data-student-id")!,
+                );
+                const note = (e.target as HTMLInputElement).value;
+
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    await updateAttendanceNote(studentId, note);
+                }, 500);
+            });
+        });
+    }
+
+    async function updateAttendance(studentId: number, status: string) {
+        if (!currentEventId) return;
+
+        const existing = attendanceData.find((a) => a.student_id === studentId);
+
+        if (existing) {
+            await supabase
+                .from("event_attendance")
+                .update({ status, check_in_time: new Date().toISOString() })
+                .eq("id", existing.id);
+        } else {
+            await supabase.from("event_attendance").insert({
+                event_id: currentEventId,
+                student_id: studentId,
+                status,
+                check_in_time: new Date().toISOString(),
+            });
+        }
+
+        const { data: attendance } = await supabase
+            .from("event_attendance")
+            .select("*")
+            .eq("event_id", currentEventId);
+        attendanceData = attendance || [];
+
+        const participantIds = new Set(
+            participantsData.map((p) => p.student_id),
+        );
+        renderAttendanceList(participantIds);
+        updateStats(participantIds);
+    }
+
+    async function updateAttendanceNote(studentId: number, note: string) {
+        if (!currentEventId) return;
+
+        const existing = attendanceData.find((a) => a.student_id === studentId);
+
+        if (existing) {
+            await supabase
+                .from("event_attendance")
+                .update({ note })
+                .eq("id", existing.id);
+        } else {
+            await supabase.from("event_attendance").insert({
+                event_id: currentEventId,
+                student_id: studentId,
+                status: "Tidak Hadir",
+                note,
+                check_in_time: new Date().toISOString(),
+            });
+        }
+
+        // Silent refresh of local data without re-rendering everything
+        const { data: attendance } = await supabase
+            .from("event_attendance")
+            .select("*")
+            .eq("event_id", currentEventId);
+        attendanceData = attendance || [];
+    }
+
+    function updateStats(participantIds: Set<number>) {
+        const counts = { Hadir: 0, "Tidak Hadir": 0, Izin: 0, Sakit: 0 };
+        const attendanceMap = Object.fromEntries(
+            attendanceData.map((a) => [a.student_id, a]),
+        );
+
+        const eventStudents = allStudents.filter((s) =>
+            participantIds.has(s.id),
+        );
+        eventStudents.forEach((s) => {
+            const status = attendanceMap[s.id]?.status || "Tidak Hadir";
+            counts[status as keyof typeof counts]++;
+        });
+
+        document.getElementById("stat-hadir")!.textContent =
+            counts["Hadir"].toString();
+        document.getElementById("stat-tidak-hadir")!.textContent =
+            counts["Tidak Hadir"].toString();
+        document.getElementById("stat-izin")!.textContent =
+            counts["Izin"].toString();
+        document.getElementById("stat-sakit")!.textContent =
+            counts["Sakit"].toString();
+    }
+
+    function renderParticipantSelection(
+        containerId: string,
+        countId: string,
+        searchQuery: string = "",
+    ) {
+        const list = document.getElementById(containerId);
+
+        // Filter students by search query
+        const filteredStudents = allStudents.filter((student) =>
+            student.full_name.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+
+        if (filteredStudents.length === 0) {
+            list!.innerHTML = `
+                <div class="col-span-2 text-center py-8 text-slate-500 italic">
+                    Tidak ada siswa yang cocok dengan pencarian "${searchQuery}"
+                </div>
+            `;
+            return;
+        }
+
+        list!.innerHTML = filteredStudents
+            .map((student, i) => {
+                const isSelected = selectedParticipants.has(student.id);
+                return `
+                <label class="flex items-center gap-3 p-3 bg-slate-800/30 rounded-xl border ${isSelected ? "border-purple-500/50 bg-purple-500/10" : "border-white/5 hover:border-purple-500/20"} transition-all cursor-pointer group">
+                    <input type="checkbox" class="participant-checkbox w-5 h-5 rounded-lg bg-slate-800 border-white/20 text-purple-500 focus:ring-purple-500/50 cursor-pointer" data-student-id="${student.id}" ${isSelected ? "checked" : ""}>
+                    <div class="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-xs font-black text-slate-400">${i + 1}</div>
+                    <span class="font-bold text-sm text-white uppercase tracking-tight group-hover:text-purple-400 transition-colors">${student.full_name} (${student.absent_no})</span>
+                </label>
+            `;
+            })
+            .join("");
+
+        // Add listeners
+        document
+            .querySelectorAll(`#${containerId} .participant-checkbox`)
+            .forEach((cb) => {
+                cb.addEventListener("change", () => {
+                    const studentId = parseInt(
+                        (cb as HTMLInputElement).getAttribute(
+                            "data-student-id",
+                        )!,
+                    );
+                    if ((cb as HTMLInputElement).checked) {
+                        selectedParticipants.add(studentId);
+                    } else {
+                        selectedParticipants.delete(studentId);
+                    }
+                    updateSelectedCount(countId);
+
+                    // Update visual
+                    const label = cb.closest("label");
+                    if ((cb as HTMLInputElement).checked) {
+                        label?.classList.add(
+                            "border-purple-500/50",
+                            "bg-purple-500/10",
+                        );
+                        label?.classList.remove("border-white/5");
+                    } else {
+                        label?.classList.remove(
+                            "border-purple-500/50",
+                            "bg-purple-500/10",
+                        );
+                        label?.classList.add("border-white/5");
+                    }
+                });
+            });
+
+        updateSelectedCount(countId);
+    }
+
+    function updateSelectedCount(countId: string) {
+        document.getElementById(countId)!.textContent =
+            selectedParticipants.size.toString();
+    }
+
+    function openEditParticipants() {
+        selectedParticipants = new Set(
+            participantsData.map((p) => p.student_id),
+        );
+        renderParticipantSelection(
+            "edit-participant-list",
+            "edit-selected-count",
+        );
+        (
+            document.getElementById(
+                "edit-participants-modal",
+            ) as HTMLDialogElement
+        ).showModal();
+    }
+
+    function setupEventListeners() {
+        // Create event button
+        document
+            .getElementById("create-event-btn")
+            ?.addEventListener("click", () => {
+                const today = new Intl.DateTimeFormat("en-CA", {
+                    timeZone: "Asia/Jakarta",
+                }).format(new Date());
+                (
+                    document.getElementById("event-date") as HTMLInputElement
+                ).value = today;
+                (
+                    document.getElementById(
+                        "create-event-modal",
+                    ) as HTMLDialogElement
+                ).showModal();
+            });
+
+        // Create event form (Step 1 -> Step 2)
+        document
+            .getElementById("create-event-form")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                pendingEventData = {
+                    name: (
+                        document.getElementById(
+                            "event-name",
+                        ) as HTMLInputElement
+                    ).value,
+                    event_date: (
+                        document.getElementById(
+                            "event-date",
+                        ) as HTMLInputElement
+                    ).value,
+                    location:
+                        (
+                            document.getElementById(
+                                "event-location",
+                            ) as HTMLInputElement
+                        ).value || null,
+                    organizer:
+                        (
+                            document.getElementById(
+                                "event-organizer",
+                            ) as HTMLInputElement
+                        ).value || null,
+                    description:
+                        (
+                            document.getElementById(
+                                "event-description",
+                            ) as HTMLTextAreaElement
+                        ).value || null,
+                };
+
+                (
+                    document.getElementById(
+                        "create-event-modal",
+                    ) as HTMLDialogElement
+                ).close();
+
+                // Reset and open participant selection
+                selectedParticipants = new Set();
+                renderParticipantSelection(
+                    "participant-list",
+                    "selected-count",
+                );
+                (
+                    document.getElementById(
+                        "select-participants-modal",
+                    ) as HTMLDialogElement
+                ).showModal();
+            });
+
+        // Back to details
+        document
+            .getElementById("back-to-details")
+            ?.addEventListener("click", () => {
+                (
+                    document.getElementById(
+                        "select-participants-modal",
+                    ) as HTMLDialogElement
+                ).close();
+                (
+                    document.getElementById(
+                        "create-event-modal",
+                    ) as HTMLDialogElement
+                ).showModal();
+            });
+
+        // Select all participants
+        document
+            .getElementById("select-all-participants")
+            ?.addEventListener("click", () => {
+                selectedParticipants = new Set(allStudents.map((s) => s.id));
+                const searchInput = document.getElementById(
+                    "search-participant",
+                ) as HTMLInputElement;
+                renderParticipantSelection(
+                    "participant-list",
+                    "selected-count",
+                    searchInput?.value || "",
+                );
+            });
+
+        // Deselect all participants
+        document
+            .getElementById("deselect-all-participants")
+            ?.addEventListener("click", () => {
+                selectedParticipants = new Set();
+                const searchInput = document.getElementById(
+                    "search-participant",
+                ) as HTMLInputElement;
+                renderParticipantSelection(
+                    "participant-list",
+                    "selected-count",
+                    searchInput?.value || "",
+                );
+            });
+
+        // Search participant (create modal)
+        document
+            .getElementById("search-participant")
+            ?.addEventListener("input", (e) => {
+                const query = (e.target as HTMLInputElement).value;
+                renderParticipantSelection(
+                    "participant-list",
+                    "selected-count",
+                    query,
+                );
+            });
+
+        // Search participant (edit modal)
+        document
+            .getElementById("edit-search-participant")
+            ?.addEventListener("input", (e) => {
+                const query = (e.target as HTMLInputElement).value;
+                renderParticipantSelection(
+                    "edit-participant-list",
+                    "edit-selected-count",
+                    query,
+                );
+            });
+
+        // Save event with participants
+        document
+            .getElementById("save-event-btn")
+            ?.addEventListener("click", async () => {
+                if (!pendingEventData) return;
+
+                if (selectedParticipants.size === 0) {
+                    alert("Pilih minimal 1 peserta!");
+                    return;
+                }
+
+                // Create event
+                const { data: newEvent, error } = await supabase
+                    .from("events")
+                    .insert(pendingEventData)
+                    .select()
+                    .single();
+
+                if (error) {
+                    alert("Gagal membuat acara: " + error.message);
+                    return;
+                }
+
+                // Add participants
+                const participantRows = Array.from(selectedParticipants).map(
+                    (studentId) => ({
+                        event_id: newEvent.id,
+                        student_id: studentId,
+                    }),
+                );
+
+                await supabase
+                    .from("event_participants")
+                    .insert(participantRows);
+
+                (
+                    document.getElementById(
+                        "select-participants-modal",
+                    ) as HTMLDialogElement
+                ).close();
+                (
+                    document.getElementById(
+                        "create-event-form",
+                    ) as HTMLFormElement
+                ).reset();
+                pendingEventData = null;
+                loadEvents();
+            });
+
+        // Edit participants button
+        document
+            .getElementById("edit-participants-btn")
+            ?.addEventListener("click", openEditParticipants);
+
+        // Edit participants - select all
+        document
+            .getElementById("edit-select-all")
+            ?.addEventListener("click", () => {
+                selectedParticipants = new Set(allStudents.map((s) => s.id));
+                const searchInput = document.getElementById(
+                    "edit-search-participant",
+                ) as HTMLInputElement;
+                renderParticipantSelection(
+                    "edit-participant-list",
+                    "edit-selected-count",
+                    searchInput?.value || "",
+                );
+            });
+
+        // Edit participants - deselect all
+        document
+            .getElementById("edit-deselect-all")
+            ?.addEventListener("click", () => {
+                selectedParticipants = new Set();
+                const searchInput = document.getElementById(
+                    "edit-search-participant",
+                ) as HTMLInputElement;
+                renderParticipantSelection(
+                    "edit-participant-list",
+                    "edit-selected-count",
+                    searchInput?.value || "",
+                );
+            });
+
+        // Save participants changes
+        document
+            .getElementById("save-participants-btn")
+            ?.addEventListener("click", async () => {
+                if (!currentEventId) return;
+
+                // Delete existing participants
+                await supabase
+                    .from("event_participants")
+                    .delete()
+                    .eq("event_id", currentEventId);
+
+                // Add new participants
+                if (selectedParticipants.size > 0) {
+                    const participantRows = Array.from(
+                        selectedParticipants,
+                    ).map((studentId) => ({
+                        event_id: currentEventId,
+                        student_id: studentId,
+                    }));
+                    await supabase
+                        .from("event_participants")
+                        .insert(participantRows);
+                }
+
+                // Refresh
+                const { data: participants } = await supabase
+                    .from("event_participants")
+                    .select("student_id")
+                    .eq("event_id", currentEventId);
+
+                participantsData = participants || [];
+                const participantIds = new Set(
+                    participantsData.map((p) => p.student_id),
+                );
+
+                document
+                    .getElementById("detail-participant-count")!
+                    .querySelector("span")!.textContent =
+                    `${participantsData.length} Peserta`;
+
+                renderAttendanceList(participantIds);
+                updateStats(participantIds);
+
+                (
+                    document.getElementById(
+                        "edit-participants-modal",
+                    ) as HTMLDialogElement
+                ).close();
+                loadEvents();
+            });
+
+        // Mark all hadir
+        document
+            .getElementById("mark-all-hadir")
+            ?.addEventListener("click", async () => {
+                if (!currentEventId) return;
+                const participantIds = new Set(
+                    participantsData.map((p) => p.student_id),
+                );
+                const eventStudents = allStudents.filter((s) =>
+                    participantIds.has(s.id),
+                );
+                for (const student of eventStudents) {
+                    await updateAttendance(student.id, "Hadir");
+                }
+            });
+
+        // Mark all tidak hadir
+        document
+            .getElementById("mark-all-tidak")
+            ?.addEventListener("click", async () => {
+                if (!currentEventId) return;
+                const participantIds = new Set(
+                    participantsData.map((p) => p.student_id),
+                );
+                const eventStudents = allStudents.filter((s) =>
+                    participantIds.has(s.id),
+                );
+                for (const student of eventStudents) {
+                    await updateAttendance(student.id, "Tidak Hadir");
+                }
+            });
+
+        // Print PDF
+        document
+            .getElementById("print-attendance-btn")
+            ?.addEventListener("click", printAttendance);
+
+        // Export Text
+        document
+            .getElementById("export-text-btn")
+            ?.addEventListener("click", exportText);
+    }
+
+    async function exportText() {
+        if (!currentEventData) return;
+
+        const participantIds = new Set(
+            participantsData.map((p) => p.student_id),
+        );
+        const eventStudents = allStudents.filter((s) =>
+            participantIds.has(s.id),
+        );
+        const attendanceMap = Object.fromEntries(
+            attendanceData.map((a) => [a.student_id, a]),
+        );
+
+        const eventDate = new Date(currentEventData.event_date);
+        const formattedDate = eventDate.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+
+        let text = `📢 *ABSENSI ACARA: ${currentEventData.name.toUpperCase()}*\n`;
+        text += `📅 Tanggal: ${formattedDate}\n`;
+        if (currentEventData.location)
+            text += `📍 Lokasi: ${currentEventData.location}\n`;
+        text += `👥 Total Peserta: ${eventStudents.length}\n\n`;
+
+        const categories = ["Hadir", "Tidak Hadir", "Izin", "Sakit"];
+        categories.forEach((cat) => {
+            const studentsInCat = eventStudents.filter((s) => {
+                const status = attendanceMap[s.id]?.status || "Tidak Hadir";
+                return status === cat;
+            });
+
+            if (studentsInCat.length > 0) {
+                const label =
+                    cat === "Tidak Hadir"
+                        ? "❌ ALPA"
+                        : cat === "Hadir"
+                          ? "✅ HADIR"
+                          : cat === "Izin"
+                            ? "📝 IZIN"
+                            : "🏥 SAKIT";
+
+                text += `*${label} (${studentsInCat.length}):*\n`;
+                studentsInCat.forEach((s, i) => {
+                    const record = attendanceMap[s.id];
+                    const note = record?.note ? ` - _${record.note}_` : "";
+                    text += `${i + 1}. ${s.full_name} (${s.absent_no})${note}\n`;
+                });
+                text += `\n`;
+            }
+        });
+
+        text += `_Dicetak otomatis oleh Sistem Absensi Kelas TKJ_`;
+
+        try {
+            await navigator.clipboard.writeText(text);
+            alert("Teks absensi berhasil disalin ke clipboard!");
+        } catch (err) {
+            console.error("Gagal menyalin teks: ", err);
+            // Fallback for some browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("Teks absensi berhasil disalin ke clipboard!");
+        }
+    }
+
+    async function printAttendance() {
+        if (!currentEventData) return;
+
+        const participantIds = new Set(
+            participantsData.map((p) => p.student_id),
+        );
+        const eventStudents = allStudents.filter((s) =>
+            participantIds.has(s.id),
+        );
+        const attendanceMap = Object.fromEntries(
+            attendanceData.map((a) => [a.student_id, a]),
+        );
+
+        const eventDate = new Date(currentEventData.event_date);
+        const formattedDate = eventDate.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+
+        const counts = { Hadir: 0, "Tidak Hadir": 0, Izin: 0, Sakit: 0 };
+        eventStudents.forEach((s) => {
+            const status = attendanceMap[s.id]?.status || "Tidak Hadir";
+            counts[status as keyof typeof counts]++;
+        });
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) return;
+
+        const statusColors: Record<string, string> = {
+            Hadir: "#10b981",
+            "Tidak Hadir": "#ef4444",
+            Izin: "#f59e0b",
+            Sakit: "#3b82f6",
+        };
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Absensi - ${currentEventData.name}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Inter', sans-serif; padding: 40px; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); min-height: 100vh; color: #fff; }
+                    .container { max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, rgba(30,27,75,0.8) 0%, rgba(15,23,42,0.9) 100%); border-radius: 32px; padding: 48px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+                    .header { text-align: center; margin-bottom: 40px; padding-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+                    .logo { font-size: 12px; font-weight: 900; letter-spacing: 0.3em; text-transform: uppercase; color: #a855f7; margin-bottom: 16px; }
+                    .title { font-size: 32px; font-weight: 900; text-transform: uppercase; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+                    .subtitle { font-size: 14px; color: #94a3b8; }
+                    .meta { display: flex; gap: 24px; justify-content: center; margin-top: 16px; font-size: 13px; color: #64748b; flex-wrap: wrap; }
+                    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+                    .stat { text-align: center; padding: 20px; border-radius: 16px; border: 1px solid; }
+                    .stat-hadir { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
+                    .stat-tidak { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+                    .stat-izin { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); }
+                    .stat-sakit { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); }
+                    .stat-value { font-size: 28px; font-weight: 900; }
+                    .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; margin-top: 4px; }
+                    .stat-hadir .stat-value { color: #10b981; }
+                    .stat-tidak .stat-value { color: #ef4444; }
+                    .stat-izin .stat-value { color: #f59e0b; }
+                    .stat-sakit .stat-value { color: #3b82f6; }
+                    table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+                    th { text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; }
+                    td { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
+                    tr td:first-child { border-radius: 12px 0 0 12px; }
+                    tr td:last-child { border-radius: 0 12px 12px 0; }
+                    .no { font-weight: 900; color: #64748b; width: 40px; }
+                    .name { font-weight: 700; }
+                    .status { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+                    .footer { margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 11px; color: #64748b; }
+                    @media print {
+                        body { background: white !important; color: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .container { box-shadow: none; border: 1px solid #e2e8f0; background: white !important; }
+                        .title { background: none; -webkit-text-fill-color: #7c3aed; color: #7c3aed; }
+                        td { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+                        .name { color: #1e293b; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="logo">Kelas TKJ • Absensi Acara</div>
+                        <h1 class="title">${currentEventData.name}</h1>
+                        <p class="subtitle">${currentEventData.description || "Daftar Kehadiran Peserta"}</p>
+                        <div class="meta">
+                            <span>📅 ${formattedDate}</span>
+                            ${currentEventData.location ? `<span>📍 ${currentEventData.location}</span>` : ""}
+                            ${currentEventData.organizer ? `<span>👤 ${currentEventData.organizer}</span>` : ""}
+                            <span>👥 ${eventStudents.length} Peserta</span>
+                        </div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat stat-hadir"><div class="stat-value">${counts["Hadir"]}</div><div class="stat-label">Hadir</div></div>
+                        <div class="stat stat-tidak"><div class="stat-value">${counts["Tidak Hadir"]}</div><div class="stat-label">Tidak Hadir</div></div>
+                        <div class="stat stat-izin"><div class="stat-value">${counts["Izin"]}</div><div class="stat-label">Izin</div></div>
+                        <div class="stat stat-sakit"><div class="stat-value">${counts["Sakit"]}</div><div class="stat-label">Sakit</div></div>
+                    </div>
+
+                    <table>
+                        <thead><tr><th>No</th><th>Nama Siswa</th><th>Status</th><th>Keterangan</th></tr></thead>
+                        <tbody>
+                            ${eventStudents
+                                .map((s, i) => {
+                                    const record = attendanceMap[s.id];
+                                    const status =
+                                        record?.status || "Tidak Hadir";
+                                    const note = record?.note || "-";
+                                    const color = statusColors[status];
+                                    return `<tr><td class="no">${i + 1}</td><td class="name">${s.full_name} (${s.absent_no})</td><td><span class="status" style="background: ${color}20; color: ${color}; border: 1px solid ${color}40;">${status}</span></td><td style="font-size: 11px; color: #94a3b8; font-style: italic;">${note}</td></tr>`;
+                                })
+                                .join("")}
+                        </tbody>
+                    </table>
+
+                    <div class="footer">
+                        <span>Dicetak: ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB</span>
+                        <span>Total: ${eventStudents.length} peserta</span>
+                    </div>
+                </div>
+                <script>window.onload = () => { setTimeout(() => window.print(), 500); }<\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    document.addEventListener("astro:page-load", init);
+    if (document.readyState === "complete") init();
+</script>
